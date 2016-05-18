@@ -1,0 +1,3 @@
+Myid	metabolitename
+X1	myristate__14_0_
+X2	uridine
