@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RS3D</title>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link href="rs3d.css" rel="stylesheet">
+    <link rel="stylesheet" href="/common/css/style.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.rawgit.com/flatlogic/bootstrap-tabcollapse/master/bootstrap-tabcollapse.js"></script>
+    <script src="rs3d.js"></script>
+ </head>
+<body>
+    <div class="container">
+        <div class="row">
+            <!-- sub-Banner div -->
+            <div class="col-xs-12 col-md-10"> <br/>
+               <a href="http://www.nih.gov" target="_BLANK"> <img src="/common/images/nci-logo-full.svg" alt="National Institute of Health " title="Banner of National Institute of Health" height="65"/></a>
+            </div>
+        </div>
+       <br/><br/><br/>
+        <div class="row">
+          <div class="col-md-12">
+			  <nav class="navbar navbar-default">
+					<!-- Collect the nav links, forms, and other content for toggling -->
+						<div class="collapse navbar-collapse" id="apc-tab-nav">
+							<ul class="nav nav-pills">
+								<li class="active"><a href="#tab-home" data-toggle="tab">Home</a></li>
+								<li><a href="#tab-qualityControl" data-toggle="tab">Quality Control Check</a></li>
+								<li><a href="#tab-harmonization" data-toggle="tab">Harmonization Check</a></li>
+								<li><a href="#tab-correlate" data-toggle="tab">Correlate</a></li>
+								<li><a href="#tab-help" data-toggle="tab">Help</a></li>
+							</ul>
+						</div>
+						<!-- /.navbar-collapse -->
+			  </nav>
+				 <!-- home tab content -->
+ 			 <div class="tab-content grey-border">
+				 <div class="tab-pane active" id="tab-home">
+                          This is a home page.
+			     </div>
+		     </div>
+		  </div>
+        </div> <!-- end of row -->
+    </div> <!-- end of container -->
+    <div id="messageBoard" title="Message"  style="display:none;">
+         <div id="message"> </div>
+    </div>
+   <div class="loading" style="display:none;"></div>
+</body>
+</html>
