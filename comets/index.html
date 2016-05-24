@@ -10,14 +10,14 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-    <link href="rs3d.css" rel="stylesheet">
+    <link href="css/comets.css" rel="stylesheet">
     <link rel="stylesheet" href="/common/css/style.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.rawgit.com/flatlogic/bootstrap-tabcollapse/master/bootstrap-tabcollapse.js"></script>
-    <script src="rs3d.js"></script>
+    <script src="javascript/comets.js"></script>
  </head>
 <body>
     <div class="container">
@@ -29,7 +29,7 @@
         </div>
        <br/><br/><br/>
         <div class="row">
-           <div id="logoutDiv" class="col-xs-12" align="right"><input type="button" class="btn btn-primary" value="LOGOUT"/></div>
+           <div id="logoutDiv" style="display:none;" class="col-xs-12" align="right"><input type="button" class="btn btn-primary" onclick="disableAllTabs();" value="LOGOUT"/></div>
         </div>
         <div class="row">
           <div class="col-md-12">
@@ -38,10 +38,10 @@
 						<div class="collapse navbar-collapse" id="apc-tab-nav">
 							<ul class="nav nav-pills">
 								<li class="active"><a href="#tab-home" data-toggle="tab">Home</a></li>
-								<li><a href="#tab-qualityControl" data-toggle="tab">Quality Control Check</a></li>
-								<li><a href="#tab-harmonization" data-toggle="tab">Harmonization Check</a></li>
-								<li><a href="#tab-correlate" data-toggle="tab">Correlate</a></li>
-								<li><a href="#tab-help" data-toggle="tab">Help</a></li>
+								<li><a href="#"  data-toggle="tab" id="controlTabId">Quality Control Check</a></li>
+								<li><a href="#" data-toggle="tab" id="harmonizationTabId">Harmonization Check</a></li>
+								<li><a href="#" data-toggle="tab" id="correlateTabId">Correlate</a></li>
+								<li><a href="#" data-toggle="tab" id="helpTabId">Help</a></li>
 							</ul>
 						</div>
 						<!-- /.navbar-collapse -->
@@ -63,7 +63,7 @@
                              <li>Correlate: A series of models will be run on each cohort in support of the age paper. The analyses will result in metabolites (OUTCOMES) displayed in rows and the covariates (EXPOSURES) along columns.</li>
                           </ul>
                           <br/><br/><br/>
-                          <div class="row">
+                          <div id="loginDiv" class="row">
 								<div class="col-md-8">
 								    <div class="row">
 								        <div class="col-md-2">&nbsp;</div>
@@ -72,7 +72,8 @@
 								        </div>
 								    </div>
 								    <div class="row">
-								        <div class="col-md-12"> &nbsp; </div>
+								        <div class="col-md-6"> &nbsp; </div>
+								        <div id="messageDiv" class="col-md-6"> &nbsp; </div>
 								    </div>
 								    <div class="row">
 								  	    <div class="col-md-6" align="right"><label for="userId">User ID</label></div>
@@ -87,13 +88,273 @@
 								    </div>
 								     <div class="row">
 								        <div class="col-md-6">&nbsp;</div>
-								  	    <div class="col-md-6" align="left"><input type="button" class=" btn btn-primary" value="    SIGN IN    "/></div>
+								  	    <div class="col-md-6" align="left"><input type="button" class=" btn btn-primary" onclick="userLogin();" value="    SIGN IN    "/></div>
 								     </div>
 								</div>
 								<div class="col-md-4">&nbsp;</div>
 						  </div>
 			     </div>
-		     </div>
+			     <!-- start quality Control Tab -->
+			     <div class="tab-pane" id="tab-qualityControl">
+			         <div class="row">
+			             <div class="col-md-3">
+			                <div class="well">
+					           <div class="well well-nested">
+					              <form name="qualityControlForm">
+					                  <div class="row">
+								          <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+					                  <div class="row">
+					                      <div class="col-xs-12">
+					                         <label for="harmonizationFile">Input Harmonizated Data File (.cvs format)</label>
+					                      </div>
+					                  </div>
+					                  <div class="row">
+					                      <div class="col-xs-12">
+					                         <input id="harmonizationFile" type="file" accept=".csv" />
+					                      </div>
+					                  </div>
+					                  <div class="row">
+					                      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+					                  <div class="row">
+					                      <div class="col-xs-12">
+					                         <label for="mappingFile">Input Refmet Mapping File (e.g. at least 3 columns: UIDs, Biochemical name and Refmet columns) </label>
+					                      </div>
+					                  </div>
+					                  <div class="row">
+					                      <div class="col-xs-12">
+					                         <input id="mappingFile" type="file" accept=".csv" />
+					                      </div>
+					                  </div>
+					                  <div class="row">
+					                      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+					                  <div class="row">
+					                      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+					                  <div class="row">
+					                      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+					              </form>
+					           </div>
+					        </div><!-- end of well -->
+			             </div>
+			             <div class="col-md-9">
+			             </div>
+			         </div>
+			     </div>
+			     <!-- end of quality Control Tab -->
+			     <!-- start harmonization Tab -->
+			     <div class="tab-pane" id="tab-harmonization">
+                     <div class="row">
+			             <div class="col-md-3">
+			                <div class="well">
+					           <div class="well well-nested">
+					              <form name="qualityControlForm">
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+					                  <div class="row">
+									      <div class="col-xs-12">
+									           <label for="metaboliteFile">Input List of metabolite names one name per line (.txt format)</label>
+									      </div>
+									  </div>
+									  <div class="row">
+									      <div class="col-xs-12">
+									           <input id="metaboliteFile" type="file" accept=".txt" />
+									      </div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+                                  </form>
+                               </div>
+                            </div> <!-- end of well -->
+                         </div>
+                     </div>
+			     </div>
+			     <!-- end of harmonization Tab -->
+			     <!-- start correlate Tab -->
+			     <div class="tab-pane" id="tab-correlate">
+                     <div class="row">
+			             <div class="col-md-3">
+			                <div class="well">
+					           <div class="well well-nested">
+					              <form name="qualityControlForm">
+					              </form>
+					           </div>
+					        </div><!-- end of well -->
+					     </div>
+					 </div>
+			     </div>
+			     <!-- end of correlate Tab -->
+			     <!-- start help Tab -->
+			     <div class="tab-pane" id="tab-help">
+			        <div class="row">
+			           <div class="col-md-12">
+			                This web application contains three functions: <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+  						    1. Quality Control Check: internal functionality to check and get some stats from the master harmonized file generated by Adam <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							This application takes in two data files:
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-2"> &nbsp;</div>
+			           <div class="col-me-10">
+			                    uids.csv (harmonized file that Adam compiles)
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-2"> &nbsp;</div>
+			           <div class="col-me-10">
+			                        Refmet.csv (BIOCHEMICAL names with refmet ids) <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							All files must be in comma-delimited format (.csv). To get a csv file, simply save your Excel sheet as a csv.<br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							##### Mapping to Refmet: Take the BIOCHEMICAL ids from uids.csv, and plug them into this web application:<br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							http://www.metabolomicsworkbench.org/data/name_to_refmet_form.php <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							Then copy paste the output into Excel and save as csv. <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							#####Important note: this app requires a column named BIOCHEMICAL <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							2. Harmonization Check: allows consortium members to check whether their list of metabolites has already been integrated and harmonized into the master harmonized file. <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							This application takes in one data file: <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							list of metabolite names with one name per line (.txt format preferred) <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							3. Correlate: A series of models will be run on each cohort in support of the age paper. The analyses will result in metabolites (OUTCOMES)
+							displayed in rows and the covariates (EXPOSURES) along columns. The input data file is assumed to have several sheets: <br/>
+		                     <ul>
+		                       <li>Metabolites - from harmonized metabolites output </li>
+		                       <li>SubjectMetabolites - abundances in columns and subject in rows </li>
+							   <li>SubjectData - other exposure and adjustment variables </li>
+							   <li>VarMap - maps the variables needed to conduct the cohort specific analysis. Specify the name of variables under CohortVariable column.
+							       if the VarReference has the same name in the cohort, leave blank </li>
+							   <li>Models - models used to conduct COMETS analysis. Outcomes, exposures and adjustment can specify multiple covariates delimited by spaces (ie: age bmi). </li>
+							 </ul>
+							   <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							3.1 Correlation Heatmap <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							The heatmap displays the proper biochemical names for harmonized metabolites. <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							3.2 Correlation Network <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+						<div class="col-md-12">
+							Using the genenet package, we display the partial correlation network of your outcomes, exposures and adjusted covariates. There is an option to display
+							the minimum correlation to display with a default of 0.40. <br/><br/>
+						</div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							3.3 Summary Statistics <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							Shows the distribution of all variables included in your data file. <br/><br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							Manuscript 1 Analyses<br/>
+			           </div>
+			        </div>
+			        <div class="row">
+			           <div class="col-md-12">
+							Please specify your models as:<br/><br/>
+			           </div>
+			        </div>
+				    <div class="row">
+			           <div class="col-md-6">
+							<table border="0" width="60%">
+							   <tr>
+							      <th>Model</th>
+							      <th>Covariate</th>
+							      <th>Adjustments</th>
+							   </tr>
+							   <tr>
+							      <td>1.1 Unadjusted </td>
+							      <td>Age </td>
+							      <td>None</td>
+							   </tr>
+							   <tr>
+							      <td>1.2 Race & Sex </td>
+							      <td>Adj </td>
+							      <td>Age Race & Sex</td>
+							   </tr>
+							   <tr>
+							      <td>1.3 xxxx </td>
+							      <td>Age </td>
+							      <td>xxxx</td>
+							   </tr>
+							</table>
+			           </div>
+			           <div class="col-md-6">
+							&nbsp;
+			           </div>
+			        </div>
+
+
+
+			        </div> <!-- end of help tab content -->
+			     </div>
+		     </div> <!-- end of tab content -->
 		  </div>
         </div> <!-- end of row -->
     </div> <!-- end of container -->
