@@ -35,7 +35,7 @@
           <div class="col-md-12">
 			  <nav class="navbar navbar-default">
 					<!-- Collect the nav links, forms, and other content for toggling -->
-						<div class="collapse navbar-collapse" id="apc-tab-nav">
+						<div class="collapse navbar-collapse" id="comets-tab-nav">
 							<ul class="nav nav-pills">
 								<li class="active"><a href="#tab-home" data-toggle="tab">Home</a></li>
 								<li><a href="#"  data-toggle="tab" id="controlTabId">Quality Control Check</a></li>
@@ -97,7 +97,7 @@
 			     <!-- start quality Control Tab -->
 			     <div class="tab-pane" id="tab-qualityControl">
 			         <div class="row">
-			             <div class="col-md-3">
+			             <div class="col-md-4">
 			                <div class="well">
 					           <div class="well well-nested">
 					              <form name="qualityControlForm">
@@ -140,7 +140,7 @@
 					           </div>
 					        </div><!-- end of well -->
 			             </div>
-			             <div class="col-md-9">
+			             <div class="col-md-8">
 			             </div>
 			         </div>
 			     </div>
@@ -148,7 +148,7 @@
 			     <!-- start harmonization Tab -->
 			     <div class="tab-pane" id="tab-harmonization">
                      <div class="row">
-			             <div class="col-md-3">
+			             <div class="col-md-4">
 			                <div class="well">
 					           <div class="well well-nested">
 					              <form name="qualityControlForm">
@@ -178,21 +178,130 @@
                                </div>
                             </div> <!-- end of well -->
                          </div>
+                         <div class="col-md-8">
+			             </div>
                      </div>
 			     </div>
 			     <!-- end of harmonization Tab -->
 			     <!-- start correlate Tab -->
 			     <div class="tab-pane" id="tab-correlate">
-                     <div class="row">
-			             <div class="col-md-3">
-			                <div class="well">
+			        <div class="row">
+ 	                    <div class="col-md-4">
+			               <div class="well">
 					           <div class="well well-nested">
 					              <form name="qualityControlForm">
-					              </form>
-					           </div>
-					        </div><!-- end of well -->
-					     </div>
-					 </div>
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+					                  <div class="row">
+									      <div class="col-xs-12">
+									           <label for="cohortFile">1. Specify Cohort</label>
+									      </div>
+									  </div>
+									  <div class="row">
+									      <div class="col-xs-12">
+									           <select name="cohortSelection" id="cohortSelection" style="width:160px;">
+											     <option value="volvo">Volvo</option>
+											     <option value="saab">Saab</option>
+											     <option value="mercedes">Mercedes</option>
+											     <option value="audi">Audi</option>
+												</select>
+									      </div>
+					                  </div>
+					                  <div class="row">
+									     <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12">
+									          <label for="inputDataFile">2. Choose Input Data File</label>
+									      </div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12">
+									          <input id="inputDataFile" type="file"/>
+									      </div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12">
+									          <label for="methodSelection">3. Method for model specification</label>
+									      </div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12">
+									          &nbsp;&nbsp;&nbsp;<input type="radio" name="methodSelection" id="methodSelection1" value="batch" checked/> &nbsp;Batch
+									      </div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12">
+									          &nbsp;&nbsp;&nbsp;<input type="radio" name="methodSelection" id="methodSelection2" value="interactive" /> &nbsp;Interactive
+									      </div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+									  <div class="row">
+									      <div class="col-xs-12">
+									          <label for="modelSelection">Choose Model</label>
+									      </div>
+					                  </div>
+									  <div class="row">
+									      <div class="col-xs-12">
+									           <select name="modelSelection" id="modelSelection" style="width:160px;">
+											     <option value="volvo">Volvo</option>
+											     <option value="saab">Saab</option>
+											     <option value="mercedes">Mercedes</option>
+											     <option value="audi">Audi</option>
+												</select>
+									      </div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+                                      <div class="row">
+									      <div class="col-xs-12"> &nbsp;</div>
+					                  </div>
+                                  </form>
+                               </div>
+                            </div> <!-- end of well -->
+                         </div>
+                         <div class="col-md-8">
+                             <div class="row">
+								  <div class="col-md-12">
+									  <nav class="navbar navbar-default">
+											<!-- Collect the nav links, forms, and other content for toggling -->
+												<div class="collapse navbar-collapse" id="correlate-tab-nav">
+													<ul class="nav nav-pills">
+														<li class="active"><a href="#tab-summary" data-toggle="tab">Summary</a></li>
+														<li><a href="#tab-heatmap"  data-toggle="tab" id="controlTabId">Heatmap</a></li>
+														<li><a href="#tab-cluster" data-toggle="tab" id="harmonizationTabId">Cluster and Heatmap</a></li>
+														<li><a href="#tab-network" data-toggle="tab" id="correlateTabId">Network</a></li>
+													</ul>
+												</div>
+									  </nav>
+									  <div class="tab-content grey-border">
+ 											<div class="tab-pane active" id="tab-summary">
+ 											  This is a summary
+ 											</div>
+ 											<div class="tab-pane" id="tab-heatmap">
+ 											   This is a heatmap
+ 											</div>
+ 											<div class="tab-pane" id="tab-cluster">
+ 											   This is cluster and heatmap
+ 											</div>
+ 											<div class="tab-pane" id="tab-network">
+ 											  This is a network
+ 											</div>
+									  </div>
+								 </div>
+                            </div> <!-- end of row -->
+			             </div> <!-- end of right panel -->
+			        </div>
 			     </div>
 			     <!-- end of correlate Tab -->
 			     <!-- start help Tab -->
@@ -322,7 +431,7 @@
 			        </div>
 				    <div class="row">
 			           <div class="col-md-6">
-							<table border="0" width="60%">
+							<table border="0" width="80%">
 							   <tr>
 							      <th>Model</th>
 							      <th>Covariate</th>
