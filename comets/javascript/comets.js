@@ -110,4 +110,5 @@ function disableAllTabs(){
 	$('#helpTabId').attr('href', '#');
     $('#loginDiv').show();
     $('#logoutDiv').hide();
+    location.reload();
 }
