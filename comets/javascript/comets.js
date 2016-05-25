@@ -2,6 +2,81 @@ var controlPage = '#tab-qualityControl';
 var harmonizationPage = '#tab-harmonization';
 var correlatePage = '#tab-correlate';
 var helpPage = '#tab-help';
+var file1;
+$(document).ready(function() {
+   $('#harmonizationFile').change(function(){
+        if (window.FileReader) {
+            var file = this.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function(event) {
+               var contents = event.target.result;
+            }
+
+            if(file){
+               reader.readAsText(file);
+               file1 = file;
+            }
+        }
+        $('#qualityControlResult').show();
+
+    });
+   $('#mappingFile').change(function(){
+        if (window.FileReader) {
+            var file = this.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function(event) {
+               var contents = event.target.result;
+            }
+
+            if(file){
+               reader.readAsText(file);
+               file1 = file;
+            }
+        }
+        $('#qualityControlResult').show();
+    });
+
+    $('#metaboliteFile').change(function(){
+	        if (window.FileReader) {
+	            var file = this.files[0];
+	            var reader = new FileReader();
+
+	            reader.onload = function(event) {
+	               var contents = event.target.result;
+	            }
+
+	            if(file){
+	               reader.readAsText(file);
+	               file1 = file;
+	            }
+	        }
+	        $('#harmonizationDiv').show();
+    });
+
+    $('#inputDataFile').change(function(){
+	        if (window.FileReader) {
+	            var file = this.files[0];
+	            var reader = new FileReader();
+
+	            reader.onload = function(event) {
+	               var contents = event.target.result;
+	            }
+
+	            if(file){
+	               reader.readAsText(file);
+	               file1 = file;
+	            }
+	        }
+	        $('#summaryDiv').show();
+	        $('#heatmapDiv').show();
+	        $('#clusterDiv').show();
+	        $('#networkDiv').show();
+    });
+
+
+});
 
 function userLogin(){
 	var userName = $('#userId').val();

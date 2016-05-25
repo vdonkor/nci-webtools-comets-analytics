@@ -124,7 +124,7 @@
 					                  </div>
 					                  <div class="row">
 					                      <div class="col-xs-12">
-					                         <input id="mappingFile" type="file" accept=".csv" />
+					                         <input id="mappingFile" type="file" />
 					                      </div>
 					                  </div>
 					                  <div class="row">
@@ -141,6 +141,202 @@
 					        </div><!-- end of well -->
 			             </div>
 			             <div class="col-md-8">
+			                <div class="col-sx-12" id="qualityControlResult" style="display:none;">
+			                     <div class="row">
+							          <div class="col-xs-12">
+							             <b>Stats on Input Files</b>
+							          </div>
+ 			                      </div>
+			                      <div class="row">
+			                          <div class="col-xs-12">
+			                             <table width="50%" border="1">
+			                                <tr>
+			                                  <th width="10%">&nbsp;</th>
+			                                  <th width="30%">Files</th>
+			                                  <th width="30%">NumRows</th>
+			                                  <th width="30%">NCols</th>
+			                                </tr>
+			                                <tr>
+			                                   <td>1</td>
+			                                   <td>Uids</td>
+			                                   <td>3148</td>
+			                                   <td>25</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>2</td>
+			                                   <td>Refmet</td>
+			                                   <td>3148</td>
+			                                   <td>5</td>
+			                                </tr>
+			                             </table>
+			                          </div>
+			                      </div>
+			                      <div class="row">
+			                         <div class="col-xs-12">&nbsp;</div>
+			                      </div>
+			                      <div class="row">
+			                         <div class="col-xs-12">
+			                            <b>Stats on metabolities in harmonized data file (uids)</b>
+			                         </div>
+			                      </div>
+			                      <div class="row">
+			                          <div class="col-xs-12">
+			                             <table width="100%" border="1">
+			                                <tr>
+			                                  <th width="10%">&nbsp;</th>
+			                                  <th width="50%">Type</th>
+			                                  <th width="40%">Number_metabolities</th>
+			                                </tr>
+			                                <tr>
+			                                   <td>1</td>
+			                                   <td>Total</td>
+			                                   <td>3148</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>2</td>
+			                                   <td>With identified biochemical name</td>
+			                                   <td>1704</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>3</td>
+			                                   <td>W/O identified biochemical name</td>
+			                                   <td>1444</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>4</td>
+			                                   <td>With NCI_Name</td>
+			                                   <td>2588</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>5</td>
+			                                   <td>With BROAD_Name</td>
+			                                   <td>350</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>6</td>
+			                                   <td>With FENLAND_METABOLON_NAME</td>
+			                                   <td>943</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>7</td>
+			                                   <td>With FENLAND_BIOCRATES_NAME</td>
+			                                   <td>188</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>8</td>
+			                                   <td>With ARIC_NAME 1</td>
+			                                   <td>601</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>9</td>
+			                                   <td>With ARIC_NAME 2</td>
+			                                   <td>1161</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>10</td>
+			                                   <td>With UCLEB_NMR_NAME</td>
+			                                   <td>27</td>
+			                                </tr>
+			                                <tr>
+			                                   <td>11</td>
+			                                   <td>With SHANGHAI_CHD_NAME</td>
+			                                   <td>615</td>
+			                                </tr>
+			                             </table>
+			                          </div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12">&nbsp; </div>
+			                      </div>
+			                      <div class="row">
+			                         <div class="col-xs-12">
+			                             <b>Of the identified metabolities, there is coverage in the following pathway database</b>
+			                         </div>
+			                      </div>
+			                      <div class="row">
+			                         <div class="col-xs-12">
+			                            <table width="100%" border="1">
+			                                <tr>
+			                                   <th width="10%">&nbsp;</th>
+			                                   <th width="45%">Type</th>
+			                                   <th width="45%">Number_Metabolities</th>
+			                                </tr>
+			                                <tr>
+			                                    <td>1</td>
+			                                    <td>HMDB</td>
+			                                    <td>1003</td>
+			                                </tr>
+			                                <tr>
+			                                    <td>2</td>
+			                                    <td>PUBCHEM</td>
+			                                    <td>987</td>
+			                                </tr>
+			                                <tr>
+			                                    <td>3</td>
+			                                    <td>CHEMSPIDER</td>
+			                                    <td>60</td>
+			                                </tr>
+			                                <tr>
+			                                    <td>4</td>
+			                                    <td>KEGG(Compound)</td>
+			                                    <td>562</td>
+			                                </tr>
+			                            </table>
+			                         </div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12">&nbsp; </div>
+			                      </div>
+			                      <div class="row">
+			                         <div class="col-xs-12">
+			                             <b>How many input metabolities map to Refmet?</b>
+			                         </div>
+			                      </div>
+			                      <div class="row">
+			                         <div class="col-xs-12">
+			                            <table width="100%" border="1">
+			                                <tr>
+			                                   <th width="8%">&nbsp;</th>
+			                                   <th width="22%">Nun_Identified</th>
+			                                   <th width="22%">Refmet_mapped</th>
+			                                   <th width="22%">Perc_mapped</th>
+			                                   <th width="22%">Refmet_unmapped</th>
+			                                </tr>
+			                                <tr>
+                                                <td>1</td>
+                                                <td>1704</td>
+                                                <td>1058</td>
+                                                <td>62.09</td>
+                                                <td>2090</td>
+			                                </tr>
+			                            </table>
+			                         </div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12">&nbsp; </div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12"><b>Number of Platform a given metabolities appears in? </b> </div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12"><img src="images/qualityControl.jpg" alt="Quality Control"/> </div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12">&nbsp; </div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12"><b>Are there duplicate BIOCHEMICAL names with a different_Name </b></div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12">The Refmet_name is not taken into account here </div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12">&nbsp; </div>
+			                      </div>
+			                      <div class="row">
+								       <div class="col-xs-12"><a href="#">Download list of duplicate BIOCHEMICAL metabolities names</a> </div>
+			                      </div>
+			                </div>
 			             </div>
 			         </div>
 			     </div>
@@ -179,7 +375,36 @@
                             </div> <!-- end of well -->
                          </div>
                          <div class="col-md-8">
-			             </div>
+                            <div class="col-xs-12" id="harmonizationDiv" style="display:none;">
+                                  <div class="row">
+                                      <div class="col-xs-12"><b>Check how many of the input metabolities are already harmonizaed by the COMETS harmonization group</b></div>
+                                  </div>
+                                  <div class="row">
+                                      <div class="col-xs-8">
+                                          <table width="80%" border="1">
+                                             <tr>
+                                                 <th width="10%">&nbsp;</th>
+                                                 <th width="45%">Num_Harmonized</th>
+                                                 <th width="45%">Num_NonHarmonized</th>
+                                             </tr>
+                                             <tr>
+                                                 <td>1</td>
+                                                 <td>0</td>
+                                                 <td>3</td>
+                                             </tr>
+                                          </table>
+                                      </div>
+                                  </div>
+                                  <div class="row">
+                                     <div class="col-xs-12">&nbsp;</div>
+                                  </div>
+                                  <div class="row">
+                                     <div class="col-xs-12"><a href="#">Download list of non-harmonizaed metabolitites and send to COMETS harmonization group</a><br/>
+                                                            <a href="#">Download list of harmonized metabolities</a><br/><br/><br/><br/>
+                                     </div>
+                                  </div>
+                            </div>
+			             </div> <!-- end of right panel -->
                      </div>
 			     </div>
 			     <!-- end of harmonization Tab -->
@@ -250,10 +475,8 @@
 									  <div class="row">
 									      <div class="col-xs-12">
 									           <select name="modelSelection" id="modelSelection" style="width:160px;">
-											     <option value="volvo">Volvo</option>
-											     <option value="saab">Saab</option>
-											     <option value="mercedes">Mercedes</option>
-											     <option value="audi">Audi</option>
+											     <option value="unadjusted">Unadjusted</option>
+											     <option value="BMI adjusted">BMI adjusted</option>
 												</select>
 									      </div>
 					                  </div>
@@ -286,16 +509,40 @@
 									  </nav>
 									  <div class="tab-content grey-border">
  											<div class="tab-pane active" id="tab-summary">
- 											  This is a summary
+ 											    <div id="summaryDiv" class="col-xs-12" style="display:none;">
+ 											        <div class="row">
+ 											            <div class="col-xs-12">
+ 											                <img src="images/summary.jpg" alt="Summary"/>
+ 											            </div>
+ 											        </div>
+ 											    </div>
  											</div>
  											<div class="tab-pane" id="tab-heatmap">
- 											   This is a heatmap
+ 											    <div id="heatmapDiv" class="col-xs-12" style="display:none;">
+ 											        <div class="row">
+ 											            <div class="col-xs-12">
+ 											                <img src="images/heatmap.jpg" alt="heatmap"/>
+ 											            </div>
+ 											        </div>
+ 											    </div>
  											</div>
  											<div class="tab-pane" id="tab-cluster">
- 											   This is cluster and heatmap
+ 											    <div id="clusterDiv" class="col-xs-12" style="display:none;">
+ 											        <div class="row">
+ 											            <div class="col-xs-12">
+ 											                <img src="images/cluster.jpg" alt="Cluster"/>
+ 											            </div>
+ 											        </div>
+ 											    </div>
  											</div>
  											<div class="tab-pane" id="tab-network">
- 											  This is a network
+ 											    <div id="networkDiv" class="col-xs-12" style="display:none;">
+ 											        <div class="row">
+ 											            <div class="col-xs-12">
+ 											                <img src="images/network.jpg" alt="Network"/>
+ 											            </div>
+ 											        </div>
+ 											    </div>
  											</div>
 									  </div>
 								 </div>
@@ -458,8 +705,6 @@
 							&nbsp;
 			           </div>
 			        </div>
-
-
 
 			        </div> <!-- end of help tab content -->
 			     </div>
