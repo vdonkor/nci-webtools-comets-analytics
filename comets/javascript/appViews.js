@@ -44,7 +44,9 @@ appComets.LandingView = Backbone.View.extend({
         if (init.options.attributes && init.options.attributes.authStatus === "connected") {
             getTemplate('landing').then(function (templ) {
                 if (templ.length > 0) {
-                    init.template = _.template(templ, {user: init.options.attributes.user });
+                    init.template = _.template(templ, {
+                        user: init.options.attributes.user
+                    });
 
                     new appComets.docTitleView({
                         pageTitle: "Welcome to COMETS (COnsortium of METabolomics Studies)"
@@ -53,6 +55,9 @@ appComets.LandingView = Backbone.View.extend({
                 }
                 init.render();
             });
+        } else {
+            // if not, logout
+
         }
     },
     render: function () {
@@ -60,8 +65,35 @@ appComets.LandingView = Backbone.View.extend({
     },
     events: {
         /**
-            <eventType targetedElement> : callbackFunction
+            "<eventType targetedElement>" : "callbackFunctionName"
         **/
+        'show.bs.tab #comets-tab-nav': 'setupPage',
+        'change #harmonizationFile': 'uploadQCHarmFile',
+        'change #mappingFile': 'uploadQCMappingFile',
+        'change #metaboliteFile': 'uploadMetaFile',
+        'change #inputDataFile': 'uploadInputDataFile'
+    },
+    setupPage: function () {
+
+    },
+    uploadQCHarmFile: function (e) {
+        fileUpload(e);
+        $('#qualityControlResult').show();
+    },
+    uploadQCMappingFile: function (e) {
+        fileUpload(e);
+        $('#qualityControlResult').show();
+    },
+    uploadMetaFile: function (e) {
+        fileUpload(e);
+        $('#harmonizationDiv').show();
+    },
+    uploadInputDataFile: function (e) {
+        fileUpload(e);
+        $('#summaryDiv').show();
+        $('#heatmapDiv').show();
+        $('#clusterDiv').show();
+        $('#networkDiv').show();
     }
 });
 
@@ -121,7 +153,8 @@ appComets.LoginView = Backbone.View.extend({
             // use backbone local storage
 
             //Ex. FB
-            fbLoginStatus = {
+
+            checkAuthorized("fb", {
                 status: 'connected',
                 authResponse: {
                     accessToken: '...',
@@ -129,32 +162,54 @@ appComets.LoginView = Backbone.View.extend({
                     signedRequest: '...',
                     userID: 'a User'
                 }
-            };
-
-            if (fbLoginStatus.status === 'connected') {
-                var authModel = new appComets.authUser({
-                    authStatus: fbLoginStatus.status,
-                    token: fbLoginStatus.authResponse.accessToken,
-                    user: fbLoginStatus.authResponse.userID
-                });
-
-                // send model to secure pages
-                new appComets.LandingView(authModel);
-
-            } else if (fbLoginStatus.status === "not_authorized") {
-                // trigger not authorized error on login page
-                new appComets.errorsView({
-                    errors: "You are not authorized to access this application"
-                });
-            }
+            });
         }
     }
 });
+
+function checkAuthorized(authService, authObj) {
+    if (authService === "fb") {
+        if (authObj.status === 'connected') {
+            var authModel = new appComets.authUser({
+                authStatus: authObj.status,
+                token: authObj.authResponse.accessToken,
+                user: authObj.authResponse.userID
+            });
+
+            // send model to secure pages
+            new appComets.LandingView(authModel);
+
+        } else if (authObj.status === "not_authorized") {
+            // trigger not authorized error on login page
+
+            new appComets.LoginView();
+            new appComets.errorsView({
+                errors: "You are not authorized to access this application"
+            });
+        }
+    }
+}
 
 function getTemplate(templName) {
     return $.get('templates/' + templName + '.html', function (data) {
         return data;
     });
+}
+
+function fileUpload(e) {
+    if (window.FileReader) {
+        var file = e.target.files[0];
+        var reader = new FileReader();
+
+        reader.onload = function (event) {
+            var contents = event.target.result;
+        }
+
+        if (file) {
+            reader.readAsText(file);
+            file1 = file;
+        }
+    }
 }
 
 $(function () {
