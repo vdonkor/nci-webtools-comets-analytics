@@ -1,5 +1,19 @@
-.container-fluid {
-    max-width: 1366px;
+@media (min-width: 768px) {
+    .container-fluid {
+        max-width: 750px;
+    }
+}
+
+@media (min-width: 992px) {
+    .container-fluid {
+        max-width: 970px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container-fluid {
+        max-width: 1170px;
+    }
 }
 
 nav.navbar.navbar-default {
@@ -7,7 +21,7 @@ nav.navbar.navbar-default {
 }
 
 .tab-content {
-    padding: 10px;
+    padding: 10px 15px;
     width: 100%;
     -webkit-overflow-scrolling: touch;
     background: white;
@@ -27,11 +41,24 @@ nav.navbar.navbar-default {
     box-shadow: 0 2px 4px 0 rgba(1, 90, 129, 0.4);
 }
 
+#inputHelp,
+#calcProgressbar {
+    display: none;
+}
+
 #page-head {
     text-align: center;
     color: #337AB7;
 }
 
-input.input:valid{
+input.input:valid {
     background: #DAFADA;
+}
+
+.steps {
+    background: #3073ad;
+    padding: 20px 10px;
+    color: white;
+    text-align: center;
+    border-radius: 25px;
 }

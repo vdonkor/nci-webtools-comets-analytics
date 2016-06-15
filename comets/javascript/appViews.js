@@ -22,20 +22,6 @@ appComets.errorsView = Backbone.View.extend({
     }
 });
 
-// call this view within every other page view to set the document title element text
-appComets.docTitleView = Backbone.View.extend({
-    el: 'title',
-    initialize: function () {
-        if (this.options.pageTitle) {
-            this.template = _.template(this.options.pageTitle);
-            this.render();
-        }
-    },
-    render: function () {
-        this.$el.html(this.template);
-    }
-});
-
 appComets.LandingView = Backbone.View.extend({
     el: '#pageContent',
     initialize: function () {
@@ -48,10 +34,7 @@ appComets.LandingView = Backbone.View.extend({
                         user: init.options.attributes.user
                     });
 
-                    new appComets.docTitleView({
-                        pageTitle: "Welcome to COMETS (COnsortium of METabolomics Studies)"
-                    });
-
+                    document.title = "Welcome to COMETS (COnsortium of METabolomics Studies)";
                 }
                 init.render();
             });
@@ -71,9 +54,14 @@ appComets.LandingView = Backbone.View.extend({
         'change #harmonizationFile': 'uploadQCHarmFile',
         'change #mappingFile': 'uploadQCMappingFile',
         'change #metaboliteFile': 'uploadMetaFile',
-        'change #inputDataFile': 'uploadInputDataFile'
+        'change #inputDataFile': 'uploadInputDataFile',
+        'change #corr_cutoff': 'updateSlider',
+
+        'click #toggleHelp': function () {
+            $("#inputHelp").toggle();
+        }
     },
-    setupPage: function () {
+    setupPage: function (e) {
 
     },
     uploadQCHarmFile: function (e) {
@@ -90,10 +78,19 @@ appComets.LandingView = Backbone.View.extend({
     },
     uploadInputDataFile: function (e) {
         fileUpload(e);
+
+        if (e.target.files.length > 0) $("#inputNotice").hide();
+        else $("#inputNotice").show();
+
         $('#summaryDiv').show();
         $('#heatmapDiv').show();
         $('#clusterDiv').show();
         $('#networkDiv').show();
+        $('#integrityDiv').show();
+    },
+    updateSlider: function (e) {
+        $("#corr_val").val(e.target.value)
+
     }
 });
 
@@ -104,10 +101,7 @@ appComets.LoginView = Backbone.View.extend({
         getTemplate('login').then(function (templ) {
             if (templ.length > 0) {
                 init.template = _.template(templ);
-
-                new appComets.docTitleView({
-                    pageTitle: "Login - COMETS (COnsortium of METabolomics Studies)"
-                });
+                document.title = "Login - COMETS (COnsortium of METabolomics Studies)";
             }
             init.render();
         });
@@ -213,8 +207,9 @@ function fileUpload(e) {
 }
 
 $(function () {
-    //load login at first
-    var loginView = new appComets.LoginView();
 
     // eventually refer to some type of session variable to check whether they are already authorized and authenticated
+
+    //load login at first
+    var loginView = new appComets.LoginView();
 });
