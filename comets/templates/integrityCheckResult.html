@@ -1,41 +1,60 @@
 <h3>Integrity Check Results</h3>
-<div id="resultStatus" class="<%= integrityStatus %>">
-    <%= integrityStatusMessage %>
-</div>
-<button type="button" id="resultsDownload" class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download results and send to COMETS harmonization group</button>
-<h3>Input Data Summary</h3>
-<table id="inputDataSummary">
-    <tr>
-        <th>Metabolites sheet</th>
-        <th>Subject data sheet</th>
-        <th>Subject metabolites sheet</th>
-    </tr>
-    <tr>
-        <td>
-            <%= metaboliteSheet.meta %> metabolite(s)</td>
-        <td>
-            <%= subjectSheet.subjects %> with
-                <%= subjectSheet.covariants %> covariants</td>
-        <td>
-            <%= subjectsMetaSheet.subjects %> subjects with
-                <%=  subjectMetasheet.meta %> metabolites</td>
-    </tr>
-</table>
 
-<h3>Harmonization Summary</h3>
-<table id="harmSummary">
-    <tr>
-        <th>N Metabolites</th>
-        <th>N Harmonized</th>
-        <th>N Non-Harmonizaed</th>
-    </tr>
-    <tr>
-        <td><%= nMetabolites %></td>
-        <td><%= nHarmonized %></td>
-        <td><%= nHarmonizedNon %></td>
-    </tr>
-</table>
-            
-<img src="<%= integrityImg.src %>", alt="<%= integrityImg.description %>" />
-            
-<p>Run date: <%=  dateRun %></p>
+<% if (status) { %>
+    <div id="resultStatus" class="alert alert-success">
+        <%= statusMessage %>
+    </div>
+    <div class="button-group">
+        <button type="button" id="resultsDownload" class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download results and send to COMETS harmonization group</button>
+    </div>
+    <h3>Input Data Summary</h3>
+    <table id="inputDataSummary" class="table table-bordered table-condensed">
+        <tr>
+            <th>Metabolites sheet</th>
+            <th>Subject data sheet</th>
+            <th>Subject metabolites sheet</th>
+        </tr>
+        <tr>
+            <td>
+                <%= metaboliteSheet.meta %> metabolite(s)</td>
+            <td>
+                <%= subjectSheet.subjects %> with
+                    <%= subjectSheet.covariants %> covariants</td>
+            <td>
+                <%= subjectMetaSheet.subjects %> subjects with
+                    <%=  subjectMetaSheet.meta %> metabolites</td>
+        </tr>
+    </table>
+
+    <h3>Harmonization Summary</h3>
+    <table id="harmSummary" class="table table-bordered table-condensed">
+        <tr>
+            <th>N Metabolites</th>
+            <th>N Harmonized</th>
+            <th>N Non-Harmonizaed</th>
+        </tr>
+        <tr>
+            <td>
+                <%= nMetabolites %>
+            </td>
+            <td>
+                <%= nHarmonized %>
+            </td>
+            <td>
+                <%= nHarmonizedNon %>
+            </td>
+        </tr>
+    </table>
+
+    <img src="<%= graph.src %>" , alt="<%= graph.description %>" />
+
+    <p>Run date:
+        <%=  dateRun %>
+    </p>
+    <% } %>
+
+        <% if (!status) { %>
+            <div id="resultStatus" class="alert alert-warning">
+                <%= statusMessage %>
+            </div>
+            <% } %>

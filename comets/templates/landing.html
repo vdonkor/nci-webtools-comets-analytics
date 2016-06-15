@@ -27,7 +27,7 @@
             <br> Harmonization: Ewy Mathe
             <br> Correlation: Ella Temprosa
             <br> Email:
-            <a href="mailto:cometsanalytics@gmail.com"></a><a href="mailto:cometsanalytics@gmail.com">cometsanalytics@gmail.com</a>
+            <a href="mailto:cometsanalytics@gmail.com">cometsanalytics@gmail.com</a>
         </p>
     </div>
     <!-- start quality Control Tab -->
@@ -360,8 +360,9 @@
                 <form class="well" name="qualityControlForm">
 
                     <div class="form-group">
-                        <label for="cohortFile">1. Specify Cohort</label>
+                        <label for="cohortSelection">1. Specify Cohort</label>
                         <select name="cohortSelection" id="cohortSelection" class="form-control">
+                            <option value="">-- Select Cohort --</option>
                             <option value="DPP">DPP</option>
                             <option value="EPIC">EPIC</option>
                             <option value="PLCO-CRC">PLCO-CRC</option>
@@ -371,7 +372,7 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div id="inputStep2" class="form-group">
                         <label for="inputDataFile">2. Choose Input Data File</label>
                         <input id="inputDataFile" type="file">
                         <div id="calcProgressbar" class="progress">
@@ -380,24 +381,26 @@
                             </div>
                         </div>
                     </div>
-                    <label for="methodSelection">3. Specify method of analyses</label>
-                    <div class="radio">
-                        <label for="methodSelection1">
-                            <input type="radio" name="methodSelection" id="methodSelection1" value="batch" checked="">Batch as specfied in the input file
-                        </label>
+                    <div id="inputStep3">
+                        <label for="methodSelection">3. Specify method of analyses</label>
+                        <div class="radio">
+                            <label for="methodSelection1">
+                                <input type="radio" name="methodSelection" id="methodSelection1" value="batch" checked="">Batch as specfied in the input file
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label for="methodSelection2">
+                                <input type="radio" name="methodSelection" id="methodSelection2" value="interactive">Interactive user input</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="modelSelection">Choose Model</label>
+                            <select name="modelSelection" id="modelSelection" class="form-control">
+                                <option value="unadjusted">Unadjusted</option>
+                                <option value="BMI adjusted">BMI adjusted</option>
+                            </select>
+                        </div>
+                        <div id="modelOptions"></div>
                     </div>
-                    <div class="radio">
-                        <label for="methodSelection2">
-                            <input type="radio" name="methodSelection" id="methodSelection2" value="interactive">Interactive user input</label>
-                    </div>
-                    <div class="form-group">
-                        <label for="modelSelection">Choose Model</label>
-                        <select name="modelSelection" id="modelSelection" class="form-control">
-                            <option value="unadjusted">Unadjusted</option>
-                            <option value="BMI adjusted">BMI adjusted</option>
-                        </select>
-                    </div>
-                    <div id="modelOptions"></div>
                     <a id="toggleHelp">Help</a>
                     <div id="inputHelp">
                         <h4>Input fields</h4> Specify the name of your cohort. If your cohort is not listed, please notify the harmonization group.
@@ -438,6 +441,9 @@
                             </div>
                         </nav>
                         <div class="tab-content grey-border">
+                            <div class="row">
+                                <div id="messageDiv"></div>
+                            </div>
                             <div id="inputNotice" class="bg-info">
                                 <b>Please import an Excel file on the left panel</b>
                             </div>
@@ -454,6 +460,7 @@
                                 </div>
                             </div>
                             <div class="tab-pane" id="tab-summary">
+                                <div id="summaryTable"></div>
                                 <div id="summaryDiv" class="col-xs-12" style="display:none;">
                                     <div class="row">
                                         <div class="col-xs-12">
@@ -478,7 +485,7 @@
                                     <div class="row">
                                         <div class="col-xs-12">
                                             <img src="images/heatmap.jpg" alt="heatmap" class="img-responsive">
-                                            <!-- interactive heatmap produced using plotly https://plot.ly/python/getting-started/ --> 
+                                            <!-- interactive heatmap produced using plotly https://plot.ly/python/getting-started/ -->
                                         </div>
                                     </div>
                                 </div>

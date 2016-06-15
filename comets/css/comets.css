@@ -40,9 +40,12 @@ nav.navbar.navbar-default {
     background: linear-gradient(to bottom, #feffff 0%, #feffff 50%, #e7f3fa 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
     box-shadow: 0 2px 4px 0 rgba(1, 90, 129, 0.4);
 }
-
+#messageBoard,
 #inputHelp,
-#calcProgressbar {
+#calcProgressbar,
+#inputStep2,
+#inputStep3
+{
     display: none;
 }
 

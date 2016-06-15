@@ -1,6 +1,13 @@
 // app namespace
 var appComets = {};
 
+Backbone.View.prototype.close = function () {
+    if (this.beforeClose) {
+        this.beforeClose();
+    }
+    this.remove();
+    this.unbind();
+};
 
 // views
 appComets.errorsView = Backbone.View.extend({
@@ -22,10 +29,60 @@ appComets.errorsView = Backbone.View.extend({
     }
 });
 
+appComets.IntegrityView = Backbone.View.extend({
+    // should already have element (el) specified, so we don't need to do it again
+    initialize: function () {
+
+        var init = this;
+        if (init.options.model) {
+            getTemplate('integrityCheckResult').then(function (templ) {
+                if (templ.length > 0) {
+
+                    integrity = init.model.get("integrity");
+                    integrity.statusMessage = "";
+
+                    if (integrity.status)
+                        integrity.statusMessage = "Passed all integrity checks, analyses can proceed. If you are part of COMETS, please download metabolite list below and submit to the COMETS harmonization group.";
+                    else
+                        integrity.statusMessage = "The input file failed the integrity check.";
+
+                    init.template = _.template(templ, {
+                        status: integrity.status,
+                        statusMessage: integrity.statusMessage,
+                        metaboliteSheet: integrity.metaboliteSheet,
+                        subjectSheet: integrity.subjectSheet,
+                        subjectMetaSheet: integrity.subjectMetaSheet,
+                        graph: integrity.graph,
+                        nMetabolites: integrity.nMetabolites,
+                        nHarmonized: integrity.nHarmonized,
+                        nHarmonizedNon: integrity.nHarmonizedNon,
+                        dateRun: integrity.dateRun
+                    });
+
+                    document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
+                }
+                init.render();
+            });
+        }
+    },
+
+    render: function () {
+        if (this.template.length > 0)
+            this.$el.html(this.template);
+    },
+    events: {
+        "click #resultsDownload": 'startDownload'
+    },
+    startDownload: function (e) {
+        alert("starting download");
+    }
+});
+
 appComets.LandingView = Backbone.View.extend({
     el: '#pageContent',
     initialize: function () {
         var init = this;
+
         // if authorized then go to landing
         if (init.options.attributes && init.options.attributes.authStatus === "connected") {
             getTemplate('landing').then(function (templ) {
@@ -50,37 +107,78 @@ appComets.LandingView = Backbone.View.extend({
         /**
             "<eventType targetedElement>" : "callbackFunctionName"
         **/
-        'show.bs.tab #comets-tab-nav': 'setupPage',
-        'change #harmonizationFile': 'uploadQCHarmFile',
-        'change #mappingFile': 'uploadQCMappingFile',
-        'change #metaboliteFile': 'uploadMetaFile',
+        'show.bs.tab #comets-tab-nav': 'setTitle',
+        'show.bs.tab #correlate-tab-nav': 'setTitle',
+        //        'change #harmonizationFile': 'uploadQCHarmFile',
+        //        'change #mappingFile': 'uploadQCMappingFile',
+        //        'change #metaboliteFile': 'uploadMetaFile',
         'change #inputDataFile': 'uploadInputDataFile',
         'change #corr_cutoff': 'updateSlider',
-
+        'change #cohortSelection': function (e) {
+            if (e.target.value.length > 0) {
+                $("#inputStep2").show();
+            } else {
+                $("#inputStep2").hide();
+            }
+        },
         'click #toggleHelp': function () {
             $("#inputHelp").toggle();
         }
     },
-    setupPage: function (e) {
-
-    },
-    uploadQCHarmFile: function (e) {
-        fileUpload(e);
-        $('#qualityControlResult').show();
-    },
-    uploadQCMappingFile: function (e) {
-        fileUpload(e);
-        $('#qualityControlResult').show();
-    },
-    uploadMetaFile: function (e) {
-        fileUpload(e);
-        $('#harmonizationDiv').show();
+    setTitle: function (e) {
+//        if($(e.target).hasClass("subnav")){
+//            
+//            document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
+//        }
+//        else
+            document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
     },
     uploadInputDataFile: function (e) {
-        fileUpload(e);
 
-        if (e.target.files.length > 0) $("#inputNotice").hide();
-        else $("#inputNotice").show();
+        // show upload status using progressbar
+        $.when(fileUpload(e)).then(function () {
+
+            // after processing pass object to create new model
+            var processedFile = new appComets.fileStats({
+                integrity: {
+                    status: true,
+                    metaboliteSheet: {
+                        meta: 19
+                    },
+                    subjectSheet: {
+                        subjects: 19,
+                        covariants: 2
+                    },
+                    subjectMetaSheet: {
+                        subjects: 19,
+                        meta: 18
+                    },
+                    nMetabolites: 18,
+                    nHarmonized: 18,
+                    nHarmonizedNon: 0,
+                    graph: {
+                        src: "images/integritycheck_graphs.jpg",
+                        description: "Description of integrity graph"
+                    },
+                    dateRun: new Date()
+                }
+            });
+
+            // create sub views for each section, after file has been processed
+            this.integrityView = new appComets.IntegrityView({
+                el: this.$("#integrityDiv"),
+                model: processedFile
+            });
+
+        });
+
+        if (e.target.files.length > 0) {
+            $("#inputNotice").hide();
+            $("#inputStep3").show();
+        } else {
+            $("#inputNotice,#inputStep3").show();
+            $("#inputStep3").hide();
+        }
 
         $('#summaryDiv').show();
         $('#heatmapDiv').show();
@@ -90,7 +188,6 @@ appComets.LandingView = Backbone.View.extend({
     },
     updateSlider: function (e) {
         $("#corr_val").val(e.target.value)
-
     }
 });
 
@@ -204,6 +301,12 @@ function fileUpload(e) {
             file1 = file;
         }
     }
+}
+
+function buildDataTable(el, tableData) {
+    $(el).DataTables({
+        data: tableData,
+    });
 }
 
 $(function () {

@@ -31,3 +31,43 @@ appComets.correlate = Backbone.Model.extend({
     }
 });
 
+
+/** 
+    need the integrity object and its properties in order to generate template
+                    
+    integrity.status
+    integrity.metaboliteSheet.meta
+    integrity.subjectSheet.subjects
+    integrity.subjectSheet.covariants
+    integrity.subjectMetasheet.meta
+    integrity.nMetabolites
+    integrity.nHarmonized
+    integrity.nHarmonizedNon
+    integrity.graph.src
+    integrity.graph.description
+    integrity.dateRun
+**/
+appComets.fileStats = Backbone.Model.extend({
+    integrity: {
+        status: null,
+        metaboliteSheet: {
+            meta: null
+        },
+        subjectSheet: {
+            subjects: null,
+            covariants: null
+        },
+        subjectMetaSheet: {
+            subjects: null,
+            meta: null
+        },
+        nMetabolites: null,
+        nHarmonized: null,
+        nHarmonizedNon: null,
+        graph: {
+            src: null,
+            description: null
+        },
+        dateRun: null
+    }
+});
