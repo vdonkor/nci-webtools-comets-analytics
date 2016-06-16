@@ -12,7 +12,7 @@ appComets.qcCheck = Backbone.Model.extend({
         harmFile: null,
         refMapFile: null,
         results: null
-    }
+    },
 });
 
 appComets.harmCheck = Backbone.Model.extend({
@@ -28,7 +28,8 @@ appComets.correlate = Backbone.Model.extend({
         dataFile: null,
         method: null,
         modelSelect: null
-    }
+    },
+    urlRoot:"/correlate"
 });
 
 

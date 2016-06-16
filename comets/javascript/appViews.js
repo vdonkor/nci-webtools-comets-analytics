@@ -109,9 +109,6 @@ appComets.LandingView = Backbone.View.extend({
         **/
         'show.bs.tab #comets-tab-nav': 'setTitle',
         'show.bs.tab #correlate-tab-nav': 'setTitle',
-        //        'change #harmonizationFile': 'uploadQCHarmFile',
-        //        'change #mappingFile': 'uploadQCMappingFile',
-        //        'change #metaboliteFile': 'uploadMetaFile',
         'change #inputDataFile': 'uploadInputDataFile',
         'change #corr_cutoff': 'updateSlider',
         'change #cohortSelection': function (e) {
@@ -126,65 +123,81 @@ appComets.LandingView = Backbone.View.extend({
         }
     },
     setTitle: function (e) {
-//        if($(e.target).hasClass("subnav")){
-//            
-//            document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
-//        }
-//        else
-            document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
+        document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
     },
     uploadInputDataFile: function (e) {
+        var formData = new FormData();
 
         // show upload status using progressbar
-        $.when(fileUpload(e)).then(function () {
+        file = fileUpload(e);
 
-            // after processing pass object to create new model
-            var processedFile = new appComets.fileStats({
-                integrity: {
-                    status: true,
-                    metaboliteSheet: {
-                        meta: 19
-                    },
-                    subjectSheet: {
-                        subjects: 19,
-                        covariants: 2
-                    },
-                    subjectMetaSheet: {
-                        subjects: 19,
-                        meta: 18
-                    },
-                    nMetabolites: 18,
-                    nHarmonized: 18,
-                    nHarmonizedNon: 0,
-                    graph: {
-                        src: "images/integritycheck_graphs.jpg",
-                        description: "Description of integrity graph"
-                    },
-                    dateRun: new Date()
+        if (file) {
+            formData.append("inputFile", file);
+
+            $.ajax({
+                type: "POST",
+                url: "/cometsRest/correlate/integrity",
+                data: formData,
+                dataType: "json",
+                cache: false,
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    $("#calcProgressbar").show().find("[role='progressbar']").addClass("active");
                 }
+            }).fail(function() {
+                $("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!"); 
+            }).then(function () {
+                $("#calcProgressbar [role='progressbar']").addClass("progress-bar-success").text("Upload Complete");
+                // after processing pass object to create new model
+                var processedFile = new appComets.fileStats({
+                    integrity: {
+                        status: true,
+                        metaboliteSheet: {
+                            meta: 19
+                        },
+                        subjectSheet: {
+                            subjects: 19,
+                            covariants: 2
+                        },
+                        subjectMetaSheet: {
+                            subjects: 19,
+                            meta: 18
+                        },
+                        nMetabolites: 18,
+                        nHarmonized: 18,
+                        nHarmonizedNon: 0,
+                        graph: {
+                            src: "images/integritycheck_graphs.jpg",
+                            description: "Description of integrity graph"
+                        },
+                        dateRun: new Date()
+                    }
+                });
+
+                // create sub views for each section, after file has been processed
+                this.integrityView = new appComets.IntegrityView({
+                    el: this.$("#integrityDiv"),
+                    model: processedFile
+                });
+
+                if (e.target.files.length > 0) {
+                    $("#inputNotice").hide();
+                    $("#inputStep3").show();
+                } else {
+                    $("#inputNotice,#inputStep3").show();
+                }
+
+                $("#inputStep3").hide();
+                $('#summaryDiv').show();
+                $('#heatmapDiv').show();
+                $('#clusterDiv').show();
+                $('#networkDiv').show();
+                $('#integrityDiv').show();
+            }).always(function(){
+                $("#calcProgressbar [role='progressbar']").removeClass("active");
             });
-
-            // create sub views for each section, after file has been processed
-            this.integrityView = new appComets.IntegrityView({
-                el: this.$("#integrityDiv"),
-                model: processedFile
-            });
-
-        });
-
-        if (e.target.files.length > 0) {
-            $("#inputNotice").hide();
-            $("#inputStep3").show();
-        } else {
-            $("#inputNotice,#inputStep3").show();
-            $("#inputStep3").hide();
         }
-
-        $('#summaryDiv').show();
-        $('#heatmapDiv').show();
-        $('#clusterDiv').show();
-        $('#networkDiv').show();
-        $('#integrityDiv').show();
     },
     updateSlider: function (e) {
         $("#corr_val").val(e.target.value)
@@ -298,7 +311,7 @@ function fileUpload(e) {
 
         if (file) {
             reader.readAsText(file);
-            file1 = file;
+            return file;
         }
     }
 }
