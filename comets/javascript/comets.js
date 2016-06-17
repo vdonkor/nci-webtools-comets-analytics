@@ -1,114 +1,61 @@
-var controlPage = '#tab-qualityControl';
-var harmonizationPage = '#tab-harmonization';
-var correlatePage = '#tab-correlate';
-var helpPage = '#tab-help';
-var file1;
-$(document).ready(function() {
-   $('#harmonizationFile').change(function(){
-        if (window.FileReader) {
-            var file = this.files[0];
-            var reader = new FileReader();
+function checkAuthorized(authService, authObj) {
+    if (authService === "fb") {
+        if (authObj.status === 'connected') {
+            var authModel = new appComets.authUser({
+                authStatus: authObj.status,
+                token: authObj.authResponse.accessToken,
+                user: authObj.authResponse.userID
+            });
 
-            reader.onload = function(event) {
-               var contents = event.target.result;
-            }
+            // send model to secure pages
+            new appComets.LandingView(authModel);
 
-            if(file){
-               reader.readAsText(file);
-               file1 = file;
-            }
+        } else if (authObj.status === "not_authorized") {
+            // trigger not authorized error on login page
+
+            new appComets.LoginView();
+            new appComets.errorsView({
+                errors: "You are not authorized to access this application"
+            });
         }
-        $('#qualityControlResult').show();
+    }
+}
 
+function getTemplate(templName) {
+    return $.get('templates/' + templName + '.html', function (data) {
+        return data;
+    }).fail(function () {
+        console.log("Cannot load template. Not found.");
+        return errorView("Cannot load template. Not found.");
     });
-   $('#mappingFile').change(function(){
-        if (window.FileReader) {
-            var file = this.files[0];
-            var reader = new FileReader();
+}
 
-            reader.onload = function(event) {
-               var contents = event.target.result;
-            }
+function fileUpload(e) {
+    if (window.FileReader) {
+        var file = e.target.files[0];
+        var reader = new FileReader();
 
-            if(file){
-               reader.readAsText(file);
-               file1 = file;
-            }
+        reader.onload = function (event) {
+            var contents = event.target.result;
         }
-        $('#qualityControlResult').show();
+
+        if (file) {
+            reader.readAsText(file);
+            return file;
+        }
+    }
+}
+
+function buildDataTable(el, tableData) {
+    $(el).DataTables({
+        data: tableData,
     });
+}
 
-    $('#metaboliteFile').change(function(){
-	        if (window.FileReader) {
-	            var file = this.files[0];
-	            var reader = new FileReader();
+$(function () {
 
-	            reader.onload = function(event) {
-	               var contents = event.target.result;
-	            }
+    // eventually refer to some type of session variable to check whether they are already authorized and authenticated
 
-	            if(file){
-	               reader.readAsText(file);
-	               file1 = file;
-	            }
-	        }
-	        $('#harmonizationDiv').show();
-    });
-
-    $('#inputDataFile').change(function(){
-	        if (window.FileReader) {
-	            var file = this.files[0];
-	            var reader = new FileReader();
-
-	            reader.onload = function(event) {
-	               var contents = event.target.result;
-	            }
-
-	            if(file){
-	               reader.readAsText(file);
-	               file1 = file;
-	            }
-	        }
-	        $('#summaryDiv').show();
-	        $('#heatmapDiv').show();
-	        $('#clusterDiv').show();
-	        $('#networkDiv').show();
-    });
-
-
+    //load login at first
+    var loginView = new appComets.LoginView();
 });
-
-function userLogin(){
-	var userName = $('#userId').val();
-	var pssword = $('#password').val();
-	var message = '';
-	if(userName.trim() == '' || pssword.trim() == ''){
-	   $('#messageDiv').html("<font color='red'>You entered invalid user ID or password!</font>");
-
-	}else{
-	  enableAllTabs();
-	 $('#loginDiv').hide();
-	}
-}
-
-function enableAllTabs(){
-	$('#messageDiv').html('');
-	$('#userId').val('');
-	$('#password').val('');
-	$('#logoutDiv').show();
-	$('#controlTabId').attr('href', controlPage);
-	$('#harmonizationTabId').attr('href', harmonizationPage);
-	$('#correlateTabId').attr('href', correlatePage);
-	$('#helpTabId').attr('href', helpPage);
-
-}
-
-function disableAllTabs(){
-    $('#controlTabId').attr('href', '#');
-    $('#harmonizationTabId').attr('href', '#');
-	$('#correlateTabId').attr('href', '#');
-	$('#helpTabId').attr('href', '#');
-    $('#loginDiv').show();
-    $('#logoutDiv').hide();
-    location.reload();
-}

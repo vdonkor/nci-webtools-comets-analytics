@@ -10,14 +10,14 @@ Backbone.View.prototype.close = function () {
 };
 
 // views
-appComets.errorsView = Backbone.View.extend({
+appComets.ErrorsView = Backbone.View.extend({
     el: '#messageDiv',
     initialize: function () {
-        if (this.options.errors.length > 0) {
+        if (this.options.errors && this.options.errors.length > 0) {
             var messages = this.options.errors.join("<br/>");
             this.template = _.template(messages);
+            this.render();
         }
-        this.render();
     },
     render: function () {
         if (this.template) {
@@ -39,12 +39,6 @@ appComets.IntegrityView = Backbone.View.extend({
                 if (templ.length > 0) {
 
                     integrity = init.model.get("integrity");
-                    integrity.statusMessage = "";
-
-                    if (integrity.status)
-                        integrity.statusMessage = "Passed all integrity checks, analyses can proceed. If you are part of COMETS, please download metabolite list below and submit to the COMETS harmonization group.";
-                    else
-                        integrity.statusMessage = "The input file failed the integrity check.";
 
                     init.template = _.template(templ, {
                         status: integrity.status,
@@ -53,9 +47,6 @@ appComets.IntegrityView = Backbone.View.extend({
                         subjectSheet: integrity.subjectSheet,
                         subjectMetaSheet: integrity.subjectMetaSheet,
                         graph: integrity.graph,
-                        nMetabolites: integrity.nMetabolites,
-                        nHarmonized: integrity.nHarmonized,
-                        nHarmonizedNon: integrity.nHarmonizedNon,
                         dateRun: integrity.dateRun
                     });
 
@@ -110,7 +101,7 @@ appComets.LandingView = Backbone.View.extend({
         'show.bs.tab #comets-tab-nav': 'setTitle',
         'show.bs.tab #correlate-tab-nav': 'setTitle',
         'change #inputDataFile': 'uploadInputDataFile',
-        'change #corr_cutoff': 'updateSlider',
+        'change #corr_cutoff': 'updateCorrelation',
         'change #cohortSelection': function (e) {
             if (e.target.value.length > 0) {
                 $("#inputStep2").show();
@@ -126,6 +117,8 @@ appComets.LandingView = Backbone.View.extend({
         document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
     },
     uploadInputDataFile: function (e) {
+        $this = this;// get the current view object
+        
         var formData = new FormData();
 
         // show upload status using progressbar
@@ -145,28 +138,19 @@ appComets.LandingView = Backbone.View.extend({
                 beforeSend: function () {
                     $("#calcProgressbar").show().find("[role='progressbar']").addClass("active");
                 }
-            }).fail(function() {
-                $("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!"); 
-            }).then(function () {
-                $("#calcProgressbar [role='progressbar']").addClass("progress-bar-success").text("Upload Complete");
+            }).fail(function () {
+                $("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
+            }).then(function (data, statusText, xhr) {
+                
+                $("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload Complete");
                 // after processing pass object to create new model
                 var processedFile = new appComets.fileStats({
                     integrity: {
-                        status: true,
-                        metaboliteSheet: {
-                            meta: 19
-                        },
-                        subjectSheet: {
-                            subjects: 19,
-                            covariants: 2
-                        },
-                        subjectMetaSheet: {
-                            subjects: 19,
-                            meta: 18
-                        },
-                        nMetabolites: 18,
-                        nHarmonized: 18,
-                        nHarmonizedNon: 0,
+                        status: statusText === "success" ? true: false,
+                        statusMessage: data.statusMessage,
+                        metaboliteSheet: data.metabolite,
+                        subjectSheet: data.subject,
+                        subjectMetaSheet: data.subjectMeta,
                         graph: {
                             src: "images/integritycheck_graphs.jpg",
                             description: "Description of integrity graph"
@@ -176,8 +160,8 @@ appComets.LandingView = Backbone.View.extend({
                 });
 
                 // create sub views for each section, after file has been processed
-                this.integrityView = new appComets.IntegrityView({
-                    el: this.$("#integrityDiv"),
+                $this.integrityView = new appComets.IntegrityView({
+                    el: $this.$("#integrityDiv"),
                     model: processedFile
                 });
 
@@ -194,13 +178,18 @@ appComets.LandingView = Backbone.View.extend({
                 $('#clusterDiv').show();
                 $('#networkDiv').show();
                 $('#integrityDiv').show();
-            }).always(function(){
+            }).always(function () {
                 $("#calcProgressbar [role='progressbar']").removeClass("active");
             });
         }
     },
-    updateSlider: function (e) {
-        $("#corr_val").val(e.target.value)
+    updateCorrelation: function (e) {
+        $("#corr_val").val(e.target.value);
+        console.log("correlation cutoff: " + e.target.value);
+        
+        // ajax request to generate updated image
+        
+        
     }
 });
 
@@ -208,6 +197,8 @@ appComets.LoginView = Backbone.View.extend({
     el: '#pageContent',
     initialize: function () {
         var init = this;
+        this.errorsView = new appComets.ErrorsView();
+
         getTemplate('login').then(function (templ) {
             if (templ.length > 0) {
                 init.template = _.template(templ);
@@ -246,9 +237,6 @@ appComets.LoginView = Backbone.View.extend({
             }
         }
 
-        new appComets.errorsView({
-            errors: messages
-        });
 
         // send credentials for validation
         if (messages.length === 0) {
@@ -267,65 +255,10 @@ appComets.LoginView = Backbone.View.extend({
                     userID: 'a User'
                 }
             });
-        }
-    }
-});
-
-function checkAuthorized(authService, authObj) {
-    if (authService === "fb") {
-        if (authObj.status === 'connected') {
-            var authModel = new appComets.authUser({
-                authStatus: authObj.status,
-                token: authObj.authResponse.accessToken,
-                user: authObj.authResponse.userID
-            });
-
-            // send model to secure pages
-            new appComets.LandingView(authModel);
-
-        } else if (authObj.status === "not_authorized") {
-            // trigger not authorized error on login page
-
-            new appComets.LoginView();
-            new appComets.errorsView({
-                errors: "You are not authorized to access this application"
+        } else {
+            this.errorsView({
+                errors: messages
             });
         }
     }
-}
-
-function getTemplate(templName) {
-    return $.get('templates/' + templName + '.html', function (data) {
-        return data;
-    });
-}
-
-function fileUpload(e) {
-    if (window.FileReader) {
-        var file = e.target.files[0];
-        var reader = new FileReader();
-
-        reader.onload = function (event) {
-            var contents = event.target.result;
-        }
-
-        if (file) {
-            reader.readAsText(file);
-            return file;
-        }
-    }
-}
-
-function buildDataTable(el, tableData) {
-    $(el).DataTables({
-        data: tableData,
-    });
-}
-
-$(function () {
-
-    // eventually refer to some type of session variable to check whether they are already authorized and authenticated
-
-    //load login at first
-    var loginView = new appComets.LoginView();
 });

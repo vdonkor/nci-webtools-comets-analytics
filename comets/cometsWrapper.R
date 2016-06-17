@@ -15,27 +15,28 @@ library(Rgraphviz)
 library(d3heatmap)
 library(plotly)
 library(stringr)
+library(RJSONIO)
 source("./server.R")
 
 OUTPUT_DIR <- './tmp/'
 dir.create(OUTPUT_DIR)
 
 processWorkbook <- function(filename) {
-    print("In processWorkbook")
-    print( paste("Filename:", filename) )
     path = file.path("uploads",filename)
-    
-    print(c("path: ", path))
-    
+
     sheets = excel_sheets(path)
     
-    metabSheet = read_excel(path, sheets$Metabolites )
-    subjMetabSheet = read_excel(path, sheets$SubjectMetabolites )
-    subjDataSheet = read_excel(path, sheets$SubjectData )
-    varMapSheet = read_excel(path, sheets$VarMap )
+    metabSheet = fixData(read_excel(path, sheets[[1]] ))
+    subjMetabSheet = fixData(read_excel(path, sheets[[2]] ))
+    subjDataSheet = fixData(read_excel(path, sheets[[3]]))
+    varMapSheet = fixData(read_excel(path, sheets[[4]] ))
     
-    print(sheets)
+    result = CheckIntegrity(metabSheet,subjMetabSheet,subjDataSheet,varMapSheet)
     
-    CheckIntegrity(metabSheet,subjMetabSheet,subjDataSheet,varMapSheet)
+#     result$inputStats$metab <- paste( length(result$dta.metab$metabid), "metabolites")
+#     result$inputStats$subj <- paste( length(result$dta.sdata$id), "subjects with", ncol(result$dta.sdata) - 1, "covariates")
+#     result$inputStats$subjMeta <- paste(nrow(result$dta.sdata)," subjects with ", ncol(result$dta.sdata)-length( names(result$dta.sdata)[-1])-1, " metabolites",sep="")
+    
+    toJSON(result)
     
 }
