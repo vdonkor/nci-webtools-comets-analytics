@@ -29,6 +29,19 @@ appComets.ErrorsView = Backbone.View.extend({
     }
 });
 
+appComets.HeaderView = Backbone.View.extend({
+    el: "#page-head",
+    initialize: function () {
+        if (this.options.user) {
+            this.template = _.template("<%= user %>, Welcome to the COMETS (COnsortium of METabolomics Studies) Analytics", this.options);
+            this.render();
+        }
+    },
+    render: function () {
+        this.$el.html(this.template);
+    },
+});
+
 appComets.IntegrityView = Backbone.View.extend({
     // should already have element (el) specified, so we don't need to do it again
     initialize: function () {
@@ -72,27 +85,7 @@ appComets.IntegrityView = Backbone.View.extend({
 appComets.LandingView = Backbone.View.extend({
     el: '#pageContent',
     initialize: function () {
-        var init = this;
-
-        // if authorized then go to landing
-        if (init.options.attributes && init.options.attributes.authStatus === "connected") {
-            getTemplate('landing').then(function (templ) {
-                if (templ.length > 0) {
-                    init.template = _.template(templ, {
-                        user: init.options.attributes.user
-                    });
-
-                    document.title = "Welcome to COMETS (COnsortium of METabolomics Studies)";
-                }
-                init.render();
-            });
-        } else {
-            // if not, logout
-
-        }
-    },
-    render: function () {
-        this.$el.html(this.template);
+        new appComets.HeaderView(this.options);
     },
     events: {
         /**
@@ -140,6 +133,8 @@ appComets.LandingView = Backbone.View.extend({
                 }
             }).fail(function () {
                 $("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
+                $("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
+                $("#inputDataFile").unwrap();
             }).then(function (data, statusText, xhr) {
                 
                 $("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload Complete");
@@ -190,75 +185,5 @@ appComets.LandingView = Backbone.View.extend({
         // ajax request to generate updated image
         
         
-    }
-});
-
-appComets.LoginView = Backbone.View.extend({
-    el: '#pageContent',
-    initialize: function () {
-        var init = this;
-        this.errorsView = new appComets.ErrorsView();
-
-        getTemplate('login').then(function (templ) {
-            if (templ.length > 0) {
-                init.template = _.template(templ);
-                document.title = "Login - COMETS (COnsortium of METabolomics Studies)";
-            }
-            init.render();
-        });
-    },
-    render: function () {
-        this.$el.html(this.template);
-    },
-    events: {
-        /**
-            <eventType targetedElement> : callbackFunction
-        **/
-        'click #signin': 'validateLogin'
-    },
-    validateLogin: function (e) {
-        // check for valid form first then, attempt to authenticate via social network
-
-        var userName = $('#userId');
-        var pssword = $('#password');
-
-        var messages = [];
-
-        if (!userName[0].validity.valid || !pssword[0].validity.valid) {
-            var unValidity = userName[0].validity;
-            var pwValidity = pssword[0].validity;
-
-            if (unValidity.valueMissing || userName.val().trim() == 0) {
-                messages.push("User ID is required");
-            }
-
-            if (pwValidity.valueMissing || pssword.val() == 0) {
-                messages.push("Password is required");
-            }
-        }
-
-
-        // send credentials for validation
-        if (messages.length === 0) {
-
-            // carry access token once authenticated, validate token when accessing secure pages
-            // use backbone local storage
-
-            //Ex. FB
-
-            checkAuthorized("fb", {
-                status: 'connected',
-                authResponse: {
-                    accessToken: '...',
-                    expiresIn: '...',
-                    signedRequest: '...',
-                    userID: 'a User'
-                }
-            });
-        } else {
-            this.errorsView({
-                errors: messages
-            });
-        }
     }
 });

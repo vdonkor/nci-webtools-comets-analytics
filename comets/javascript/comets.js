@@ -1,26 +1,3 @@
-function checkAuthorized(authService, authObj) {
-    if (authService === "fb") {
-        if (authObj.status === 'connected') {
-            var authModel = new appComets.authUser({
-                authStatus: authObj.status,
-                token: authObj.authResponse.accessToken,
-                user: authObj.authResponse.userID
-            });
-
-            // send model to secure pages
-            new appComets.LandingView(authModel);
-
-        } else if (authObj.status === "not_authorized") {
-            // trigger not authorized error on login page
-
-            new appComets.LoginView();
-            new appComets.errorsView({
-                errors: "You are not authorized to access this application"
-            });
-        }
-    }
-}
-
 function getTemplate(templName) {
     return $.get('templates/' + templName + '.html', function (data) {
         return data;
@@ -53,9 +30,5 @@ function buildDataTable(el, tableData) {
 }
 
 $(function () {
-
-    // eventually refer to some type of session variable to check whether they are already authorized and authenticated
-
-    //load login at first
-    var loginView = new appComets.LoginView();
+    new appComets.LandingView(/*Add authentication data*/);
 });
