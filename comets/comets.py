@@ -1,9 +1,8 @@
-from flask import Flask, request,json,jsonify
-import rpy2.robjects as robjects
 import sys, os, time, linecache
+from flask import Flask, request, json, jsonify
+from rpy2.robjects import r as wrapper
 
 app = Flask(__name__)
-wrapper = robjects.r
 wrapper['source']('./cometsWrapper.R')
 
 # separate api calls for the different authenication providers(Facebook, Google)
@@ -51,8 +50,9 @@ def integrityCheck():
 import argparse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    # Default port is production value; prod, stage, dev = 8140, sandbox = 9140
-    parser.add_argument('-p', dest = 'port_num', default='9200', help='Sets the Port')
-    parser.add_argument('--debug', action = 'store_true')
+    
+    # Default port is 9200
+    parser.add_argument('-p', '--port', type = int, dest = 'port', default = 9200, help = 'Sets the Port')
+    parser.add_argument('-d', '--debug', action = 'store_true', help = 'Enables debugging')
     args = parser.parse_args()
-    app.run(host = '0.0.0.0', port = int(args.port_num), debug = args.debug, use_evalex = False)
+    app.run(host = '0.0.0.0', port = args.port, debug = args.debug, use_evalex = False)
