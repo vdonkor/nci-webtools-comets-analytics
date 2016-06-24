@@ -4,24 +4,20 @@ library(jsonlite)
 # function to read in files that are input by users for Quality Control Check
 #######################
 readInputQCFiles <- function(input) {
-  input = fromJSON(input)
-  
-  uidsfile = input$uidsfile
-  refmetfile = input$refmetfile
-  
-  uids = refmet = data.frame()
-  
-  if(!is.null(uidsfile))
-    uids = read.delim(uidsfile, sep=',', header=T)
-
-  if(!is.null(refmetfile))
-    refmet = read.delim(refmetfile, sep=',', header=T)
-  
-  toJSON(list(
-      uids = uids,
-      refmet = refmet
-    )
+  input  = fromJSON(input)
+  output = list(
+    uids   = data.frame(),
+    refmet = data.frame()
   )
+
+  if(is.character(input$uidsfile))
+    output$uids = read.csv(input$uidsfile)
+
+  if(is.character(input$refmetfile))
+    output$refmet = read.csv(input$refmetfile)
+
+  toJSON(output)
+  
 }# end readInputQCFiles
 
 
@@ -29,21 +25,53 @@ readInputQCFiles <- function(input) {
 # function to read in files that are input by users for Harmonization Check
 #######################
 readInputHarmFiles <- function(input) {
-    
-  metlistfile = input$metlist
-  metlist = masteruids = data.frame()
+  
+  input = fromJSON(input)
+  
+  output = list(
+    names = factor(),
+    masteruids = data.frame()
+  )
 
-  if (!is.null(metlistfile)) {
-    metlist=read.delim(metlistfile$datapath,sep=",",header=F)
-    masteruids=read.delim("uid.csv",sep=",",header=T)
+  if (is.character(input$metlist)) {
+    output$names       = read.csv(input$metlist)[,1]
+    output$masteruids  = read.csv('uid.csv')
   }
 
-  toJSON(list(
-    names = metlist[,1],
-    masteruids = masteruids
-    )
-  )
+  toJSON(output)
 } # end readInputHarmFiles
+
+#######################
+# function to merge uids with refmet
+#######################
+mergeInputFiles <- function(input) {
+  
+  input  = readInputQCFiles(input)
+  output = list()
+  
+  if (is.null(input))
+    return (NULL)
+
+  uids   = input$uids
+  refmet = input$refmet
+  
+  colnames(refmet) = c('BIOCHEMICAL',
+                       'Refmet_NAME',
+                       'Refmet_formula',
+                       'Refmet_Mass',
+                       'Refmet_MW.structure')
+
+  if (!(all.equal(as.character(uids$BIOCHEMICAL), as.character(refmet$BIOCHEMICAL))))
+    myind  = as.numeric(lapply(uids$BIOCHEMICAL, function(x) which(refmet$BIOCHEMICAL == x)[1]))
+
+  output = cbind(uids, refmet[, -which(colnames(refmet) == 'BIOCHEMICAL')])
+  output$dbid = paste('dbid', 1:nrow(uids_withrefmet), sep = '_')
+  
+  toJSON(output)
+}
+
+
+
 
 
 #######################
@@ -246,6 +274,5 @@ output$downloadharmmetab <- downloadHandler(
 
 
 
-}) # end shinyServer
 
 
