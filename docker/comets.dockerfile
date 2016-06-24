@@ -18,7 +18,10 @@ RUN apt-get update \
 
  && rm -rf /deploy/tmp
 
- && sh /deploy/build.sh --name comets --port 9999 --root /deploy
+ && sh /deploy/build.sh --name comets --port 9200 --root /deploy
  && sh /deploy/setup-comets.sh
+
+
+EXPOSE 9200
 
 ENTRYPOINT ["/deploy/wsgi/apachectl", "start", "-DFOREGROUND"]
