@@ -1,11 +1,7 @@
 # include dependencies for COMETS
-FROM r-base:latest
+FROM cbiitss:rbase
 
-RUN apt-get update \ 
- && apt-get install -y git apache2-dev python-dev python-pip \
- && pip install flask mod_wsgi rpy2
-
- && R -e "install.packages(c('readxl', 'plyr', 'dplyr', 'reshape2', 'psych', 'tidyr', 'GeneNet'), repos='https://cran.rstudio.com')" \
+RUN R -e "install.packages(c('readxl', 'plyr', 'dplyr', 'reshape2', 'psych', 'tidyr', 'GeneNet'), repos='https://cran.rstudio.com')" \
  
  && mkdir /deploy \
  && cd /deploy \
@@ -16,11 +12,10 @@ RUN apt-get update \
  && cp -r /deploy/tmp/app/comets /deploy/app \
  && cp -r /deploy/tmp/common/modules/mod_wsgi/build.sh /deploy/ \
 
- && rm -rf /deploy/tmp
+ && rm -rf /deploy/tmp \
 
- && sh /deploy/build.sh --name comets --port 9200 --root /deploy
- && sh /deploy/setup-comets.sh
-
+ && sh build.sh --name comets --port 9200 --root /deploy \
+ && sh setup-comets.sh
 
 EXPOSE 9200
 
