@@ -1,18 +1,30 @@
+
+library(plyr)
+library(dplyr)
 library(readxl)
 
-# Converts all sheets in a workbook to a list
+
+#################################################################################
+#' Converts all sheets in a workbook to a list
+#'
+#' @param filepath Path to excel file
+#' @return A list containing the contents of the workbook
+#' @examples
+#' readExcel('examples/cometsInput.xlsx')
+#################################################################################
 readExcel <- function(filepath) {
-  sheets = excel_sheets(filepath)
   
-  # Process each sheet
+  filepath  = system.file(filepath)
+  sheets    = excel_sheets(filepath)
+  
+  # process each sheet
   x = lapply(sheets, function(X) {
     sheet = read_excel(filepath, sheet = X)
     
-    # Ignore rows with all NA values
-    index = apply(sheet, 1, function(x) all(is.na(x)))
-    sheet = sheet[!index, ]
+    # ignore rows with all NA values
+    sheet = sheet[!apply(is.na(sheet), 1, all), ]
     
-    # Convert names to lowercase
+    # convert column names to lowercase
     names(sheet) = tolower(names(sheet))
     
     sheet
@@ -22,89 +34,85 @@ readExcel <- function(filepath) {
   x
 }
 
-# Integrity check of input Excel file
+
+
+#################################################################################
+#' Check integrity of input excel file
+#'
+#' @param filepath Path to excel file
+#' @return A list representing the workbook, as well as any error messages
+#' @examples
+#' checkIntegrity('examples/cometsInput.xlsx')
+#################################################################################
 checkIntegrity <- function(filepath) {
-
-  input         = readExcel(filepath)
-  output        = input
-
-# input$metabolites         = metabolite meta data  (sheet 1)
-# input$subjectmetabolites  = abundance data        (sheet 2)
-# input$subjectdata         = subject meta data     (sheet 3)
-# input$varmap              = variable mapping data (sheet 4)
-
-  metabolites   = input$metabolites
-  subjectmeta   = input$subjectmetabolites
-  subjectdata   = input$subjectdata
-  varmap        = input$varmap
-
-  metaboliteID  = varmap$cohortvariable[tolower(varmap$varreference) == "metabolite_id"]
-  subjectID     = varmap$cohortvariable[tolower(varmap$varreference) == "id"]
   
-  if (length(metaboliteID) == 0) {
-    output$message = c(output$message, 
-                       "Error: Metabolite id is not found as a parameter in VarMap sheet! Specify which column should be used for metabolite id.",
-                       "\n")
+  # input$metabolites         = metabolite meta data  (sheet 1)
+  # input$subjectmetabolites  = abundance data        (sheet 2)
+  # input$subjectdata         = subject meta data     (sheet 3)
+  # input$varmap              = variable mapping data (sheet 4)
+  
+  input          = readExcel(filepath)
+  output         = input
+  
+  metabolites    = input$metabolites
+  subjectmeta    = input$subjectmetabolites
+  subjectdata    = input$subjectdata
+  varmap         = input$varmap
+  
+  metaboliteID   = varmap$cohortvariable[tolower(varmap$varreference) == 'metabolite_id']
+  subjectID      = varmap$cohortvariable[tolower(varmap$varreference) == 'id']
+  
+  output$message = {
+    if (length(metaboliteID) == 0) 
+      'Error: Metabolite ID not found as a parameter in VarMap sheet! Specify which column should be used for metabolite ID'
+  
+    else if (length(subjectID) == 0)
+      'Error: Subject ID not found as a parameter in VarMap sheet! Specify which column should be used for subject ID'
+  
+    else if (!metaboliteID %in% colnames(metabolites))
+      paste0('Error: Metabolite ID from VarMap sheet (', metaboliteID, ') does not match column name from Metabolites Sheet')
+  
+    else if (!subjectID %in% colnames(subjectdata))
+      paste0('Error: Sample ID from VarMap sheet (', metaboliteID, ') does not match column name from SubjectData Sheet')
+    
+    else if (n_distinct(subjectdata[[subjectID]]) != n_distinct(subjectmeta[[subjectID]]))
+      'Warning: Number of subjects in SubjectData sheet does not match number of subjects in SubjectMetabolites sheet'
+
+    else if (anyDuplicated(colnames(subjectmeta)))
+      'Warning: Metabolite abundances sheet (SubjectMetabolites) contains duplicate columns (metabolite names)'
+
+    else if (anyDuplicated(subjectdata[[subjectID]]))
+      'Warning: Sample Information sheet (SubjectData) contains duplicate ids'
+
+    else if (anyDuplicated(metabolites[[metaboliteID]]))
+      'Warning: Metabolite Information sheet (Metabolites) contains duplicate metabolite ids'
+    
+    else
+      'Success: Input data has passed QC (metabolite and sample names match in all sheets)'
   }
   
-  else if (length(subjectID) == 0) {
-    output$message = c(output$message, 
-                       "Error: Subject id is not found as a parameter in VarMap sheet! Specify which column should be used for subject id.",
-                       "\n")
+  # convert columns to lowercase if no error messages were found
+  if (!grepl('Error', output$message)) {
+    output$metabolites[[metaboliteID]] = tolower(metabolites[[metaboliteID]])
+    output$subjectdata[[subjectID]]    = tolower(subjectdata[[subjectID]])
+    output$subjectmeta[[subjectID]]    = tolower(subjectmeta[[subjectID]])
   }
 
-  else {
-    metabolites[[metaboliteID]] = tolower(metabolites[[metaboliteID]])
-    subjectdata[[subjectID]]    = tolower(subjectdata[[subjectID]])
-    subjectmeta[[subjectID]]    = tolower(subjectmeta[[subjectID]])
-    
-    if (length(grep(metaboliteID, colnames(metabolites))) == 0) {
-      output$message = c(output$message,
-                         "Error: Metabolite ID from 'VarMap sheet' (", metaboliteID, ") does not match column name from 'Metabolites Sheet'",
-                         "\n")
-    }
-    
-    else if (length(grep(subjectID, colnames(subjectdata))) == 0) {
-      output$message = c(output$message,
-                         "Error: Sample ID from 'VarMap sheet' (", metaboliteID, ") does not match column name from 'SubjectData Sheet'",
-                         "\n")
-    }
-    
-    else if (length(unique(subjectdata[, subjectID])) != length(unique(subjectmeta[, subjectID]))) {
-      output$message = c(output$message,
-                         "Warning: Number of subjects in SubjectData sheet does not match number of subjects in SubjectMetabolites sheet",
-                         "\n")
-    }
-    
-    else if (length(unique(colnames(subjectmeta))) != ncol(subjectmeta)) {
-      output$message = c(output$message,
-                         "Warning: Metabolite abundances sheet (SubjectMetabolites) contains duplicate columns (metabolite names)",
-                         "\n")
-    }
-    
-    else if (length(unique(unlist(subjectdata[, subjectID]))) != nrow(subjectdata)) {
-      output$message = c(output$message,
-                         "Warning: Sample Information sheet (SubjectData) contains duplicate ids",
-                         "\n")
-    }
-    
-    else if (length(unique(unlist(metabolites[, metaboliteID]))) != nrow(metabolites)) {
-      output$message = c(output$message,
-                         "Warning: Metabolite Information sheet (Metabolites) contains duplicate metabolite ids",
-                         "\n")
-    }
-  }
-  
-  if (is.null(output$message)) {
-    output$message = "Input data has passed QC (metabolite and sample names match in all input files)"
-  }
-  
-  output$metaboliteID = metaboliteID
-  output$subjectID    = subjectID
+  output$metaboliteID = tolower(metaboliteID)
+  output$subjectID    = tolower(subjectID)
   output
 }
 
 
+
+#################################################################################
+#' Read data from excel file
+#'
+#' @param filepath Path to excel file
+#' @return A list containing the excel file contents
+#' @examples
+#' readData('examples/cometsInput.xlsx')
+#################################################################################
 readData <- function(filepath) {
   
   input = checkIntegrity(filepath)
@@ -115,21 +123,39 @@ readData <- function(filepath) {
   # input$varmap              = variable mapping data (sheet 4)
   # input$metaboliteID        = metabolite ID
   # input$subjectID           = subject ID
-  # input$message             = QC message
+  # input$message             = quality check message
   # input$modelspec           = 'Batch' or 'Interactive'
 
-  if (length(grep("Error", input$message)) == 0) {
+  if (grepl('Error', input$message)) {
     
-    dat = inner_join(input$subjectdata, input$subjectmetabolites)
+  }
+  
+  else {
+    dta = inner_join(input$subjectdata, input$subjectmetabolites)
+
+    idvar = input$subjectID
+    metavar = input$metaboliteID
+    
+    if (input$modelspec == 'Batch') {
+      tst = filter(input$varmap, !is.na(cohortvariable) & varreference != 'metabolite_id')
+      
+      
+      
+      
+      newnames = mapv
+      
+    }
+    
+    
+    
     
     # idvar<-dta.vmap$cohortvariable[dta.vmap$varreference == 'id']
-    # metabvar<-tolower(dta.vmap$cohortvariable[dta.vmap$varreference == "metabolite_id"])
+    # metabvar<-tolower(dta.vmap$cohortvariable[dta.vmap$varreference == 'metabolite_id'])
 
-    
     #rename variables if batch mode so we can run models 
-    if (input$modelspec == "Batch") {
+    if (input$modelspec == 'Batch') {
       # take only vars that are named differently for the cohort
-      tst<-dplyr::filter(dta.vmap,!is.na(cohortvariable) & varreference != "metabolite_id")
+      tst<-dplyr::filter(dta.vmap,!is.na(cohortvariable) & varreference != 'metabolite_id')
       
       newnames <- mapvalues(names(dta),
                             from = c(tolower(tst$cohortvariable)),
@@ -137,14 +163,19 @@ readData <- function(filepath) {
       
       names(dta) <- newnames
       
+      
+      
+      
       newnames <- mapvalues(names(dta),
                             from = c(tolower(tst$cohortvariable)),
                             to = c(tolower(tst$varreference)))
       
       names(dta) <- newnames
+      
+      rename(input$me)
       
       #       #rename cohort metabid to metabolite id
-      #       names(dta.metab)<-mapvalues(names(dta.metab),from=metabvar,to="metabolite_id")
+      #       names(dta.metab)<-mapvalues(names(dta.metab),from=metabvar,to='metabolite_id')
     }
     
   }
