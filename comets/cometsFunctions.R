@@ -117,6 +117,7 @@ checkIntegrity <- function(filepath) {
 readData <- function(filepath) {
   
   input = checkIntegrity(filepath)
+  output = input
   
   # input$metabolites         = metabolite meta data  (sheet 1)
   # input$subjectmetabolites  = abundance data        (sheet 2)
@@ -127,10 +128,30 @@ readData <- function(filepath) {
   # input$message             = quality check message
   # input$modelspec           = 'Batch' or 'Interactive'
 
-  if (input$success) {
-    # refactored readData function
-  }
+  dt = inner_join(input$subjectdata, input$subjectmeta)
+  
+  # refactored readData function
+  if (input$success)
+    output$results = list(
+      integrityCheck = list(
+        inputDataSummary = list(
+          'Metabolites Sheet' = paste(length(input$metabolites[[input$metaboliteID]]), 'metabolites'),
+          'Subject data sheet' = paste(nrow(input$subjectdata), 'subjects with', ncol(input$subjectdata) -1, 'covariates'),
+          'Subject metabolites sheet' = paste(nrow(dt), 'subjects with', ncol(dt) - length(names(input$subjectdata[-1])) - 1, 'metabolites')
+        ),
+        
+        metaboliteSummary = list(
+          'N Metabolites' = 0,
+          'N Harmonized' = 0,
+          'N Non-Harmonized' = 0,
+          'N with zero variance' = 0,
+          'N with >25% at min' = 0
+        )
+      )
+    )
     
-  return(toJSON(input, auto_unbox = T))
+    
+
+  return(toJSON(output, auto_unbox = T))
 }
 
