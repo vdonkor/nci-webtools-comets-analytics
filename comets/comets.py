@@ -5,16 +5,6 @@ from rpy2.robjects import r as wrapper
 app = Flask(__name__)
 wrapper['source']('./cometsWrapper.R')
 
-# separate api calls for the different authenication providers(Facebook, Google)
-@app.route('/cometsRest/auth', methods = ['POST'])
-def comets():
-    return ""
-
-@app.route('/cometsRest/qc', methods = ['POST'])
-def qualityControlCheck():
-    #    return robjects.r['getApcDataJSON'](request.stream.read())[0]
-    return ""
-
 # takes excel workbook as input
 @app.route('/cometsRest/correlate/integrity', methods = ['POST'])
 def integrityCheck():
@@ -30,14 +20,9 @@ def integrityCheck():
         if os.path.isfile(os.path.join('uploads', filename)):
             print "Successfully Uploaded"
         
-        result=json.loads(wrapper['processWorkbook'](filename)[0])
+        result=wrapper['processWorkbook'](filename)[0]
         
-        return json.dumps({
-                "statusMessage": result["outmessage"],
-                "metabolite": result["dta.metab"],
-                "subject" : result["dta.sdata"],
-                "subjectMeta": result["dta.smetab"]
-            })
+        return result
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame

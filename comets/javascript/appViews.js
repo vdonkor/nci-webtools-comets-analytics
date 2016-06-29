@@ -1,15 +1,6 @@
 // app namespace
 var appComets = {};
 
-Backbone.View.prototype.close = function () {
-    if (this.beforeClose) {
-        this.beforeClose();
-    }
-    this.remove();
-    this.unbind();
-};
-
-// views
 appComets.ErrorsView = Backbone.View.extend({
     el: '#messageDiv',
     initialize: function () {
@@ -42,50 +33,122 @@ appComets.HeaderView = Backbone.View.extend({
     },
 });
 
-appComets.IntegrityView = Backbone.View.extend({
-    // should already have element (el) specified, so we don't need to do it again
+appComets.FormView = Backbone.View.extend({
+    el: "#cometsForm",
+    tagName: "form",
     initialize: function () {
+        // get the current view object
+        $this = this;
 
-        var init = this;
-        if (init.options.model) {
-            getTemplate('integrityCheckResult').then(function (templ) {
-                if (templ.length > 0) {
+        // watch model for changes and trigger render
+        $this.model.on('change', this.render);
+    },
+    render: function () {
+        if ($this.model) {
+            // retrieve the array of options
+            results = $this.model.get('subjectOptions');
 
-                    integrity = init.model.get("integrity");
-
-                    init.template = _.template(templ, {
-                        status: integrity.status,
-                        statusMessage: integrity.statusMessage,
-                        metaboliteSheet: integrity.metaboliteSheet,
-                        subjectSheet: integrity.subjectSheet,
-                        subjectMetaSheet: integrity.subjectMetaSheet,
-                        graph: integrity.graph,
-                        dateRun: integrity.dateRun
-                    });
-
-                    document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
-                }
-                init.render();
+            _.each($this.$el.find('#outcome, #exposure, #covariates'), function (control) {
+                $this.$el.find(control).selectize({
+                    plugins: ["remove_button"],
+                    options: results
+                });
             });
+
+            $('#analysisOptions').show();
         }
     },
-
-    render: function () {
-        if (this.template.length > 0)
-            this.$el.html(this.template);
-    },
     events: {
-        "click #resultsDownload": 'startDownload'
+        "change #inputDataFile": 'uploadInputDataFile',
+        "change [name='methodSelection']": "analysisMethod",
+        "change #cohortSelection": "cohortSelect",
+        "change #modelDescription": "getDescription",
+        "change #outcome": "updateOptions",
+        "change #exposure": "updateOptions",
+        "change #covariates": "updateOptions",
+        "click #toggleHelp": function () {
+            $this.$el.find("#inputHelp").toggle();
+        }
     },
-    startDownload: function (e) {
-        alert("starting download");
+    uploadInputDataFile: function (e) {
+        var formData = new FormData();
+
+        var file = fileUpload(e);
+//        var inputData = this.model.get('input');
+//        // check if model has data
+//        if (!$.isEmptyObject(inputData)) {
+//
+//            _.each(inputData, function (value, key) {
+//                formData.append(key, value);
+//            });
+//        }
+
+        // check if file object exists
+        if (file) {
+            formData.append("inputFile", file);
+
+            if ($this.model) {
+                $this.model.fetch({
+                    type: "POST",
+                    data: formData,
+                    dataType: "json",
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    beforeSend: function () {
+                        $this.$el.find("#calcProgressbar").show().find("[role='progressbar']").addClass("active");
+                    }
+                }).fail(function () {
+                    $this.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
+                    $this.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
+                    $this.$el.find("#inputDataFile").unwrap();
+                }).then(function (data, statusText, xhr) {
+                    $this.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload Complete");
+
+                }).always(function () {
+                    $this.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
+                });
+            }
+        }
+    },
+    analysisMethod: function (e) {
+        $this.model.set('methodSelect', e.target.value);
+        var newVal = $this.model.get('methodSelect');
+
+        $this.$el.find("#" + newVal).show();
+
+        if (newVal == "batch") {
+            $this.$el.find("#interactive").hide();
+        } else {
+            $this.$el.find("#batch").hide();
+        }
+    },
+    cohortSelect: function (e) {
+        $this.model.set('cohort', e.target.value);
+    },
+    updateOptions: function (e) {
+        var inputs = $this.model.set(e.target.id, e.target.value.split(","));
+    },
+    getDescription: function (e) {
+        $this.model.set('modelDescription',  e.target.value);
     }
 });
 
 appComets.LandingView = Backbone.View.extend({
     el: '#pageContent',
     initialize: function () {
-        new appComets.HeaderView(this.options);
+        //holds all the possible result pieces
+        this.resultModel = new appComets.ResultsModel();
+        
+        this.landingTitle = new appComets.HeaderView();
+
+        this.formView = new appComets.FormView({
+            model: this.resultModel
+        });
+
+        //        this.integrityView = new appComets.IntegrityView({
+        //            model: this.resultsModel
+        //        });
     },
     events: {
         /**
@@ -93,97 +156,62 @@ appComets.LandingView = Backbone.View.extend({
         **/
         'show.bs.tab #comets-tab-nav': 'setTitle',
         'show.bs.tab #correlate-tab-nav': 'setTitle',
-        'change #inputDataFile': 'uploadInputDataFile',
-        'change #corr_cutoff': 'updateCorrelation',
-        'change #cohortSelection': function (e) {
-            if (e.target.value.length > 0) {
-                $("#inputStep2").show();
-            } else {
-                $("#inputStep2").hide();
-            }
-        },
-        'click #toggleHelp': function () {
-            $("#inputHelp").toggle();
-        }
     },
     setTitle: function (e) {
         document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
-    },
-    uploadInputDataFile: function (e) {
-        $this = this;// get the current view object
-        
-        var formData = new FormData();
+    }
+});
 
-        // show upload status using progressbar
-        file = fileUpload(e);
+// view for the results displayed under the integrity check tab
+appComets.IntegrityView = Backbone.View.extend({
+    el: "#integrityDiv",
+    initialize: function () {
+        var $this = this;
+        if ($this.model) {
+            getTemplate('integrityCheckResult').then(function (templ) {
+                if (templ.length > 0) {
+                    document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
 
-        if (file) {
-            formData.append("inputFile", file);
-
-            $.ajax({
-                type: "POST",
-                url: "/cometsRest/correlate/integrity",
-                data: formData,
-                dataType: "json",
-                cache: false,
-                processData: false,
-                contentType: false,
-                beforeSend: function () {
-                    $("#calcProgressbar").show().find("[role='progressbar']").addClass("active");
+                    $this.template = _.template(templ, {
+                        status: init.model.get('status'),
+                        statusMessage: init.model.get('statusMessage'),
+                        metabolite: init.model.get('metabolite'),
+                        subject: init.model.get('subject'),
+                        subjectMeta: init.model.get('subjectMeta'),
+                        graph: init.model.get('graph'),
+                        dateRun: init.model.get('dateRun')
+                    });
                 }
-            }).fail(function () {
-                $("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
-                $("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
-                $("#inputDataFile").unwrap();
-            }).then(function (data, statusText, xhr) {
-                
-                $("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload Complete");
-                // after processing pass object to create new model
-                var processedFile = new appComets.fileStats({
-                    integrity: {
-                        status: statusText === "success" ? true: false,
-                        statusMessage: data.statusMessage,
-                        metaboliteSheet: data.metabolite,
-                        subjectSheet: data.subject,
-                        subjectMetaSheet: data.subjectMeta,
-                        graph: {
-                            src: "images/integritycheck_graphs.jpg",
-                            description: "Description of integrity graph"
-                        },
-                        dateRun: new Date()
-                    }
-                });
-
-                // create sub views for each section, after file has been processed
-                $this.integrityView = new appComets.IntegrityView({
-                    el: $this.$("#integrityDiv"),
-                    model: processedFile
-                });
-
-                if (e.target.files.length > 0) {
-                    $("#inputNotice").hide();
-                    $("#inputStep3").show();
-                } else {
-                    $("#inputNotice,#inputStep3").show();
-                }
-
-                $("#inputStep3").hide();
-                $('#summaryDiv').show();
-                $('#heatmapDiv').show();
-                $('#clusterDiv').show();
-                $('#networkDiv').show();
-                $('#integrityDiv').show();
-            }).always(function () {
-                $("#calcProgressbar [role='progressbar']").removeClass("active");
+                init.render();
             });
         }
     },
+    render: function () {
+        if ($this.template.length > 0)
+            $this.$el.html(this.template);
+    },
+    events: {
+        "click #resultsDownload": 'startDownload',
+        'change #corr_cutoff': 'updateCorrelation'
+    },
+    startDownload: function (e) {
+        alert("starting download");
+    },
     updateCorrelation: function (e) {
         $("#corr_val").val(e.target.value);
-        console.log("correlation cutoff: " + e.target.value);
-        
-        // ajax request to generate updated image
-        
-        
+        $this.model.set(e.target.id, e.target.value);
     }
+});
+
+// the view to populate the options for the 'Choose Model' select control
+appComets.ModelSelectionOptions = Backbone.View.extend({
+    el: "#modelSelection",
+    tagName: "select",
+    initialize: function () {
+        if (this.options.models) {
+            this.template = _.template(this.options.models);
+        }
+    },
+    render: function () {}
+
 });
