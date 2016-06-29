@@ -2,7 +2,7 @@
 library(plyr)
 library(dplyr)
 library(readxl)
-
+library(jsonlite)
 
 #################################################################################
 #' Converts all sheets in a workbook to a list
@@ -14,8 +14,7 @@ library(readxl)
 #################################################################################
 readExcel <- function(filepath) {
   
-  filepath  = system.file(filepath)
-  sheets    = excel_sheets(filepath)
+  sheets = excel_sheets(filepath)
   
   # process each sheet
   x = lapply(sheets, function(X) {
@@ -91,13 +90,15 @@ checkIntegrity <- function(filepath) {
       'Success: Input data has passed QC (metabolite and sample names match in all sheets)'
   }
   
+  output$success = !grepl('Error', output$message)
+  
   # convert columns to lowercase if no error messages were found
-  if (!grepl('Error', output$message)) {
+  if (output$success) {
     output$metabolites[[metaboliteID]] = tolower(metabolites[[metaboliteID]])
     output$subjectdata[[subjectID]]    = tolower(subjectdata[[subjectID]])
     output$subjectmeta[[subjectID]]    = tolower(subjectmeta[[subjectID]])
   }
-
+  
   output$metaboliteID = tolower(metaboliteID)
   output$subjectID    = tolower(subjectID)
   output
@@ -126,60 +127,10 @@ readData <- function(filepath) {
   # input$message             = quality check message
   # input$modelspec           = 'Batch' or 'Interactive'
 
-  if (grepl('Error', input$message)) {
-    
-  }
-  
-  else {
-    dta = inner_join(input$subjectdata, input$subjectmetabolites)
-
-    idvar = input$subjectID
-    metavar = input$metaboliteID
-    
-    if (input$modelspec == 'Batch') {
-      tst = filter(input$varmap, !is.na(cohortvariable) & varreference != 'metabolite_id')
-      
-      
-      
-      
-      newnames = mapv
-      
-    }
-    
-    
-    
-    
-    # idvar<-dta.vmap$cohortvariable[dta.vmap$varreference == 'id']
-    # metabvar<-tolower(dta.vmap$cohortvariable[dta.vmap$varreference == 'metabolite_id'])
-
-    #rename variables if batch mode so we can run models 
-    if (input$modelspec == 'Batch') {
-      # take only vars that are named differently for the cohort
-      tst<-dplyr::filter(dta.vmap,!is.na(cohortvariable) & varreference != 'metabolite_id')
-      
-      newnames <- mapvalues(names(dta),
-                            from = c(tolower(tst$cohortvariable)),
-                            to = c(tolower(tst$varreference)))
-      
-      names(dta) <- newnames
-      
-      
-      
-      
-      newnames <- mapvalues(names(dta),
-                            from = c(tolower(tst$cohortvariable)),
-                            to = c(tolower(tst$varreference)))
-      
-      names(dta) <- newnames
-      
-      rename(input$me)
-      
-      #       #rename cohort metabid to metabolite id
-      #       names(dta.metab)<-mapvalues(names(dta.metab),from=metabvar,to='metabolite_id')
-    }
-    
+  if (input$success) {
+    # refactored readData function
   }
     
-  
+  return(toJSON(input, auto_unbox = T))
 }
 
