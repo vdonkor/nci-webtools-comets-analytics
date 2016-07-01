@@ -15,12 +15,14 @@ appComets.ResultsModel = Backbone.Model.extend({
         subjectOptions: [],
         cohortSelection: "",
         methodSelection: null,
-        modelSelection: [],
+        modelSelection: null,
         modelDescription: "",
         outcome:[],
         exposure: [],
         covariates: [],
-        results: null
+        results: null,
+        batch: true,
+        interactive: false
     },
     urlRoot: "/cometsRest/correlate/integrity",
     parse: function (response, xhr) {

@@ -36,23 +36,17 @@ appComets.HeaderView = Backbone.View.extend({
 appComets.LandingView = Backbone.View.extend({
     el: '#pageContent',
     initialize: function () {
-        baseView = this;
-        
         //holds all the possible result pieces
-        baseView.resultModel = new appComets.ResultsModel();
-        
-        baseView.resultModel.on("change:csvFile", function () {
-            if (this.get("csvFile"))
-                baseView.$el.find("#inputNotice").hide();
-            else
-                baseView.$el.find("#inputNotice").show();
+        this.resultModel = new appComets.ResultsModel();
+
+        this.landingTitle = new appComets.HeaderView();
+
+        //subview
+        this.correlateView = new appComets.CorrelateView({
+            el: this.$el.find("#tab-correlate"),
+            model: this.resultModel
         });
 
-        baseView.landingTitle = new appComets.HeaderView();
-
-        baseView.formView = new appComets.FormView({
-            model: baseView.resultModel
-        });
     },
     events: {
         /**
@@ -66,8 +60,8 @@ appComets.LandingView = Backbone.View.extend({
     }
 });
 
+
 appComets.FormView = Backbone.View.extend({
-    el: "#cometsForm",
     tagName: "form",
     initialize: function () {
         // get the current view object
@@ -156,16 +150,8 @@ appComets.FormView = Backbone.View.extend({
         }
     },
     analysisMethod: function (e) {
-        $this.model.set('methodSelect', e.target.value);
-        var newVal = $this.model.get('methodSelect');
-
-        $this.$el.find("#" + newVal).show();
-
-        if (newVal == "batch") {
-            $this.$el.find("#interactive").hide();
-        } else {
-            $this.$el.find("#batch").hide();
-        }
+        $this.model.set('methodSelection', e.target.value);
+        var newVal = $this.model.get('methodSelection');
     },
     cohortSelect: function (e) {
         $this.model.set('cohort', e.target.value);
@@ -178,6 +164,54 @@ appComets.FormView = Backbone.View.extend({
     }
 });
 
+appComets.CorrelateView = Backbone.View.extend({
+    initialize: function () {
+        baseView = this;
+        this.model.on("change:methodSelection", function () {
+            /**
+                watch the methodSelection attribute in the model for changes. 
+                Toggle the visibility of the batch and interactive controls. 
+                The controls being hidden will have its data reset to its default in the model 
+            **/
+            switch (this.get("methodSelection")) {
+            case "batch":
+                baseView.$el.find("#batch").show();
+                baseView.$el.find("#interactive").hide();
+                this.set("interactive", this.defaults.interactive);
+                this.set("modelDescription", this.defaults.modelDescription);
+                this.set("outcome", this.defaults.outcome);
+                this.set("exposure", this.defaults.exposure);
+                this.set("covariates", this.defaults.covariates);
+                break;
+            case "interactive":
+                baseView.$el.find("#batch").hide();
+                baseView.$el.find("#interactive").show();
+                this.set("batch", this.defaults.batch);
+                this.set("modelSelection", this.defaults.modelSelection)
+                break;
+            default:
+                baseView.$el.find("#batch,#interactive").hide();
+                this.set("batch", this.defaults.batch);
+                this.set("interactive", this.defaults.interactive);
+                break;
+            }
+        });
+
+        this.model.on("change:csvFile", function () {
+            if (this.get("csvFile"))
+                baseView.$el.find("#inputNotice").hide();
+            else
+                baseView.$el.find("#inputNotice").show();
+        });
+
+        //subview
+        baseView.formView = new appComets.FormView({
+            el: baseView.$el.find("#cometsForm"),
+            model: this.model
+        });
+
+    }
+});
 // view for the results displayed under the integrity check tab
 appComets.IntegrityView = Backbone.View.extend({
     el: "#integrityDiv",
