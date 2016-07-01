@@ -1,5 +1,6 @@
 appComets.ResultsModel = Backbone.Model.extend({
     defaults: {
+        csvFile: null,
         metabolites: [],
         subjectmetabolites: [],
         subjectdata: [],
@@ -10,7 +11,7 @@ appComets.ResultsModel = Backbone.Model.extend({
         subjectmeta: [],
         metaboliteID: null,
         subjectID: null,
-        dateRun: new Date(),
+        dateRun: new Date().toLocaleDateString(),
         subjectOptions: [],
         cohortSelection: "",
         methodSelection: null,
@@ -18,7 +19,8 @@ appComets.ResultsModel = Backbone.Model.extend({
         modelDescription: "",
         outcome:[],
         exposure: [],
-        covariates: []
+        covariates: [],
+        results: null
     },
     urlRoot: "/cometsRest/correlate/integrity",
     parse: function (response, xhr) {

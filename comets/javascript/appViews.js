@@ -33,6 +33,39 @@ appComets.HeaderView = Backbone.View.extend({
     },
 });
 
+appComets.LandingView = Backbone.View.extend({
+    el: '#pageContent',
+    initialize: function () {
+        baseView = this;
+        
+        //holds all the possible result pieces
+        baseView.resultModel = new appComets.ResultsModel();
+        
+        baseView.resultModel.on("change:csvFile", function () {
+            if (this.get("csvFile"))
+                baseView.$el.find("#inputNotice").hide();
+            else
+                baseView.$el.find("#inputNotice").show();
+        });
+
+        baseView.landingTitle = new appComets.HeaderView();
+
+        baseView.formView = new appComets.FormView({
+            model: baseView.resultModel
+        });
+    },
+    events: {
+        /**
+            "<eventType targetedElement>" : "callbackFunctionName"
+        **/
+        'show.bs.tab #comets-tab-nav': 'setTitle',
+        'show.bs.tab #correlate-tab-nav': 'setTitle',
+    },
+    setTitle: function (e) {
+        document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
+    }
+});
+
 appComets.FormView = Backbone.View.extend({
     el: "#cometsForm",
     tagName: "form",
@@ -42,21 +75,15 @@ appComets.FormView = Backbone.View.extend({
 
         // watch model for changes and trigger render
         $this.model.on('change', this.render);
+
+        $this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+            $(el).selectize({
+                plugins: ["remove_button"]
+            });
+        });
     },
     render: function () {
-        if ($this.model) {
-            // retrieve the array of options
-            results = $this.model.get('subjectOptions');
 
-            _.each($this.$el.find('#outcome, #exposure, #covariates'), function (control) {
-                $this.$el.find(control).selectize({
-                    plugins: ["remove_button"],
-                    options: results
-                });
-            });
-
-            $('#analysisOptions').show();
-        }
     },
     events: {
         "change #inputDataFile": 'uploadInputDataFile',
@@ -74,18 +101,13 @@ appComets.FormView = Backbone.View.extend({
         var formData = new FormData();
 
         var file = fileUpload(e);
-//        var inputData = this.model.get('input');
-//        // check if model has data
-//        if (!$.isEmptyObject(inputData)) {
-//
-//            _.each(inputData, function (value, key) {
-//                formData.append(key, value);
-//            });
-//        }
+        this.model.set("csvFile", file);
 
         // check if file object exists
         if (file) {
-            formData.append("inputFile", file);
+            _.each(this.model.attributes, function (modelItem) {
+                formData.append("inputFile", modelItem);
+            });
 
             if ($this.model) {
                 $this.model.fetch({
@@ -103,8 +125,30 @@ appComets.FormView = Backbone.View.extend({
                     $this.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
                     $this.$el.find("#inputDataFile").unwrap();
                 }).then(function (data, statusText, xhr) {
-                    $this.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload Complete");
+                    $this.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $this.model.get("csvFile").name + "' Complete");
 
+                    $this.model.set(data);
+
+                    // retrieve the array of options
+                    results = $this.model.get('subjectOptions');
+
+                    _.each($this.$el.find('#outcome, #exposure, #covariates'), function (control) {
+                        control.selectize.addOption(results);
+                        control.selectize.refreshOptions();
+                    });
+
+                    //subviews
+
+                    $this.integrityView = new appComets.IntegrityView({
+                        model: $this.model
+                    });
+
+                    $this.modelOptionsView = new appComets.ModelSelectionOptions({
+                        modelsOptions: $this.model.get("models")
+                    });
+
+
+                    $this.$el.find('#analysisOptions').show();
                 }).always(function () {
                     $this.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
                 });
@@ -130,35 +174,7 @@ appComets.FormView = Backbone.View.extend({
         var inputs = $this.model.set(e.target.id, e.target.value.split(","));
     },
     getDescription: function (e) {
-        $this.model.set('modelDescription',  e.target.value);
-    }
-});
-
-appComets.LandingView = Backbone.View.extend({
-    el: '#pageContent',
-    initialize: function () {
-        //holds all the possible result pieces
-        this.resultModel = new appComets.ResultsModel();
-        
-        this.landingTitle = new appComets.HeaderView();
-
-        this.formView = new appComets.FormView({
-            model: this.resultModel
-        });
-
-        //        this.integrityView = new appComets.IntegrityView({
-        //            model: this.resultsModel
-        //        });
-    },
-    events: {
-        /**
-            "<eventType targetedElement>" : "callbackFunctionName"
-        **/
-        'show.bs.tab #comets-tab-nav': 'setTitle',
-        'show.bs.tab #correlate-tab-nav': 'setTitle',
-    },
-    setTitle: function (e) {
-        document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
+        $this.model.set('modelDescription', e.target.value);
     }
 });
 
@@ -173,22 +189,23 @@ appComets.IntegrityView = Backbone.View.extend({
                     document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
 
                     $this.template = _.template(templ, {
-                        status: init.model.get('status'),
-                        statusMessage: init.model.get('statusMessage'),
-                        metabolite: init.model.get('metabolite'),
-                        subject: init.model.get('subject'),
-                        subjectMeta: init.model.get('subjectMeta'),
-                        graph: init.model.get('graph'),
-                        dateRun: init.model.get('dateRun')
+                        status: $this.model.get('success'),
+                        statusMessage: $this.model.get('message'),
+                        metabolites: $this.model.get('metabolites'),
+                        metaboliteId: $this.model.get('metaboliteID'),
+                        subject: $this.model.get('subjectdata'),
+                        subjectMeta: $this.model.get('subjectmeta'),
+                        varMap: $this.model.get('varmap'),
+                        dateRun: $this.model.get('dateRun'),
+                        summary: $this.model.get('results').integrityCheck
                     });
                 }
-                init.render();
+                $this.render();
             });
         }
     },
     render: function () {
-        if ($this.template.length > 0)
-            $this.$el.html(this.template);
+        this.$el.html(this.template);
     },
     events: {
         "click #resultsDownload": 'startDownload',
@@ -199,7 +216,7 @@ appComets.IntegrityView = Backbone.View.extend({
     },
     updateCorrelation: function (e) {
         $("#corr_val").val(e.target.value);
-        $this.model.set(e.target.id, e.target.value);
+        this.model.set(e.target.id, e.target.value);
     }
 });
 
@@ -208,10 +225,12 @@ appComets.ModelSelectionOptions = Backbone.View.extend({
     el: "#modelSelection",
     tagName: "select",
     initialize: function () {
-        if (this.options.models) {
-            this.template = _.template(this.options.models);
+        if (this.options.modelsOptions) {
+            this.template = _.template("<% _.each(modelsOptions, function(modelOpt){ %><option value='<%= modelOpt.model %>'><%= modelOpt.model %></option><% }) %>", this.options);
+            this.render();
         }
     },
-    render: function () {}
-
+    render: function () {
+        this.$el.html(this.template);
+    }
 });
