@@ -16,10 +16,11 @@
             <th>Subject metabolites sheet</th>
         </tr>
         <tr>
-            
             <%  _.each(summary.inputDataSummary,function(summaryData) { %>
-               <td><%= summaryData %></td>
-            <% }); %>
+                <td>
+                    <%= summaryData %>
+                </td>
+                <% }); %>
         </tr>
     </table>
 
@@ -29,26 +30,33 @@
             <th>N Metabolites</th>
             <th>N Harmonized</th>
             <th>N Non-Harmonizaed</th>
-            <th>N with zero variance</th>	
+            <th>N with zero variance</th>
             <th>N with >25% at min</th>
         </tr>
         <tr>
             <%  _.each(summary.metaboliteSummary,function(summaryData) { %>
-               <td><%= summaryData %></td>
-            <% }); %>
+                <td>
+                    <%= summaryData %>
+                </td>
+                <% }); %>
         </tr>
     </table>
 
-    (Place Graphs Here)
+    <div id="varianceDist">
+        (Place Graphs Here)
+    </div>
+    <div id="subjectDist">
+        (Place Graphs Here)
+    </div>
 
     <p>Run date:
         <%=  dateRun %>
     </p>
     <% } %>
 
-<% if (!status) { %>
-    <div id="resultStatus" class="alert alert-warning">
-        <span class="glyphicon glyphicon-warning-sign"></span>
-        <%= statusMessage %>
-    </div>
-<% } %>
+        <% if (!status) { %>
+            <div id="resultStatus" class="alert alert-warning">
+                <span class="glyphicon glyphicon-warning-sign"></span>
+                <%= statusMessage %>
+            </div>
+            <% } %>

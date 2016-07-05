@@ -77,15 +77,25 @@ appComets.FormView = Backbone.View.extend({
         if (view.model) {
             var interactiveOptionsCount = view.model.get("outcome").length + view.model.get("exposure").length + view.model.get("covariates").length;
 
-            if (interactiveOptionsCount > 0)
-                view.$el.find("#runModel").show();
+            if (
+                ( view.model.get("methodSelection") == "interactive" && interactiveOptionsCount > 0 ) ||
+                ( view.model.get("methodSelection") == "batch" && view.model.get("batch") )
+            ) {
+                view.$el.find("#runModel").removeAttr('disabled');
+            } 
             else
-                view.$el.find("#runModel").hide();
+                view.$el.find("#runModel").attr('disabled', true);
+            
+            if(view.model.get("batch") == true)
+                view.model.set("modelSelection", view.$el.find("#modelSelection").val());
+            else
+                view.model.set("modelSelection", view.model.defaults.modelSelection);
 
             if (view.model.get('csvFile') === null || view.model.get('csvFile') === undefined) {
-                view.$el.find("#calcProgressbar, #load").hide();
+                view.$el.find("#calcProgressbar").hide();
+                view.$el.find("#load").attr('disabled', true);
             } else {
-                view.$el.find("#load").show();
+                view.$el.find("#load").removeAttr('disabled');
             }
         }
     },
@@ -109,55 +119,55 @@ appComets.FormView = Backbone.View.extend({
     },
     processFile: function (e) {
         e.preventDefault();
+        file = view.model.get("csvFile")
+        if (file) {
+            var formData = new FormData();
+            formData.append("inputFile", file);
 
-        $this = this;
+            view.model.fetch({
+                type: "POST",
+                data: formData,
+                dataType: "json",
+                cache: false,
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    view.$el.find("#calcProgressbar").show()
+                        .find("[role='progressbar']")
+                        .removeClass("progress-bar-danger progress-bar-success")
+                        .addClass("active").text("Uploading....Please Wait");
+                }
+            }).fail(function () {
+                view.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
+                view.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
+                view.$el.find("#inputDataFile").unwrap();
+            }).then(function (data, statusText, xhr) {
+                view.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + view.model.get("csvFile").name + "' Complete");
 
-        var formData = new FormData();
-        formData.append("inputFile", this.model.get("csvFile"));
+                view.model.set(data);
 
-        view.model.fetch({
-            type: "POST",
-            data: formData,
-            dataType: "json",
-            cache: false,
-            processData: false,
-            contentType: false,
-            beforeSend: function () {
-                view.$el.find("#calcProgressbar").show()
-                    .find("[role='progressbar']")
-                    .removeClass("progress-bar-danger progress-bar-success")
-                    .addClass("active").text("Uploading....Please Wait"); 
-            }
-        }).fail(function () {
-            view.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
-            view.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
-            view.$el.find("#inputDataFile").unwrap();
-        }).then(function (data, statusText, xhr) {
-            view.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $this.model.get("csvFile").name + "' Complete");
+                // retrieve the array of options
+                results = view.model.get('subjectOptions');
 
-            view.model.set(data);
+                _.each(view.$el.find('#outcome, #exposure, #covariates'), function (control) {
+                    control.selectize.addOption(results);
+                    control.selectize.refreshOptions();
+                });
 
-            // retrieve the array of options
-            results = $this.model.get('subjectOptions');
+                // subviews
+                view.integrityView = new appComets.IntegrityView({
+                    model: view.model
+                });
 
-            _.each($this.$el.find('#outcome, #exposure, #covariates'), function (control) {
-                control.selectize.addOption(results);
-                control.selectize.refreshOptions();
+                view.modelOptionsView = new appComets.ModelSelectionOptions({
+                    modelsOptions: view.model.get("models")
+                });
+
+                view.$el.find('#analysisOptions').show();
+            }).always(function () {
+                view.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
             });
-
-            // subviews
-            view.integrityView = new appComets.IntegrityView({
-                model: $this.model
-            });
-
-            view.modelOptionsView = new appComets.ModelSelectionOptions({
-                modelsOptions: $this.model.get("models")
-            });
-
-            view.$el.find('#analysisOptions').show();
-        }).always(function () {
-            view.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
-        });
+        }
     },
     analysisMethod: function (e) {
         view.model.set('methodSelection', e.target.value);
@@ -174,7 +184,7 @@ appComets.FormView = Backbone.View.extend({
         else
             selectedOptions = view.model.defaults[e.target.id];
 
-        var inputs = $this.model.set(e.target.id, selectedOptions);
+        var inputs = view.model.set(e.target.id, selectedOptions);
     },
     getDescription: function (e) {
         view.model.set('modelDescription', e.target.value);
@@ -233,30 +243,31 @@ appComets.CorrelateView = Backbone.View.extend({
 appComets.IntegrityView = Backbone.View.extend({
     el: "#integrityDiv",
     initialize: function () {
-        var $this = this;
-        if ($this.model) {
+        var view = this;
+        if (view.model) {
             getTemplate('integrityCheckResult').then(function (templ) {
                 if (templ.length > 0) {
                     document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
 
-                    $this.template = _.template(templ, {
-                        status: $this.model.get('success'),
-                        statusMessage: $this.model.get('message'),
-                        metabolites: $this.model.get('metabolites'),
-                        metaboliteId: $this.model.get('metaboliteID'),
-                        subject: $this.model.get('subjectdata'),
-                        subjectMeta: $this.model.get('subjectmeta'),
-                        varMap: $this.model.get('varmap'),
-                        dateRun: $this.model.get('dateRun'),
-                        summary: $this.model.get('results').integrityCheck
+                    view.template = _.template(templ, {
+                        status: view.model.get('success'),
+                        statusMessage: view.model.get('message'),
+                        metabolites: view.model.get('metabolites'),
+                        metaboliteId: view.model.get('metaboliteID'),
+                        subject: view.model.get('subjectdata'),
+                        subjectMeta: view.model.get('subjectmeta'),
+                        varMap: view.model.get('varmap'),
+                        dateRun: view.model.get('dateRun'),
+                        summary: view.model.get('results').integrityCheck
                     });
                 }
-                $this.render();
+                view.render();
             });
         }
     },
     render: function () {
         this.$el.html(this.template);
+        //        this.generateBarPlots();
     },
     events: {
         "click #resultsDownload": 'startDownload',
@@ -266,9 +277,45 @@ appComets.IntegrityView = Backbone.View.extend({
         alert("starting download");
     },
     updateCorrelation: function (e) {
-        $("#corr_val").val(e.target.value);
-        this.model.set(e.target.id, e.target.value);
-    }
+            $("#corr_val").val(e.target.value);
+            view.model.set(e.target.id, e.target.value);
+        }
+        //  ,
+        //    generateBarPlots: function () {
+        //        var varianceGraphContainer = this.$el.find("#varianceDist");
+        //        var subjectGraphContainer = this.$el.find("#subjectDist");
+        //
+        //        Plotly.plot(varianceGraphContainer, [{
+        //                type: "bar",
+        //                title: "Log2 Variance Distribution",
+        //                x: [],
+        //                y: []
+        //        },
+        //            {
+        //                yaxis: {
+        //                    title: "Frequency",
+        //                },
+        //                xaxis: {
+        //                    title: 'log2 Variance'
+        //                },
+        //        }]);
+
+    //        Plotly.plot(subjectGraphContainer, [{
+    //                type: "bar",
+    //                title: "Distribution of number of subjects at min value",
+    //                x: [],
+    //                y: []
+    //            },
+    //            {
+    //                yaxis: {
+    //                    title: "Frequency",
+    //                },
+    //                xaxis: {
+    //                    title: 'number at minimum value'
+    //                },
+    //            }                                 
+    //        ]);
+    //    }
 });
 
 // the view to populate the options for the 'Choose Model' select control
