@@ -52,7 +52,9 @@ nav.navbar.navbar-default {
 #calcProgressbar,
 #interactive,
 #batch,
-#analysisOptions {
+#analysisOptions,
+#load,
+#runModel {
     display: none;
 }
 

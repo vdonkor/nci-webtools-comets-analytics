@@ -60,27 +60,38 @@ appComets.LandingView = Backbone.View.extend({
     }
 });
 
-
 appComets.FormView = Backbone.View.extend({
     tagName: "form",
     initialize: function () {
-        // get the current view object
-        $this = this;
-
+        view = this;
         // watch model for changes and trigger render
-        $this.model.on('change', this.render);
+        view.model.on('change', this.render);
 
-        $this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+        view.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
             $(el).selectize({
                 plugins: ["remove_button"]
             });
         });
     },
     render: function () {
+        if (view.model) {
+            var interactiveOptionsCount = view.model.get("outcome").length + view.model.get("exposure").length + view.model.get("covariates").length;
 
+            if (interactiveOptionsCount > 0)
+                view.$el.find("#runModel").show();
+            else
+                view.$el.find("#runModel").hide();
+
+            if (view.model.get('csvFile') === null || view.model.get('csvFile') === undefined) {
+                view.$el.find("#calcProgressbar, #load").hide();
+            } else {
+                view.$el.find("#load").show();
+            }
+        }
     },
     events: {
         "change #inputDataFile": 'uploadInputDataFile',
+        "click #load": "processFile",
         "change [name='methodSelection']": "analysisMethod",
         "change #cohortSelection": "cohortSelect",
         "change #modelDescription": "getDescription",
@@ -88,79 +99,85 @@ appComets.FormView = Backbone.View.extend({
         "change #exposure": "updateOptions",
         "change #covariates": "updateOptions",
         "click #toggleHelp": function () {
-            $this.$el.find("#inputHelp").toggle();
+            this.$el.find("#inputHelp").toggle();
         }
     },
     uploadInputDataFile: function (e) {
-        var formData = new FormData();
-
+        //add file to model
         var file = fileUpload(e);
         this.model.set("csvFile", file);
+    },
+    processFile: function (e) {
+        e.preventDefault();
 
-        // check if file object exists
-        if (file) {
-            _.each(this.model.attributes, function (modelItem) {
-                formData.append("inputFile", modelItem);
+        $this = this;
+
+        var formData = new FormData();
+        formData.append("inputFile", this.model.get("csvFile"));
+
+        view.model.fetch({
+            type: "POST",
+            data: formData,
+            dataType: "json",
+            cache: false,
+            processData: false,
+            contentType: false,
+            beforeSend: function () {
+                view.$el.find("#calcProgressbar").show()
+                    .find("[role='progressbar']")
+                    .removeClass("progress-bar-danger progress-bar-success")
+                    .addClass("active").text("Uploading....Please Wait"); 
+            }
+        }).fail(function () {
+            view.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
+            view.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
+            view.$el.find("#inputDataFile").unwrap();
+        }).then(function (data, statusText, xhr) {
+            view.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $this.model.get("csvFile").name + "' Complete");
+
+            view.model.set(data);
+
+            // retrieve the array of options
+            results = $this.model.get('subjectOptions');
+
+            _.each($this.$el.find('#outcome, #exposure, #covariates'), function (control) {
+                control.selectize.addOption(results);
+                control.selectize.refreshOptions();
             });
 
-            if ($this.model) {
-                $this.model.fetch({
-                    type: "POST",
-                    data: formData,
-                    dataType: "json",
-                    cache: false,
-                    processData: false,
-                    contentType: false,
-                    beforeSend: function () {
-                        $this.$el.find("#calcProgressbar").show().find("[role='progressbar']").addClass("active");
-                    }
-                }).fail(function () {
-                    $this.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
-                    $this.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
-                    $this.$el.find("#inputDataFile").unwrap();
-                }).then(function (data, statusText, xhr) {
-                    $this.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $this.model.get("csvFile").name + "' Complete");
+            // subviews
+            view.integrityView = new appComets.IntegrityView({
+                model: $this.model
+            });
 
-                    $this.model.set(data);
+            view.modelOptionsView = new appComets.ModelSelectionOptions({
+                modelsOptions: $this.model.get("models")
+            });
 
-                    // retrieve the array of options
-                    results = $this.model.get('subjectOptions');
-
-                    _.each($this.$el.find('#outcome, #exposure, #covariates'), function (control) {
-                        control.selectize.addOption(results);
-                        control.selectize.refreshOptions();
-                    });
-
-                    //subviews
-
-                    $this.integrityView = new appComets.IntegrityView({
-                        model: $this.model
-                    });
-
-                    $this.modelOptionsView = new appComets.ModelSelectionOptions({
-                        modelsOptions: $this.model.get("models")
-                    });
-
-
-                    $this.$el.find('#analysisOptions').show();
-                }).always(function () {
-                    $this.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
-                });
-            }
-        }
+            view.$el.find('#analysisOptions').show();
+        }).always(function () {
+            view.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
+        });
     },
     analysisMethod: function (e) {
-        $this.model.set('methodSelection', e.target.value);
-        var newVal = $this.model.get('methodSelection');
+        view.model.set('methodSelection', e.target.value);
+        var newVal = view.model.get('methodSelection');
     },
     cohortSelect: function (e) {
-        $this.model.set('cohort', e.target.value);
+        view.model.set('cohort', e.target.value);
     },
     updateOptions: function (e) {
-        var inputs = $this.model.set(e.target.id, e.target.value.split(","));
+        var selectedOptions = e.target.value;
+
+        if (selectedOptions.length > 0)
+            selectedOptions = selectedOptions.split(",");
+        else
+            selectedOptions = view.model.defaults[e.target.id];
+
+        var inputs = $this.model.set(e.target.id, selectedOptions);
     },
     getDescription: function (e) {
-        $this.model.set('modelDescription', e.target.value);
+        view.model.set('modelDescription', e.target.value);
     }
 });
 

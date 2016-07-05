@@ -90,6 +90,7 @@
                                             Uploading....please wait
                                         </div>
                                     </div>
+                                    <button id="load" class="btn btn-primary btn-block">Load</button>
                                 </div>
                                 <div id="analysisOptions">
                                     <label for="methodSelection">3. Specify method of analyses</label>
@@ -114,20 +115,22 @@
                                         </div>
 
                                         <div class="form-group">
-                                            <label for="outcome"> Select outcome(s):</label>
+                                            <label for="outcome">Select outcome(s):</label>
                                             <input type="text" name="outcome" id="outcome" />
                                         </div>
 
                                         <div class="form-group">
-                                            <label for="exposure"> Select exposure(s):</label>
+                                            <label for="exposure">Select exposure(s):</label>
                                             <input type="text" name="exposure" id="exposure" />
                                         </div>
 
                                         <div class="form-group">
-                                            <label for="exposure"> Adjusted covariates:</label>
+                                            <label for="exposure">Adjusted covariates:</label>
                                             <input type="text" name="covariates" id="covariates" />
                                         </div>
                                     </div>
+                                    
+                                    <button id="runModel" class="btn btn-primary btn-block">Run Model</button>
                                 </div>
                                 <a id="toggleHelp">Help</a>
                                 <div id="inputHelp">
