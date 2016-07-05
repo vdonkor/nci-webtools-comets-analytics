@@ -1,0 +1,5 @@
+*.sh
+*.wsgi
+app/
+tmp/
+uploads/

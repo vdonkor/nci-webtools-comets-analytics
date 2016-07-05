@@ -1,114 +1,46 @@
-var controlPage = '#tab-qualityControl';
-var harmonizationPage = '#tab-harmonization';
-var correlatePage = '#tab-correlate';
-var helpPage = '#tab-help';
-var file1;
-$(document).ready(function() {
-   $('#harmonizationFile').change(function(){
-        if (window.FileReader) {
-            var file = this.files[0];
-            var reader = new FileReader();
+function getTemplate(templName) {
+    return $.get('templates/' + templName + '.html', function (data) {
+        return data;
+    }).fail(function () {
+        console.log("Cannot load template. Not found.");
+        return errorView("Cannot load template. Not found.");
+    });
+}
 
-            reader.onload = function(event) {
-               var contents = event.target.result;
-            }
+function fileUpload(e) {
+    if (window.FileReader) {
+        var file = e.target.files[0];
+        var reader = new FileReader();
 
-            if(file){
-               reader.readAsText(file);
-               file1 = file;
-            }
+        reader.onload = function (event) {
+            var contents = event.target.result;
         }
-        $('#qualityControlResult').show();
 
-    });
-   $('#mappingFile').change(function(){
-        if (window.FileReader) {
-            var file = this.files[0];
-            var reader = new FileReader();
-
-            reader.onload = function(event) {
-               var contents = event.target.result;
-            }
-
-            if(file){
-               reader.readAsText(file);
-               file1 = file;
-            }
+        if (file) {
+            reader.readAsText(file);
+            return file;
         }
-        $('#qualityControlResult').show();
+    }
+}
+
+function buildDataTable(el, tableData) {
+    $(el).DataTables({
+        data: tableData,
+    });
+}
+
+function generateDataTable(el, dtData, dtCols) {
+    var table = $("<table></table>");
+
+    el.empty().append(table);
+
+    el.find("table").DataTable({
+        dom: '<"top"i>rt<"bottom"flp><"clear">',
+        data: dtData,
     });
 
-    $('#metaboliteFile').change(function(){
-	        if (window.FileReader) {
-	            var file = this.files[0];
-	            var reader = new FileReader();
+}
 
-	            reader.onload = function(event) {
-	               var contents = event.target.result;
-	            }
-
-	            if(file){
-	               reader.readAsText(file);
-	               file1 = file;
-	            }
-	        }
-	        $('#harmonizationDiv').show();
-    });
-
-    $('#inputDataFile').change(function(){
-	        if (window.FileReader) {
-	            var file = this.files[0];
-	            var reader = new FileReader();
-
-	            reader.onload = function(event) {
-	               var contents = event.target.result;
-	            }
-
-	            if(file){
-	               reader.readAsText(file);
-	               file1 = file;
-	            }
-	        }
-	        $('#summaryDiv').show();
-	        $('#heatmapDiv').show();
-	        $('#clusterDiv').show();
-	        $('#networkDiv').show();
-    });
-
-
+$(function () {
+    var baseView = new appComets.LandingView();
 });
-
-function userLogin(){
-	var userName = $('#userId').val();
-	var pssword = $('#password').val();
-	var message = '';
-	if(userName.trim() == '' || pssword.trim() == ''){
-	   $('#messageDiv').html("<font color='red'>You entered invalid user ID or password!</font>");
-
-	}else{
-	  enableAllTabs();
-	 $('#loginDiv').hide();
-	}
-}
-
-function enableAllTabs(){
-	$('#messageDiv').html('');
-	$('#userId').val('');
-	$('#password').val('');
-	$('#logoutDiv').show();
-	$('#controlTabId').attr('href', controlPage);
-	$('#harmonizationTabId').attr('href', harmonizationPage);
-	$('#correlateTabId').attr('href', correlatePage);
-	$('#helpTabId').attr('href', helpPage);
-
-}
-
-function disableAllTabs(){
-    $('#controlTabId').attr('href', '#');
-    $('#harmonizationTabId').attr('href', '#');
-	$('#correlateTabId').attr('href', '#');
-	$('#helpTabId').attr('href', '#');
-    $('#loginDiv').show();
-    $('#logoutDiv').hide();
-    location.reload();
-}

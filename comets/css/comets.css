@@ -1,19 +1,74 @@
+#pageContent {
+    background: inherit;
+}
+
+.overlay {
+    background-color: #ffffff;
+    background-image: url("../images/loader.gif");
+    background-position: center;    
+    position: absolute;
+    top:0:
+    height: 100%;
+    width: 100%;
+}
+
+header {
+    padding-left: 2em;
+    margin: 1em auto;
+}
+
+header img {
+    width: 500px;
+    max-width: 550px;
+}
+
+nav.navbar.navbar-default {
+    padding: 5px 0;
+}
 
 .tab-content {
-	padding: 10px;
-	width: 100%;
-	-webkit-overflow-scrolling: touch;
-	background: white;
-	border-width: 0;
-	border-style: solid;
-	border-color: #d9d9d9;
-	border-radius: 0 0 4px 4px;
-	overflow: hidden;
+    padding: 10px 15px;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    background: white;
+    border-width: 0;
+    border-style: solid;
+    border-color: #d9d9d9;
+    border-radius: 0 0 4px 4px;
+    overflow: hidden;
 }
-.ui-widget{
-	font-size:90%;
+
+.ui-widget {
+    font-size: 90%;
 }
+
 .well-nested {
     background: linear-gradient(to bottom, #feffff 0%, #feffff 50%, #e7f3fa 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
     box-shadow: 0 2px 4px 0 rgba(1, 90, 129, 0.4);
+}
+
+#messageBoard,
+#inputHelp,
+#calcProgressbar,
+#interactive,
+#batch,
+#analysisOptions {
+    display: none;
+}
+
+#page-head {
+    text-align: center;
+    color: #337AB7;
+}
+
+input.input:valid {
+    background: #DAFADA;
+}
+
+.steps {
+    background: #3073ad;
+    padding: 20px 10px;
+    color: white;
+    text-align: center;
+    border-radius: 25px;
 }
