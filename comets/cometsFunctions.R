@@ -146,12 +146,38 @@ readData <- function(filepath) {
           'N Non-Harmonized' = 0,
           'N with zero variance' = 0,
           'N with >25% at min' = 0
+        ),
+        
+        plots = list(
+          c(),
+          c()
         )
+      ),
+      
+      summary = list(
+        correlationResults = list()
+      ),
+      
+      heatmap = list(
+        plots = list(
+          c()
+        )
+      ),
+      
+      clusterAndHeatmap = list(
+        c()
       )
     )
-    
-    
 
-  return(toJSON(output, auto_unbox = T))
+  toJSON(output, auto_unbox = T)
 }
+
+
+
+
+
+
+
+
+
 
