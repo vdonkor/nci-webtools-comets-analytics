@@ -2,10 +2,11 @@
 
 <% if (status) { %>
     <div id="resultStatus" class="alert alert-success">
+        <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
     </div>
     <div class="button-group">
-        <button type="button" id="resultsDownload" class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download results and send to COMETS harmonization group</button>
+        <button type="button" id="resultsDownload" class="btn btn-default btn-block"><span class="glyphicon glyphicon-download"></span> Download results and send to COMETS harmonization group</button>
     </div>
     <h3>Input Data Summary</h3>
     <table id="inputDataSummary" class="table table-bordered table-condensed">
@@ -15,14 +16,10 @@
             <th>Subject metabolites sheet</th>
         </tr>
         <tr>
-            <td>
-                <%= metaboliteSheet.meta %> metabolite(s)</td>
-            <td>
-                <%= subjectSheet.subjects %> with
-                    <%= subjectSheet.covariants %> covariants</td>
-            <td>
-                <%= subjectMetaSheet.subjects %> subjects with
-                    <%=  subjectMetaSheet.meta %> metabolites</td>
+            
+            <%  _.each(summary.inputDataSummary,function(summaryData) { %>
+               <td><%= summaryData %></td>
+            <% }); %>
         </tr>
     </table>
 
@@ -32,21 +29,17 @@
             <th>N Metabolites</th>
             <th>N Harmonized</th>
             <th>N Non-Harmonizaed</th>
+            <th>N with zero variance</th>	
+            <th>N with >25% at min</th>
         </tr>
         <tr>
-            <td>
-                <%= metaboliteSheet.length %>
-            </td>
-            <td>
-                <%= metaboliteSheet.length %>
-            </td>
-            <td>
-                <%= metaboliteSheet.length %>
-            </td>
+            <%  _.each(summary.metaboliteSummary,function(summaryData) { %>
+               <td><%= summaryData %></td>
+            <% }); %>
         </tr>
     </table>
 
-    <img src="<%= graph.src %>" , alt="<%= graph.description %>" />
+    (Place Graphs Here)
 
     <p>Run date:
         <%=  dateRun %>
@@ -55,6 +48,7 @@
 
 <% if (!status) { %>
     <div id="resultStatus" class="alert alert-warning">
+        <span class="glyphicon glyphicon-warning-sign"></span>
         <%= statusMessage %>
     </div>
 <% } %>

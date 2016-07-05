@@ -1,19 +1,25 @@
-@media (min-width: 768px) {
-    .container-fluid {
-        max-width: 750px;
-    }
+#pageContent {
+    background: inherit;
 }
 
-@media (min-width: 992px) {
-    .container-fluid {
-        max-width: 970px;
-    }
+.overlay {
+    background-color: #ffffff;
+    background-image: url("../images/loader.gif");
+    background-position: center;    
+    position: absolute;
+    top:0:
+    height: 100%;
+    width: 100%;
 }
 
-@media (min-width: 1200px) {
-    .container-fluid {
-        max-width: 1170px;
-    }
+header {
+    padding-left: 2em;
+    margin: 1em auto;
+}
+
+header img {
+    width: 500px;
+    max-width: 550px;
 }
 
 nav.navbar.navbar-default {
@@ -40,12 +46,15 @@ nav.navbar.navbar-default {
     background: linear-gradient(to bottom, #feffff 0%, #feffff 50%, #e7f3fa 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
     box-shadow: 0 2px 4px 0 rgba(1, 90, 129, 0.4);
 }
+
 #messageBoard,
 #inputHelp,
 #calcProgressbar,
-#inputStep2,
-#inputStep3
-{
+#interactive,
+#batch,
+#analysisOptions,
+#load,
+#runModel {
     display: none;
 }
 

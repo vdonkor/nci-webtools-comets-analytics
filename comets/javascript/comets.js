@@ -29,6 +29,18 @@ function buildDataTable(el, tableData) {
     });
 }
 
+function generateDataTable(el, dtData, dtCols) {
+    var table = $("<table></table>");
+
+    el.empty().append(table);
+
+    el.find("table").DataTable({
+        dom: '<"top"i>rt<"bottom"flp><"clear">',
+        data: dtData,
+    });
+
+}
+
 $(function () {
-    new appComets.LandingView(/*Add authentication data*/);
+    var baseView = new appComets.LandingView();
 });
