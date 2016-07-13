@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "library(CometsAnalyticsPackage)\n\nprocessWorkbook <- function(filename) {\n\n    path = file.path(\"uploads\", filename)\n\n    readData(path)\n\n}\n",
+    "created" : 1468430556184.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2576069136",
+    "id" : "E4E113C6",
+    "lastKnownWriteTime" : 1468434629,
+    "last_content_update" : 1468434629486,
+    "path" : "~/comets/comets/cometsWrapper.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

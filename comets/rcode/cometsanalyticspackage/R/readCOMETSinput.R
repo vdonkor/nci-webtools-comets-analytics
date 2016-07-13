@@ -8,11 +8,11 @@
 #' @examples
 #' dir <- system.file("extdata", package="CometsAnalyticsPackage", mustWork=TRUE)
 #' csvfile <- file.path(dir, "cometsInput.xlsx")
-#' metabdata <- readCSV(csvfile)
+#' metabdata <- readCOMETSinput(csvfile)
 #'
 #' @export
 
-readCSV <- function(csvfilePath,modelspec="NoBATCH") {
+readCOMETSinput <- function(csvfilePath,modelspec="NoBATCH") {
     stopifnot(is.character(csvfilePath))
     if (!file.exists(csvfilePath)) {
         stop("CSV input file does not exist")
