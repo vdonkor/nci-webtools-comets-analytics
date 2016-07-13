@@ -3,7 +3,7 @@ from flask import Flask, request, json, jsonify
 from rpy2.robjects import r as wrapper
 
 app = Flask(__name__)
-wrapper['source']('./cometsWrapper.R')
+wrapper.source('./cometsWrapper.R')
 
 # takes excel workbook as input
 @app.route('/cometsRest/correlate/integrity', methods = ['POST'])
@@ -20,7 +20,7 @@ def integrityCheck():
         if os.path.isfile(os.path.join('uploads', filename)):
             print "Successfully Uploaded"
         
-        result=wrapper['processWorkbook'](filename)[0]
+        result = wrapper.processWorkbook(filename)[0]
         
         return result
     except Exception as e:
