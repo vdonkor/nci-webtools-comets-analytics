@@ -1,30 +1,26 @@
-#library(shiny)
-#library(shinyjs)
-#library(ggplot2)
-#library(haven)
-library(readxl)
-#library(plyr)
-library(dplyr)
-library(reshape2)
-#library(RColorBrewer)
-#library(ppcor)
-#library(psych)
-#library(tidyr)
-#library(GeneNet)
-#library(Rgraphviz)
-#library(d3heatmap)
-#library(plotly)
 library(stringr)
 library(jsonlite)
-#library(RJSONIO)
+library(CometsAnalyticsPackage)
 
-
-source("./cometsFunctions.R")
-
-processWorkbook <- function(filename) {
-    
-    path = file.path("uploads", filename)
-
-    readData(path)
-    
+loadWorkbook <- function(filename) {
+  suppressWarnings(suppressMessages({
+    returnValue <- list()
+    returnValue$saveValue <- tryCatch(
+      withCallingHandlers(
+        readCOMETSinput(filename),
+        message=function(m) {
+          print(m$message)
+        },
+        warning=function(w) {
+          returnValue$warnings <<- append(returnValue$warnings, w$message)
+        }
+      ),
+      error=function(e) {
+        returnValue$error <<- e$message
+        return(NULL)
+      }
+    )
+  }))
+  print(returnValue)
+  toJSON(returnValue, auto_unbox = T)
 }

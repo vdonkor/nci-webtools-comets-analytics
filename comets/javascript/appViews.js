@@ -137,11 +137,15 @@ appComets.FormView = Backbone.View.extend({
                         .removeClass("progress-bar-danger progress-bar-success")
                         .addClass("active").text("Uploading....Please Wait");
                 }
-            }).fail(function () {
+            }).fail(function (x,y,z) {
+                console.log(x);
+                console.log(y);
+                console.log(z);
                 view.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
                 view.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
                 view.$el.find("#inputDataFile").unwrap();
             }).then(function (data, statusText, xhr) {
+                return;
                 view.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + view.model.get("csvFile").name + "' Complete");
 
                 view.model.set(data);

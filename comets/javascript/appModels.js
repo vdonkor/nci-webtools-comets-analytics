@@ -26,6 +26,9 @@ appComets.ResultsModel = Backbone.Model.extend({
     },
     urlRoot: "/cometsRest/correlate/integrity",
     parse: function (response, xhr) {
+        console.log(response);
+        this.set('subjectOptions',[]);
+        return;
         // options need to be array of objects for selectize plugin
         options = [];
         _.each(Object.keys(response.subjectdata[0]).concat(Object.keys(response.subjectmeta[0])), function (subject) {
