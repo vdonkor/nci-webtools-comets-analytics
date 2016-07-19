@@ -48,27 +48,29 @@
 
             <div class="tab-content grey-border">
                 <div class="tab-pane active" id="tab-home">
-                    <h2 id='page-head'>Welcome to the COMETS (COnsortium of METabolomics Studies) Analytics</h2>
-                    <div class="row">
-                        <h1>About</h1>
-                        <p>THis web-based application will support all cohort-specific analyses of the COMETS consortium. Data are not saved in the system, but output must be downloaded and submitted for meta-analyses. This collaborative work is done via the COMETS harmonization group activities. For more informationon the consortium, see COMETS website</p>
-                        <img class="img-repsonsive" src="images/cometsWorkflow.png" alt="diagram of the workflow for the comets application" />
+                    <div class="container">
+                        <h2 id='page-head'>Welcome to the COMETS (COnsortium of METabolomics Studies) Analytics</h2>
+                        <div class="row">
+                            <h1>About</h1>
+                            <p>THis web-based application will support all cohort-specific analyses of the COMETS consortium. Data are not saved in the system, but output must be downloaded and submitted for meta-analyses. This collaborative work is done via the COMETS harmonization group activities. For more informationon the consortium, see COMETS website</p>
+                            <img class="img-repsonsive" src="images/cometsWorkflow.png" alt="diagram of the workflow for the comets application" />
+                        </div>
+                        <h3>For Questions or help:</h3>
+                        <p>COMETS: Steven Moore
+                            <br> UID file: Adam Risch
+                            <br> Harmonization: Ewy Mathe
+                            <br> Correlation: Ella Temprosa
+                            <br> Email:
+                            <a href="mailto:cometsanalytics@gmail.com">cometsanalytics@gmail.com</a>
+                        </p>
                     </div>
-                    <h3>For Questions or help:</h3>
-                    <p>COMETS: Steven Moore
-                        <br> UID file: Adam Risch
-                        <br> Harmonization: Ewy Mathe
-                        <br> Correlation: Ella Temprosa
-                        <br> Email:
-                        <a href="mailto:cometsanalytics@gmail.com">cometsanalytics@gmail.com</a>
-                    </p>
                 </div>
                 <!-- start correlate Tab -->
                 <div class="tab-pane" id="tab-correlate">
                     <div class="row">
                         <div class="col-xs-12 col-md-4">
                             <h3>Conduct cohort-specific correlation analyses</h3>
-                            <form class="well" id="cometsForm" name="cometsForm" enctype="multipart/form-data">
+                            <form id="cometsForm" class="well" name="cometsForm" enctype="multipart/form-data">
                                 <div class="form-group">
                                     <label for="cohortSelection">1. Specify Cohort</label>
                                     <select name="cohortSelection" id="cohortSelection" class="form-control">
@@ -129,7 +131,7 @@
                                             <input type="text" name="covariates" id="covariates" />
                                         </div>
                                     </div>
-                                    
+
                                     <button id="runModel" class="btn btn-primary btn-block" disabled="true">Run Model</button>
                                 </div>
                                 <a id="toggleHelp" href="javascript:void(0);">Help</a>
@@ -150,7 +152,8 @@
 
 
                                 </div>
-
+                                
+                                <div id="loader"></div>
                             </form>
 
                         </div>
@@ -167,7 +170,6 @@
                                                 <li><a href="#tab-summary" data-toggle="tab">Summary</a></li>
                                                 <li><a href="#tab-heatmap" data-toggle="tab" id="controlTabId">Heatmap</a></li>
                                                 <li><a href="#tab-cluster" data-toggle="tab" id="harmonizationTabId">Cluster and Heatmap</a></li>
-                                                <li><a href="#tab-network" data-toggle="tab" id="correlateTabId">Network</a></li>
                                             </ul>
                                         </div>
                                     </nav>
@@ -192,11 +194,7 @@
                                             </div>
                                         </div>
                                         <div class="tab-pane" id="tab-cluster">
-                                            <div id="clusterDiv" class="col-xs-12" >
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane" id="tab-network">
-                                            <div id="networkDiv" class="col-xs-12">
+                                            <div id="clusterDiv" class="col-xs-12">
                                             </div>
                                         </div>
                                     </div>
@@ -209,75 +207,77 @@
                 </div>
                 <!-- start help Tab -->
                 <div class="tab-pane" id="tab-help">
-                    <div class="row">
-                        <h3 class="col-xs-12 col-md-1 steps">Step 1</h3>
-                        <div class="col-xs-12 col-md-10">
-                            <h3>Upload input file</h3>
-                            <p>The input file is currently in excel formate with 5 sheets. Download and use the example input file <a href="cometsInput.xlsx" title="example input excel file">here</a> as a template.</p>
-                            <ol>
-                                <li> <b><i>Metabolites</i></b>
-                                    <br>This sheet serves as the metadata or information on the metabolites used for the harmonization step. Minimum required columns include analysis platform, metabolite name and metabolite id (ie. variable name of your metabolite). It is preferred to also include RT, m/z, chemical ID (HMDB, InChi key, or other identifier).
-                                </li>
-                                <li> <b><i>SubjectMetabolites</i></b>
-                                    <br> This sheet contains the abundances in columns and subject in rows. The subject identifier is expected in the first column and the remaining columns are considered as metabolite ids.
-                                </li>
-                                <li> <b><i>SubjectData</i></b>
-                                    <br> This sheet contains other exposure and adjustment variables for use in the analyses.
-                                </li>
-                                <li> <b><i>VarMap</i></b>
-                                    <br>This sheet is used to map the variables needed to conduct the cohort specific analysis. Specify the name of variables under CohortVariable column and add notes for your convenience. Cells in grey are protected. You will also need to specify the column name in the metabolites sheet corresponding to your metabolite_id.
-                                </li>
-                                <li> <b><i>Models</i></b>
-                                    <br> This sheet is used for the batch analyses mode and contains the model specifications. Outcomes, exposures and adjustment can specify multiple covariates delimited by spaces (ie: age bmi).
-                                </li>
-                            </ol>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <h3 class="col-xs-12 col-md-1 steps">Step 2</h3>
-                        <div class="col-xs-12 col-md-10">
-                            <h3>Harmonize Metabolites</h3>
-                            <p>
-                                The harmonization step will assess whether your cohort’s metabolites are available in COMET’s master metabolites so that a universal ID (named UID_01) can be associated with your metabolites. The COMETS master metabolite list is maintained by IMS and can be sent in advance of the analyses to ensure availability of a universal ID for each of your metabolites. The universal ID (currently named UID_01) ensures alignment of metabolites across the different cohorts to ensure identification for meta-analysis.</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <h3 class="col-xs-12 col-md-1 steps">Step 3</h3>
-                        <div class="col-xs-12 col-md-10">
-                            <h3>Data Integrity</h3>
-                            <p>
-                                Data integrity checks are run to ensure the appropriate data are presented for analyses. The following conditions are checked:
+                    <div class="container">
+                        <div class="row">
+                            <h3 class="col-xs-12 col-md-1 steps">Step 1</h3>
+                            <div class="col-xs-12 col-md-10">
+                                <h3>Upload input file</h3>
+                                <p>The input file is currently in excel formate with 5 sheets. Download and use the example input file <a href="cometsInput.xlsx" title="example input excel file">here</a> as a template.</p>
                                 <ol>
-                                    <li> Subject ID or Metabolite ID is/are not provided in the Varmap sheet
+                                    <li> <b><i>Metabolites</i></b>
+                                        <br>This sheet serves as the metadata or information on the metabolites used for the harmonization step. Minimum required columns include analysis platform, metabolite name and metabolite id (ie. variable name of your metabolite). It is preferred to also include RT, m/z, chemical ID (HMDB, InChi key, or other identifier).
                                     </li>
-                                    <li> Subject ID or Metabolite ID provided in Varmap sheet do not correspond to a column in “Metabolites” and “SubjectData” sheets, respectively
+                                    <li> <b><i>SubjectMetabolites</i></b>
+                                        <br> This sheet contains the abundances in columns and subject in rows. The subject identifier is expected in the first column and the remaining columns are considered as metabolite ids.
                                     </li>
-                                    <li> Metabolites ids in Metabolites and SubjectMetabolites sheet do not match
+                                    <li> <b><i>SubjectData</i></b>
+                                        <br> This sheet contains other exposure and adjustment variables for use in the analyses.
                                     </li>
-                                    <li> Subject ids in SubjectData and SubjectMetabolites sheet do not match
+                                    <li> <b><i>VarMap</i></b>
+                                        <br>This sheet is used to map the variables needed to conduct the cohort specific analysis. Specify the name of variables under CohortVariable column and add notes for your convenience. Cells in grey are protected. You will also need to specify the column name in the metabolites sheet corresponding to your metabolite_id.
+                                    </li>
+                                    <li> <b><i>Models</i></b>
+                                        <br> This sheet is used for the batch analyses mode and contains the model specifications. Outcomes, exposures and adjustment can specify multiple covariates delimited by spaces (ie: age bmi).
                                     </li>
                                 </ol>
-                                If any of the following conditions failed, the analyses will be suspended and corrections to the data are required. The data integrity checks will also flag the following but will proceed with the analyses:
-                                <ol>
-                                    <li> Number of subjects in “SubjectData” and “SubjectMetabolites” sheets do not match
-                                    </li>
-                                    <li> Metabolite abundances from “SubjectMetabolites” contains duplicate columns (metabolites) or rows (subjects)
-                                    </li>
-                                    <li> There are duplicate subject ids in Subject Information “SubjectData” sheet
-                                    </li>
-                                    <li> There are duplicate metabolite ids in Metabolite Information “Metabolites” sheet
-                                    </li>
-                                </ol>
-                            </p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <h3 class="col-xs-12 col-md-1 steps">Step 4</h3>
-                        <div class="col-xs-12 col-md-10">
-                            <h3>Run Correlation Analyses</h3>
-                            <p>
-                                The correlation analyses can be done in batch (as specified in the input file) or in interactive mode using user specified exposure and outcome variables. Heatmaps, hierarchical clustering, and network analyses of the computed correlations are also available.
-                            </p>
+                        <div class="row">
+                            <h3 class="col-xs-12 col-md-1 steps">Step 2</h3>
+                            <div class="col-xs-12 col-md-10">
+                                <h3>Harmonize Metabolites</h3>
+                                <p>
+                                    The harmonization step will assess whether your cohort’s metabolites are available in COMET’s master metabolites so that a universal ID (named UID_01) can be associated with your metabolites. The COMETS master metabolite list is maintained by IMS and can be sent in advance of the analyses to ensure availability of a universal ID for each of your metabolites. The universal ID (currently named UID_01) ensures alignment of metabolites across the different cohorts to ensure identification for meta-analysis.</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <h3 class="col-xs-12 col-md-1 steps">Step 3</h3>
+                            <div class="col-xs-12 col-md-10">
+                                <h3>Data Integrity</h3>
+                                <p>
+                                    Data integrity checks are run to ensure the appropriate data are presented for analyses. The following conditions are checked:
+                                    <ol>
+                                        <li> Subject ID or Metabolite ID is/are not provided in the Varmap sheet
+                                        </li>
+                                        <li> Subject ID or Metabolite ID provided in Varmap sheet do not correspond to a column in “Metabolites” and “SubjectData” sheets, respectively
+                                        </li>
+                                        <li> Metabolites ids in Metabolites and SubjectMetabolites sheet do not match
+                                        </li>
+                                        <li> Subject ids in SubjectData and SubjectMetabolites sheet do not match
+                                        </li>
+                                    </ol>
+                                    If any of the following conditions failed, the analyses will be suspended and corrections to the data are required. The data integrity checks will also flag the following but will proceed with the analyses:
+                                    <ol>
+                                        <li> Number of subjects in “SubjectData” and “SubjectMetabolites” sheets do not match
+                                        </li>
+                                        <li> Metabolite abundances from “SubjectMetabolites” contains duplicate columns (metabolites) or rows (subjects)
+                                        </li>
+                                        <li> There are duplicate subject ids in Subject Information “SubjectData” sheet
+                                        </li>
+                                        <li> There are duplicate metabolite ids in Metabolite Information “Metabolites” sheet
+                                        </li>
+                                    </ol>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <h3 class="col-xs-12 col-md-1 steps">Step 4</h3>
+                            <div class="col-xs-12 col-md-10">
+                                <h3>Run Correlation Analyses</h3>
+                                <p>
+                                    The correlation analyses can be done in batch (as specified in the input file) or in interactive mode using user specified exposure and outcome variables. Heatmaps, hierarchical clustering, and network analyses of the computed correlations are also available.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
