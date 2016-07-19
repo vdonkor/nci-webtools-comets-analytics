@@ -1,12 +1,3 @@
-function getTemplate(templName) {
-    return $.get('templates/' + templName + '.html', function (data) {
-        return data;
-    }).fail(function () {
-        console.log("Cannot load template. Not found.");
-        return errorView("Cannot load template. Not found.");
-    });
-}
-
 function fileUpload(e) {
     if (window.FileReader) {
         var file = e.target.files[0];
@@ -41,6 +32,26 @@ function generateDataTable(el, dtData, dtCols) {
 
 }
 
-$(function () {
-    var baseView = new appComets.LandingView();
-});
+function generateBarPlots(el, xLabels, yLabels, graphTitle, data) {
+    Plotly.newPlot(el, [{
+        x: xLabels,
+        y: data,
+        type: 'bar'
+    }], {
+        title: graphTitle,
+        showlegend: false
+    });
+}
+
+function generateHeatmap (el, xLabels, yLabels, graphTitle, data){
+    Plotly.newPlot(el, [{
+        x: xLabels,
+        y: data,
+        type: 'heatmap',
+        colorbar: {
+            
+        }
+    }], {
+        title: graphTitle
+    });
+}

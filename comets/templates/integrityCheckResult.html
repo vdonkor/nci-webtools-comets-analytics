@@ -42,16 +42,12 @@
         </tr>
     </table>
 
-    <div id="varianceDist">
-        (Place Graphs Here)
+    <div id="varianceDist" >
     </div>
-    <div id="subjectDist">
-        (Place Graphs Here)
+    <div id="subjectDist" >
     </div>
 
-    <p>Run date:
-        <%=  dateRun %>
-    </p>
+    <p>Run date: <%=  dateRun %></p>
     <% } %>
 
         <% if (!status) { %>
@@ -59,4 +55,4 @@
                 <span class="glyphicon glyphicon-warning-sign"></span>
                 <%= statusMessage %>
             </div>
-            <% } %>
+        <% } %>
