@@ -1,9 +1,9 @@
-import sys, os, time, linecache
+import json, sys, os, time, linecache
 from flask import Flask, request, json, jsonify, send_from_directory
 from rpy2.robjects import r as wrapper
 
 app = Flask(__name__)
-wrapper['source']('./cometsWrapper.R')
+wrapper.source('./cometsWrapper.R')
 
 
 def buildFailure(message,statusCode = 400):
@@ -29,11 +29,11 @@ def integrityCheck():
         saveFile = userFile.save(filename)
         if os.path.isfile(filename):
             print "Successfully Uploaded"
-        result=wrapper['loadWorkbook'](filename)[0]
+        result=json.loads(wrapper.loadWorkbook(filename)[0])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
-            response = buildSuccess(result['saveResult'])
+            response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame

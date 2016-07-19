@@ -21,6 +21,5 @@ loadWorkbook <- function(filename) {
       }
     )
   }))
-  print(returnValue)
   toJSON(returnValue, auto_unbox = T)
 }

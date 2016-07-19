@@ -137,15 +137,11 @@ appComets.FormView = Backbone.View.extend({
                         .removeClass("progress-bar-danger progress-bar-success")
                         .addClass("active").text("Uploading....Please Wait");
                 }
-            }).fail(function (x,y,z) {
-                console.log(x);
-                console.log(y);
-                console.log(z);
+            }).fail(function () {
                 view.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
                 view.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
                 view.$el.find("#inputDataFile").unwrap();
             }).then(function (data, statusText, xhr) {
-                return;
                 view.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + view.model.get("csvFile").name + "' Complete");
 
                 view.model.set(data);
@@ -254,15 +250,15 @@ appComets.IntegrityView = Backbone.View.extend({
                     document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
 
                     view.template = _.template(templ, {
-                        status: view.model.get('success'),
-                        statusMessage: view.model.get('message'),
-                        metabolites: view.model.get('metabolites'),
-                        metaboliteId: view.model.get('metaboliteID'),
+                        status: view.model.get('status'),
+                        statusMessage: view.model.get('integritymessage'),
+                        metabolites: view.model.get('metab'),
+                        metaboliteId: view.model.get('metabId'),
                         subject: view.model.get('subjectdata'),
                         subjectMeta: view.model.get('subjectmeta'),
                         varMap: view.model.get('varmap'),
                         dateRun: view.model.get('dateRun'),
-                        summary: view.model.get('results').integrityCheck
+                        summary: view.model.get('integrityCheck')
                     });
                 }
                 view.render();
