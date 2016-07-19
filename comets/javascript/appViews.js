@@ -98,6 +98,7 @@ appComets.FormView = Backbone.View.extend({
                 processData: false,
                 contentType: false,
                 beforeSend: function () {
+                    view.$el.find("#loader").addClass("show");
                     view.$el.find("#calcProgressbar").show()
                         .find("[role='progressbar']")
                         .removeClass("progress-bar-danger progress-bar-success")
@@ -144,6 +145,7 @@ appComets.FormView = Backbone.View.extend({
                 view.$el.find('#analysisOptions').show();
             }).always(function () {
                 view.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
+                view.$el.find("#loader").removeClass("show");
             });
         }
     },
