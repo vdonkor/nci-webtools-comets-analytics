@@ -41,6 +41,26 @@ function generateDataTable(el, dtData, dtCols) {
 
 }
 
+function generateHistogram(el, xTitle, graphTitle, data) {
+    Plotly.newPlot(el, [{
+        x: data,
+        type: "histogram"
+    }], {
+        margin: {
+            l: 50,
+            t:100
+        },
+        title: graphTitle,
+        xaxis: {
+            title: xTitle,
+            showgrid: false
+        },
+        yaxis: {
+            title: "Frequency"
+        }
+    });
+}
+
 $(function () {
     var baseView = new appComets.LandingView();
 });

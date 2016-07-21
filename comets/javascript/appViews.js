@@ -267,7 +267,9 @@ appComets.IntegrityView = Backbone.View.extend({
     },
     render: function () {
         this.$el.html(this.template);
-        //        this.generateBarPlots();
+        var data = view.model.get('metab');
+        generateHistogram('varianceDist', 'log2 Variance', 'Log2 Variance Distribution', data.map(function(obj) { return obj.log2var; }));
+        generateHistogram('subjectDist', 'Number at minimum', 'Distribution of number of subject at min', data.map(function(obj) { return obj['num.min']; }));
     },
     events: {
         "click #resultsDownload": 'startDownload',
