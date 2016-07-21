@@ -250,15 +250,15 @@ appComets.IntegrityView = Backbone.View.extend({
                     document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
 
                     view.template = _.template(templ, {
-                        status: view.model.get('success'),
-                        statusMessage: view.model.get('message'),
-                        metabolites: view.model.get('metabolites'),
-                        metaboliteId: view.model.get('metaboliteID'),
+                        status: view.model.get('status'),
+                        statusMessage: view.model.get('integritymessage'),
+                        metabolites: view.model.get('metab'),
+                        metaboliteId: view.model.get('metabId'),
                         subject: view.model.get('subjectdata'),
                         subjectMeta: view.model.get('subjectmeta'),
                         varMap: view.model.get('varmap'),
                         dateRun: view.model.get('dateRun'),
-                        summary: view.model.get('results').integrityCheck
+                        summary: view.model.get('integrityCheck')
                     });
                 }
                 view.render();
