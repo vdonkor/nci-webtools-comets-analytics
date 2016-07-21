@@ -27,15 +27,15 @@ appComets.ResultsModel = Backbone.Model.extend({
     urlRoot: "/cometsRest/correlate/integrity",
     parse: function (response, xhr) {
         // Shiny used to handle this for us, but it makes more sense to do here anyway
-        var subjectdataIds = response.allSubjectMetaData;
+        var subjectdataIds = response.allSubjectMetaData.slice();
         subjectdataIds.unshift(response.subjId);
-        var metaboliteIds = response.allMetabolites;
+        var metaboliteIds = response.allMetabolites.slice();
         metaboliteIds.unshift(response.subjId);
         response.integrityCheck = {}
         response.integrityCheck.inputDataSummary = {
             'Metabolites Sheet': response.metab.length + ' metabolites',
             'Subject data sheet': response.allSubjects.length + ' subjects with ' + response.allSubjectMetaData.length + ' covariates',
-            'Subject metabolites sheet': response.subjdata.length + ' subjects with ' + (Object.keys(response.subjdata[0]).length-response.allSubjectMetaData.length) + ' metabolites'
+            'Subject metabolites sheet': response.subjdata.length + ' subjects with ' + (Object.keys(response.subjdata[0]).length-response.allSubjectMetaData.length-1) + ' metabolites'
         }
         var sum = function(prev,curr,index,arr) { return prev+curr; };
         response.integrityCheck.metaboliteSummary = {
