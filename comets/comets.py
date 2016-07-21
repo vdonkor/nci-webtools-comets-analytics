@@ -23,16 +23,16 @@ def integrityCheck():
         userFile = request.files['inputFile']
         if not os.path.exists('uploads'):
             os.makedirs('uploads')
-                
         name, ext = os.path.splitext(userFile.filename)
-        filename = os.path.join('uploads', "cometsInput_" + time.strftime("%Y_%m_%d_%I_%M") + ext)
-        saveFile = userFile.save(filename)
-        if os.path.isfile(filename):
+        filename = "cometsInput_" + time.strftime("%Y_%m_%d_%I_%M") + ext
+        saveFile = userFile.save(os.path.join('uploads', filename))
+        if os.path.isfile(os.path.join('uploads', filename)):
             print "Successfully Uploaded"
-        result=json.loads(wrapper.loadWorkbook(filename)[0])
+        result=json.loads(wrapper.loadWorkbook(os.path.join('uploads', filename))[0])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
+            result['saveValue']['filename'] = os.path.splitext(filename)[0]
             response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
