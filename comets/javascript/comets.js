@@ -14,12 +14,6 @@ function fileUpload(e) {
     }
 }
 
-function buildDataTable(el, tableData) {
-    $(el).DataTables({
-        data: tableData,
-    });
-}
-
 function generateDataTable(el, dtData, dtCols) {
     var table = $("<table></table>");
 
@@ -31,36 +25,51 @@ function generateDataTable(el, dtData, dtCols) {
     });
 }
 
-function generateHistogram(el, xTitle, graphTitle, data) {
+function generateHistogram(el, xLabels, yLabels, graphTitle, data) {
     Plotly.newPlot(el, [{
         x: data,
-        type: "histogram"
+        type: 'histogram'
     }], {
         margin: {
             l: 50,
-            t:100
+            t: 100
         },
         title: graphTitle,
         xaxis: {
-            title: xTitle,
+            title: xLabels,
             showgrid: false
         },
         yaxis: {
-            title: "Frequency"
+            title: yLabels
         }
     });
 }
 
-function generateHeatmap (el, xLabels, yLabels, graphTitle, data){
+function generateHeatmap(el, xLabels, yLabels, legendLabel, minVal, maxVal, data) {
     Plotly.newPlot(el, [{
-        x: xLabels,
-        y: data,
+        transpose: true,
+        z: data,
+        //        x: xLabels,
+        y: yLabels,
         type: 'heatmap',
+        colorscale: "Viridis",
         colorbar: {
-            
-        }
+            title: legendLabel
+        },
+        zmax: maxVal,
+        zmin: minVal,
+        text: yLabels,
+        height: 500,
+        connectgaps: true
     }], {
-        title: graphTitle
+        margin: {
+            l: 200
+        },
+        autosize: true,
+        xaxis: {
+            title: "Age",
+            showgrid: false
+        }
     });
 }
 

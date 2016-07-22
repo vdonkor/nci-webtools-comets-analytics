@@ -92,7 +92,7 @@
                                             Uploading....please wait
                                         </div>
                                     </div>
-                                    <button id="load" class="btn btn-primary btn-block" disabled="true">Load</button>
+                                    <button id="load" class="pull-right" disabled="true">Load</button>
                                 </div>
                                 <div id="analysisOptions">
                                     <b>3. Specify method of analyses</b>
@@ -106,8 +106,10 @@
                                             <input type="radio" name="methodSelection" id="methodSelection2" value="interactive">Interactive user input</label>
                                     </div>
                                     <div id="batch">
-                                        <label for="modelSelection">Choose Model</label>
-                                        <select name="modelSelection" id="modelSelection" class="form-control"></select>
+                                        <div class="form-group">
+                                            <label for="modelSelection">Choose Model</label>
+                                            <select name="modelSelection" id="modelSelection" class="form-control"></select>
+                                        </div>
                                     </div>
 
                                     <div id="interactive">
@@ -132,7 +134,7 @@
                                         </div>
                                     </div>
 
-                                    <button id="runModel" class="btn btn-primary btn-block" disabled="true">Run Model</button>
+                                    <button id="runModel" class="pull-right" disabled="true">Run Model</button>
                                 </div>
                                 <a id="toggleHelp" href="javascript:void(0);">Help</a>
                                 <div id="inputHelp">
@@ -152,7 +154,7 @@
 
 
                                 </div>
-                                
+
                                 <div id="loader"></div>
                             </form>
 

@@ -134,6 +134,10 @@ appComets.FormView = Backbone.View.extend({
                     model: view.model
                 });
 
+                view.summaryView = new appComets.SummaryView({
+                    model: view.model
+                });
+
                 view.correlateHeatmapView = new appComets.CorrelateHeatmapView({
                     model: view.model
                 });
@@ -216,15 +220,15 @@ appComets.IntegrityView = Backbone.View.extend({
                 document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
 
                 view.template = _.template(appComets.templatesList.integrityCheckResult, {
-                    status: view.model.get('success'),
-                    statusMessage: view.model.get('message'),
-                    metabolites: view.model.get('metabolites'),
-                    metaboliteId: view.model.get('metaboliteID'),
+                    status: view.model.get('status'),
+                    statusMessage: view.model.get('integritymessage'),
+                    metabolites: view.model.get('metab'),
+                    metaboliteId: view.model.get('metabId'),
                     subject: view.model.get('subjectdata'),
                     subjectMeta: view.model.get('subjectmeta'),
                     varMap: view.model.get('varmap'),
                     dateRun: view.model.get('dateRun'),
-                    summary: view.model.get('results').integrityCheck
+                    summary: view.model.get('integrityCheck')
                 });
 
                 view.render();
@@ -234,10 +238,13 @@ appComets.IntegrityView = Backbone.View.extend({
     render: function () {
         this.$el.html(this.template);
 
-        testData = [90, 130, 40];
-
-        generateBarPlots("varianceDist", "log2 Variance", "Frequency", "Log2 Variance Distribution", testData);
-        generateBarPlots("subjectDist", "Number at minimum", "Frequency", "Distribution of number of subject at min", testData);
+        var data = view.model.get('metab');
+        generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Log2 Variance Distribution', data.map(function (obj) {
+            return obj.log2var;
+        }));
+        generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of number of subject at min', data.map(function (obj) {
+            return obj['num.min'];
+        }));
     },
     events: {
         "click #resultsDownload": 'startDownload',
@@ -304,47 +311,102 @@ appComets.CorrelateHeatmapView = Backbone.View.extend({
     initialize: function () {
         var view = this;
         if (view.model) {
-            getTemplate('integrityCheckResult').then(function (templ) {
-                if (templ.length > 0) {
-                    document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
+            document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
 
-                    view.template = _.template(templ, {
-                        status: view.model.get('status'),
-                        statusMessage: view.model.get('integritymessage'),
-                        metabolites: view.model.get('metab'),
-                        metaboliteId: view.model.get('metabId'),
-                        subject: view.model.get('subjectdata'),
-                        subjectMeta: view.model.get('subjectmeta'),
-                        varMap: view.model.get('varmap'),
-                        dateRun: view.model.get('dateRun'),
-                        summary: view.model.get('integrityCheck')
-                    });
-                }
+            if (appComets.templatesList) {
+                view.template = _.template(appComets.templatesList.heatmapResult);
                 view.render();
-            });
+            }
         }
     },
     render: function () {
         this.$el.html(this.template);
-        var data = view.model.get('metab');
-        generateHistogram('varianceDist', 'log2 Variance', 'Log2 Variance Distribution', data.map(function(obj) { return obj.log2var; }));
-        generateHistogram('subjectDist', 'Number at minimum', 'Distribution of number of subject at min', data.map(function(obj) { return obj['num.min']; }));
+
+        data = {
+            acetylcholine: 0.7218,
+            acetylglycine: 0.6306,
+            aconitate: 0.7555,
+            adenine: 0.5432,
+            adenosine: 0.7163,
+            adipate: 0.6818,
+            adma: 1.097,
+            adp: 0.8087,
+            alanine: 0.9623,
+            allantoin: 0.4429,
+            alpha_glycerophosphate: 0.6553,
+            alpha_glycerophosphocholine: 0.9891,
+            alpha_hydroxybutyrate: 0.7611,
+            alpha_ketoglutarate: 0.7594,
+            aminoisobutyric_acid: 0.7941,
+            amp: 0.7018,
+            anserine: 0.9876,
+            anthranilic_acid: 0.5126
+        };
+
+        var values = _.values(data);
+        var metaboliteNames = _.keys(data);
+
+        minVal = _.min(values);
+        maxVal = _.max(values);
+
+        generateHeatmap("correlateHeatmap", 'age', metaboliteNames, "Correlation", minVal, maxVal, [values]);
     },
     events: {
-        "click #resultsDownload": 'startDownload',
-        'change #corr_cutoff': 'updateCorrelation'
+        "change #sortRow": "sortGraph",
+        "change #plotHeight": "resizeGraph",
     },
-    startDownload: function (e) {
-        alert("starting download");
-        this.model.on("change:variance", this.refreshGraphs);
-
-        if (appComets.templatesList)
-            this.template = _.template(appComets.templatesList.heatmapResult);
-
+    sortGraph: function () {
+        console.log("sort graph");
     },
-    refreshGraphs: function () {
-
+    resizeGraph: function (e) {
+        if (e.target.value >= 200) {
+            Plotly.relayout("correlateHeatmap", {
+                height: e.target.value
+            });
+        }
     }
+});
+
+appComets.SummaryView = Backbone.View.extend({
+    el: "#tab-summary",
+    initialize: function () {
+        var view = this;
+        if (view.model) {
+            document.title = "Summary - Welcome to COMETS (COnsortium of METabolomics Studies)";
+
+            view.render();
+
+        }
+    },
+    render: function () {
+        data = {
+            acetylcholine: 0.7218,
+            acetylglycine: 0.6306,
+            aconitate: 0.7555,
+            adenine: 0.5432,
+            adenosine: 0.7163,
+            adipate: 0.6818,
+            adma: 1.097,
+            adp: 0.8087,
+            alanine: 0.9623,
+            allantoin: 0.4429,
+            alpha_glycerophosphate: 0.6553,
+            alpha_glycerophosphocholine: 0.9891,
+            alpha_hydroxybutyrate: 0.7611,
+            alpha_ketoglutarate: 0.7594,
+            aminoisobutyric_acid: 0.7941,
+            amp: 0.7018,
+            anserine: 0.9876,
+            anthranilic_acid: 0.5126
+        };
+
+        var values = _.values(data);
+        var cols = _.keys(data);
+
+
+//        generateDataTable(this.$el.find("#summaryTable"), data, cols);
+    },
+
 });
 
 // the view to populate the options for the 'Choose Model' select control

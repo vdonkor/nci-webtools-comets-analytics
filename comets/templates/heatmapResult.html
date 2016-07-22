@@ -1,11 +1,19 @@
-<label for="sortRow"></label>
-<select id="sortRow">
-    <option value="asc">Alphabetic (asc)</option>
-    <option value="desc">Alphabetic (desc)</option>
-    <option value="age">age</option>
-</select>
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="form-group">
+            <label for="sortRow">Sort rows:</label>
+            <select id="sortRow" class="form-control">
+                <option value="asc">Alphabetic (asc)</option>
+                <option value="desc">Alphabetic (desc)</option>
+                <option value="age">age</option>
+            </select>
+        </div>
 
-<label for="plotHeight">Plot height:</label>
-<input id="plotHeight" type="number" min="200" max="9000" />
+        <div class="form-group">
+            <label for="plotHeight">Plot height:</label>
+            <input id="plotHeight" class="form-control" value="500" type="number" min="200" max="9000" />
+        </div>
+    </div>
+</div>
 <hr />
 <div id="correlateHeatmap"></div>
