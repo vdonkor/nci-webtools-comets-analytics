@@ -220,6 +220,7 @@ appComets.IntegrityView = Backbone.View.extend({
                 document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
 
                 view.template = _.template(appComets.templatesList.integrityCheckResult, {
+
                     status: view.model.get('status'),
                     statusMessage: view.model.get('integritymessage'),
                     metabolites: view.model.get('metab'),
@@ -237,7 +238,6 @@ appComets.IntegrityView = Backbone.View.extend({
     },
     render: function () {
         this.$el.html(this.template);
-
         var data = view.model.get('metab');
         generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Log2 Variance Distribution', data.map(function (obj) {
             return obj.log2var;

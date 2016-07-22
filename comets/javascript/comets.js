@@ -72,7 +72,3 @@ function generateHeatmap(el, xLabels, yLabels, legendLabel, minVal, maxVal, data
         }
     });
 }
-
-$(function () {
-    var baseView = new appComets.LandingView();
-});

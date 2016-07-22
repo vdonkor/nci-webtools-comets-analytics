@@ -57,6 +57,7 @@ def templates():
                         filename = os.path.splitext(templateFile)[0]
                         templates[filename] = content
         return jsonify(templates)
+        
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame
