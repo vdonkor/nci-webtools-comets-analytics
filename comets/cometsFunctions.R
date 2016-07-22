@@ -94,9 +94,9 @@ checkIntegrity <- function(filepath) {
   
   # convert columns to lowercase if no error messages were found
   if (output$success) {
-    output$metabolites[[metaboliteID]] = tolower(metabolites[[metaboliteID]])
-    output$subjectdata[[subjectID]]    = tolower(subjectdata[[subjectID]])
-    output$subjectmeta[[subjectID]]    = tolower(subjectmeta[[subjectID]])
+      output$metabolites[[metaboliteID]] = tolower(metabolites[[metaboliteID]])
+      output$subjectdata[[subjectID]]    = tolower(subjectdata[[subjectID]])
+      output$subjectmeta[[subjectID]]    = tolower(subjectmeta[[subjectID]])
   }
   
   output$metaboliteID = tolower(metaboliteID)
@@ -131,8 +131,24 @@ readData <- function(filepath) {
   dt = inner_join(input$subjectdata, input$subjectmeta)
   
   # refactored readData function
-  if (input$success)
-    output$results = list(
+  if (input$success) {
+    
+    # add summary statistics
+    mymets=output$metabolites[[output$metaboliteID]]
+    sbj=inner_join(output$subjectmeta, output$subjectdata)
+    variance=as.numeric(lapply(mymets, function(x) {
+        temp=which(colnames(sbj )==x)
+        if(length(temp)==0) {return(NA)}
+        else return(var(log2(sbj[[x]]),na.rm=TRUE))
+    }))
+    
+    minValue=as.numeric(lapply(mymets, function(x) {
+        temp=which(colnames(sbj)==x)
+        if(length(temp)==0) {return(NA)}
+        else return(length(which(sbj[[x]]==min(sbj[[x]],na.rm=TRUE))))
+    }))
+      
+  output$results = list(
       integrityCheck = list(
         inputDataSummary = list(
           'Metabolites Sheet' = paste(length(input$metabolites[[input$metaboliteID]]), 'metabolites'),
@@ -141,43 +157,19 @@ readData <- function(filepath) {
         ),
         
         metaboliteSummary = list(
-          'N Metabolites' = 0,
-          'N Harmonized' = 0,
-          'N Non-Harmonized' = 0,
-          'N with zero variance' = 0,
-          'N with >25% at min' = 0
-        ),
-        
-        plots = list(
-          c(),
-          c()
+          'N Metabolites' = nrow(input$metabolites),
+          'N Harmonized' = length(which(!is.na(input$metabolites$uid_01))),
+          'N Non-Harmonized' = length(which(is.na(input$metabolites$uid_01))),
+          'N with zero variance' = length(which(variance==0)),
+          'N with > 25% at min' = length(which(minValue>nrow(input$subjectdata)*.25))
         )
-      ),
-      
-      summary = list(
-        correlationResults = list()
-      ),
-      
-      heatmap = list(
-        plots = list(
-          c()
-        )
-      ),
-      
-      clusterAndHeatmap = list(
-        c()
       )
     )
+  
+  output$logVariance = variance
+  output$minValue = minValue
+  
+  }
 
-  toJSON(output, auto_unbox = T)
+  return(toJSON(output, auto_unbox = T))
 }
-
-
-
-
-
-
-
-
-
-

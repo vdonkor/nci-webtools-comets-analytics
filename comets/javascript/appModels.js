@@ -73,6 +73,5 @@ appComets.ResultsModel = Backbone.Model.extend({
         delete response.allSubjectMetaData;
         delete response.allSubjects;
         delete response.mods;
-        console.log(response);
     }
 });
