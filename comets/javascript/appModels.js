@@ -1,18 +1,18 @@
-appComets.ResultsModel = Backbone.Model.extend({
+appComets.IntegrityResultsModel = Backbone.Model.extend({
     defaults: {
         csvFile: null,
-        metabolites: [],
-        subjectmetabolites: [],
-        subjectdata: [],
-        varmap: [],
-        models: [],
-        message: null,
-        success: null,
-        subjectmeta: [],
-        metaboliteID: null,
-        subjectID: null,
         dateRun: new Date().toLocaleDateString(),
+        integritymessage: null,
+        metab: [],
+        metabId: null,
+        models: [],
+        status: null,
+        subjectdata: [],
+        subjectmeta: [],
         subjectOptions: [],
+        subjectID: null,
+        varmap: [],
+        // form writebacks
         cohortSelection: "",
         methodSelection: null,
         modelSelection: null,
@@ -20,11 +20,10 @@ appComets.ResultsModel = Backbone.Model.extend({
         outcome:[],
         exposure: [],
         covariates: [],
-        results: null,
         batch: true,
         interactive: false
     },
-    urlRoot: "/cometsRest/correlate/integrity",
+    urlRoot: "/cometsRest/integrityCheck",
     parse: function (response, xhr) {
         // Shiny used to handle this for us, but it makes more sense to do here anyway
         var subjectdataIds = response.allSubjectMetaData.slice();
@@ -62,17 +61,25 @@ appComets.ResultsModel = Backbone.Model.extend({
         response.status = response.integritymessage.toLowerCase().indexOf("error") < 0;
         response.models = response.mods;
         // options need to be array of objects for selectize plugin
-        options = response.allMetabolites.concat(response.allSubjectMetaData).map(function(subject) {
+        response.subjectOptions = response.allMetabolites.concat(response.allSubjectMetaData).map(function(subject) {
             return {
                 text: subject,
                 value: subject
             };
         });
-        this.set('subjectOptions', options);
         delete response.allMetabolites;
         delete response.allSubjectMetaData;
         delete response.allSubjects;
         delete response.mods;
+        console.log(response);
+    }
+});
+
+appComets.CorrelationResultsModel = Backbone.Model.extend({
+    defaults: {
+    },
+    urlRoot: "/cometsRest/correlate",
+    parse: function (response, xhr) {
         console.log(response);
     }
 });

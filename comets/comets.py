@@ -16,7 +16,7 @@ def buildSuccess(message):
   return response
 
 # takes excel workbook as input
-@app.route('/cometsRest/correlate/integrity', methods = ['POST'])
+@app.route('/cometsRest/integrityCheck', methods = ['POST'])
 def integrityCheck():
     try:
         userFile = request.files['inputFile']
@@ -27,11 +27,36 @@ def integrityCheck():
         saveFile = userFile.save(os.path.join('uploads', filename))
         if os.path.isfile(os.path.join('uploads', filename)):
             print "Successfully Uploaded"
-        result=json.loads(wrapper.loadWorkbook(os.path.join('uploads', filename))[0])
+        result=json.loads(wrapper.checkIntegrity(os.path.join('uploads', filename))[0])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
             result['saveValue']['filename'] = os.path.splitext(filename)[0]
+            response = buildSuccess(result['saveValue'])
+    except Exception as e:
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        print 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
+        response = buildFailure({"error":"An unknown error occurred"})
+    return response
+
+# takes previously uploaded file and 
+@app.route('/cometsRest/correlate', methods = ['POST'])
+def correlate():
+    try:
+        parameters = dict(request.form)
+        for field in parameters:
+            parameters[field] = parameters[field][0]
+        filename = parameters['filename']
+        result=json.loads(wrapper.runModel(os.path.join('uploads', filename+".xlsx"))[0])
+        if ("error" in result):
+            response = buildFailure({"error": result['error']})
+        else:
+            print(result['saveValue'])
             response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()

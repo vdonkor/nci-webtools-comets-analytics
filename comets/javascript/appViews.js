@@ -37,7 +37,7 @@ appComets.LandingView = Backbone.View.extend({
     el: '#pageContent',
     initialize: function () {
         //holds all the possible result pieces
-        this.resultModel = new appComets.ResultsModel();
+        this.resultModel = new appComets.IntegrityResultsModel();
 
         this.landingTitle = new appComets.HeaderView();
 
@@ -101,7 +101,8 @@ appComets.FormView = Backbone.View.extend({
     },
     events: {
         "change #inputDataFile": 'uploadInputDataFile',
-        "click #load": "processFile",
+        "click #load": "checkIntegrity",
+        "click #runModel": "runModel",
         "change [name='methodSelection']": "analysisMethod",
         "change #cohortSelection": "cohortSelect",
         "change #modelDescription": "getDescription",
@@ -117,7 +118,7 @@ appComets.FormView = Backbone.View.extend({
         var file = fileUpload(e);
         this.model.set("csvFile", file);
     },
-    processFile: function (e) {
+    checkIntegrity: function (e) {
         e.preventDefault();
         file = view.model.get("csvFile")
         if (file) {
@@ -159,6 +160,10 @@ appComets.FormView = Backbone.View.extend({
                     model: view.model
                 });
 
+                view.summaryView = new appComets.SummaryView({
+                    model: view.model
+                });
+
                 view.modelOptionsView = new appComets.ModelSelectionOptions({
                     modelsOptions: view.model.get("models")
                 });
@@ -168,6 +173,37 @@ appComets.FormView = Backbone.View.extend({
                 view.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
             });
         }
+    },
+    runModel: function (e) {
+        e.preventDefault();
+        var summaryModel = new appComets.CorrelationResultsModel();
+        var formData = new FormData();
+        formData.append('filename',view.model.get('filename'));
+        formData.append('cohortSelection',view.model.get('cohortSelection'));
+        formData.append('methodSelection',view.model.get('methodSelection'));
+        if (view.model.get('batch')) {
+            formData.append('modelSelection',view.model.get('modelSelection'));
+        } else if (view.model.get('interactive')) {
+            formData.append('modelDescription',view.model.get('modelDescription'));
+            formData.append('outcome',view.model.get('outcome'));
+            formData.append('exposure',view.model.get('exposure'));
+            formData.append('covariates',view.model.get('covariates'));
+        }
+        summaryModel.fetch({
+            type: "POST",
+            data: formData,
+            dataType: "json",
+            cache: false,
+            processData: false,
+            contentType: false
+        }).fail(function () {
+        }).then(function (data, statusText, xhr) {
+            summaryModel.set(data);
+            view.summaryView = new appComets.SummaryView({
+                model: summaryModel
+            });
+        }).always(function () {
+        });
     },
     analysisMethod: function (e) {
         view.model.set('methodSelection', e.target.value);
@@ -334,3 +370,29 @@ appComets.ModelSelectionOptions = Backbone.View.extend({
         this.$el.html(this.template);
     }
 });
+
+// view the run model summary
+appComets.SummaryView = Backbone.View.extend({
+    el: "#tab-summary",
+    initialize: function () {
+        var view = this;
+        if (view.model) {
+            getTemplate('correlationResult').then(function (templ) {
+                if (templ.length > 0) {
+                    view.template = _.template(templ, {
+                    });
+                }
+                view.render();
+            });
+        }
+    },
+    render: function () {
+        this.$el.html(this.template);
+    }
+});
+
+// view for the heatmap
+
+// view for the "cluster and heatmap"
+
+// view for "network"
