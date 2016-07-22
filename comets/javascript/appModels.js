@@ -62,12 +62,11 @@ appComets.ResultsModel = Backbone.Model.extend({
         response.status = response.integritymessage.toLowerCase().indexOf("error") < 0;
         response.models = response.mods;
         // options need to be array of objects for selectize plugin
-        options = [];
-        _.each(Object.keys(response.allMetabolites[0]).concat(Object.keys(response.allSubjectMetaData[0])), function (subject) {
-            options.push({
+        options = response.allMetabolites.concat(response.allSubjectMetaData).map(function(subject) {
+            return {
                 text: subject,
                 value: subject
-            });
+            };
         });
         this.set('subjectOptions', options);
         delete response.allMetabolites;
