@@ -1,4 +1,13 @@
-# This dockerfile expects the comets analytics package to be mounted to the /
+# This dockerfile expects the comets analytics package to be mounted as /deploy/CometsAnalyticsPackage.tar.gz. 
+# The container will install the package at runtime and then run the application 
+#
+# For example:
+# docker run -d \
+#  -p 8100:8000 \
+#  -v /local/content/apps/comets:/deploy/app \
+#  -v /local/content/logs/comets:/deploy/logs \
+#  -v /local/content/apps/comets/rcode/CometsAnalyticsPackage.tar.gz:/deploy/CometsAnalyticsPackage.tar.gz \
+#  cbiitss:comets
 
 FROM cbiitss:r-base
 
@@ -10,10 +19,6 @@ RUN mkdir -p /deploy \
 
 USER ncianalysis
 WORKDIR /deploy
-
-RUN 
-
-RUN echo 
 
 RUN echo " \n\
 R -e "install.packages('/deploy/CometsAnalyticsPackage.tar.gz', repos=NULL) \n\
