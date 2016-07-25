@@ -2,7 +2,7 @@ FROM cbiitss:r-base
 
 COPY CometsAnalyticsPackage.tar.gz /tmp/
 
-RUN R -e "install.packages(c('/tmp/CometsAnalyticsPackage.tar.gz', repos=NULL))"
+RUN R -e "install.packages('/tmp/CometsAnalyticsPackage.tar.gz', repos=NULL)"
 
 RUN adduser -u 4004 ncianalysis
 
