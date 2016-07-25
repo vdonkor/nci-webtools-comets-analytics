@@ -6,7 +6,7 @@
 #  -p 8100:8000 \
 #  -v /local/content/apps/comets:/deploy/app \
 #  -v /local/content/logs/comets:/deploy/logs \
-#  -v /local/content/apps/comets/rcode/CometsAnalyticsPackage.tar.gz:/deploy/CometsAnalyticsPackage.tar.gz \
+#  -v /local/content/apps/comets/rcode/COMETS_0.0.0.8001.tar.gz:/deploy/CometsAnalyticsPackage.tar.gz \
 #  cbiitss:comets-dev
 # 
 # This image has the same dependencies as the comets.dockerfile image:
