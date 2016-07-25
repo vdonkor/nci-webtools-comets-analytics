@@ -1,12 +1,3 @@
-function getTemplate(templName) {
-    return $.get('templates/' + templName + '.html', function (data) {
-        return data;
-    }).fail(function () {
-        console.log("Cannot load template. Not found.");
-        return errorView("Cannot load template. Not found.");
-    });
-}
-
 function fileUpload(e) {
     if (window.FileReader) {
         var file = e.target.files[0];
@@ -23,12 +14,6 @@ function fileUpload(e) {
     }
 }
 
-function buildDataTable(el, tableData) {
-    $(el).DataTables({
-        data: tableData,
-    });
-}
-
 function generateDataTable(el, dtData, dtCols) {
     var table = $("<table></table>");
 
@@ -38,29 +23,52 @@ function generateDataTable(el, dtData, dtCols) {
         dom: '<"top"i>rt<"bottom"flp><"clear">',
         data: dtData,
     });
-
 }
 
-function generateHistogram(el, xTitle, graphTitle, data) {
+function generateHistogram(el, xLabels, yLabels, graphTitle, data) {
     Plotly.newPlot(el, [{
         x: data,
-        type: "histogram"
+        type: 'histogram'
     }], {
         margin: {
             l: 50,
-            t:100
+            t: 100
         },
         title: graphTitle,
         xaxis: {
-            title: xTitle,
+            title: xLabels,
             showgrid: false
         },
         yaxis: {
-            title: "Frequency"
+            title: yLabels
         }
     });
 }
 
-$(function () {
-    var baseView = new appComets.LandingView();
-});
+function generateHeatmap(el, xLabels, yLabels, legendLabel, minVal, maxVal, data) {
+    Plotly.newPlot(el, [{
+        transpose: true,
+        z: data,
+        //        x: xLabels,
+        y: yLabels,
+        type: 'heatmap',
+        colorscale: "Viridis",
+        colorbar: {
+            title: legendLabel
+        },
+        zmax: maxVal,
+        zmin: minVal,
+        text: yLabels,
+        height: 500,
+        connectgaps: true
+    }], {
+        margin: {
+            l: 200
+        },
+        autosize: true,
+        xaxis: {
+            title: "Age",
+            showgrid: false
+        }
+    });
+}

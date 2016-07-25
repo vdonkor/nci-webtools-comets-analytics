@@ -20,33 +20,22 @@ appComets.ErrorsView = Backbone.View.extend({
     }
 });
 
-appComets.HeaderView = Backbone.View.extend({
-    el: "#page-head",
-    initialize: function () {
-        if (this.options.user) {
-            this.template = _.template("<%= user %>, Welcome to the COMETS (COnsortium of METabolomics Studies) Analytics", this.options);
-            this.render();
-        }
-    },
-    render: function () {
-        this.$el.html(this.template);
-    },
-});
-
 appComets.LandingView = Backbone.View.extend({
     el: '#pageContent',
     initialize: function () {
+        var baseView = this;
         //holds all the possible result pieces
         this.resultModel = new appComets.IntegrityResultsModel();
 
-        this.landingTitle = new appComets.HeaderView();
-
-        //subview
-        this.correlateView = new appComets.CorrelateView({
-            el: this.$el.find("#tab-correlate"),
+        //subviews
+        this.formView = new appComets.FormView({
+            el: this.$el.find("#cometsForm"),
             model: this.resultModel
         });
 
+        this.correlateView = new appComets.CorrelateView({
+            model: this.resultModel
+        });
     },
     events: {
         /**
@@ -65,39 +54,8 @@ appComets.FormView = Backbone.View.extend({
     initialize: function () {
         view = this;
         // watch model for changes and trigger render
-        view.model.on('change', this.render);
-
-        view.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
-            $(el).selectize({
-                plugins: ["remove_button"]
-            });
-        });
-    },
-    render: function () {
-        if (view.model) {
-            var interactiveOptionsCount = view.model.get("outcome").length + view.model.get("exposure").length + view.model.get("covariates").length;
-            if (
-                ( view.model.get("methodSelection") == "interactive" && interactiveOptionsCount > 0 ) ||
-                ( view.model.get("methodSelection") == "batch" && view.model.get("modelSelection") )
-            ) {
-                view.$el.find("#runModel").removeAttr('disabled');
-            } 
-            else
-                view.$el.find("#runModel").attr('disabled', true);
-            
-            if(view.model.get("methodSelection") == "batch") {
-                view.model.set("modelSelection", view.$el.find("#modelSelection").val());
-            } else {
-                view.model.set("modelSelection", view.model.defaults.modelSelection);
-            }
-
-            if (view.model.get('csvFile') === null || view.model.get('csvFile') === undefined) {
-                view.$el.find("#calcProgressbar").hide();
-                view.$el.find("#load").attr('disabled', true);
-            } else {
-                view.$el.find("#load").removeAttr('disabled');
-            }
-        }
+        view.model.on('change', view.render);
+        view.render();
     },
     events: {
         "change #inputDataFile": 'uploadInputDataFile',
@@ -118,9 +76,16 @@ appComets.FormView = Backbone.View.extend({
         //add file to model
         var file = fileUpload(e);
         this.model.set("csvFile", file);
+
+        if (file == null || file == undefined) {
+            view.$el.find("#load").attr('disabled', true);
+        } else {
+            view.$el.find("#load").removeAttr('disabled');
+        }
     },
     checkIntegrity: function (e) {
         e.preventDefault();
+
         file = view.model.get("csvFile")
         if (file) {
             var formData = new FormData();
@@ -134,6 +99,7 @@ appComets.FormView = Backbone.View.extend({
                 processData: false,
                 contentType: false,
                 beforeSend: function () {
+                    view.$el.find("#loader").addClass("show");
                     view.$el.find("#calcProgressbar").show()
                         .find("[role='progressbar']")
                         .removeClass("progress-bar-danger progress-bar-success")
@@ -151,9 +117,17 @@ appComets.FormView = Backbone.View.extend({
                 // retrieve the array of options
                 results = view.model.get('subjectOptions');
 
-                _.each(view.$el.find('#outcome, #exposure, #covariates'), function (control) {
+                _.each(view.$el.find('#outcome, #exposure, #covariates'), function (control, ind) {
+                    control.selectize.addOption({
+                        text: 'All Metabolites',
+                        value: 'All metabolites'
+                    });
                     control.selectize.addOption(results);
                     control.selectize.refreshOptions();
+
+                    if (control.id == "outcome") {
+                        control.selectize.addItem("all metabolites");
+                    }
                 });
 
                 // subviews
@@ -168,6 +142,7 @@ appComets.FormView = Backbone.View.extend({
                 view.$el.find('#analysisOptions').show();
             }).always(function () {
                 view.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
+                view.$el.find("#loader").removeClass("show");
             });
         }
     },
@@ -199,12 +174,22 @@ appComets.FormView = Backbone.View.extend({
             view.summaryView = new appComets.SummaryView({
                 model: summaryModel
             });
+            view.correlateHeatmapView = new appComets.CorrelateHeatmapView({
+                model: view.model
+            });
         }).always(function () {
         });
     },
     analysisMethod: function (e) {
         view.model.set('methodSelection', e.target.value);
-        var newVal = view.model.get('methodSelection');
+
+        if (e.target.value == "batch") {
+            view.$el.find("#batch").show();
+            view.$el.find("#interactive").hide();
+        } else {
+            view.$el.find("#interactive").show();
+            view.$el.find("#batch").hide();
+        }
     },
     cohortSelect: function (e) {
         view.model.set('cohort', e.target.value);
@@ -224,19 +209,98 @@ appComets.FormView = Backbone.View.extend({
     },
     getDescription: function (e) {
         view.model.set('modelDescription', e.target.value);
+    },
+    render: function () {
+        if (view.model) {
+            var interactiveOptionsCount = view.model.get("outcome").length + view.model.get("exposure").length + view.model.get("covariates").length;
+
+            view.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+                $(el).selectize({
+                    plugins: ["remove_button"],
+                });
+            });
+
+            if (
+                (view.model.get("methodSelection") == "interactive" && interactiveOptionsCount > 0) ||
+                (view.model.get("methodSelection") == "batch" && view.model.get("modelSelection"))
+            ) {
+                view.$el.find("#runModel").removeAttr('disabled');
+            } else
+                view.$el.find("#runModel").attr('disabled', true);
+
+            if(view.model.get("methodSelection") == "batch") {
+                view.model.set("modelSelection", view.$el.find("#modelSelection").val());
+            } else {
+                view.model.set("modelSelection", view.model.defaults.modelSelection);
+            }
+        }
+    }
+});
+
+// view for the results displayed under the integrity check tab
+appComets.IntegrityView = Backbone.View.extend({
+    el: "#integrityDiv",
+    initialize: function () {
+        var view = this;
+        if (view.model) {
+
+            if (appComets.templatesList) {
+                document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
+
+                view.template = _.template(appComets.templatesList.integrityCheckResult, {
+
+                    status: view.model.get('status'),
+                    statusMessage: view.model.get('integritymessage'),
+                    metabolites: view.model.get('metab'),
+                    metaboliteId: view.model.get('metabId'),
+                    subject: view.model.get('subjectdata'),
+                    subjectMeta: view.model.get('subjectmeta'),
+                    varMap: view.model.get('varmap'),
+                    dateRun: view.model.get('dateRun'),
+                    summary: view.model.get('integrityCheck')
+                });
+
+                view.render();
+            }
+        }
+    },
+    render: function () {
+        this.$el.html(this.template);
+        var data = view.model.get('metab');
+        generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Log2 Variance Distribution', data.map(function (obj) {
+            return obj.log2var;
+        }));
+        generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of number of subject at min', data.map(function (obj) {
+            return obj['num.min'];
+        }));
+    },
+    events: {
+        "click #resultsDownload": 'startDownload',
+        'change #corr_cutoff': 'updateCorrelation'
+    },
+    startDownload: function (e) {
+        alert("starting download");
+    },
+    updateCorrelation: function (e) {
+        $("#corr_val").val(e.target.value);
+        view.model.set(e.target.id, e.target.value);
     }
 });
 
 appComets.CorrelateView = Backbone.View.extend({
+    el: "#tab-correlate",
     initialize: function () {
         baseView = this;
         this.model.on("change:methodSelection", function () {
+
             /**
                 watch the methodSelection attribute in the model for changes. 
                 Toggle the visibility of the batch and interactive controls. 
                 The controls being hidden will have its data reset to its default in the model 
             **/
+
             switch (this.get("methodSelection")) {
+
             case "batch":
                 baseView.$el.find("#batch").show();
                 baseView.$el.find("#interactive").hide();
@@ -261,99 +325,74 @@ appComets.CorrelateView = Backbone.View.extend({
         });
 
         this.model.on("change:csvFile", function () {
+
             if (this.get("csvFile"))
                 baseView.$el.find("#inputNotice").hide();
             else
                 baseView.$el.find("#inputNotice").show();
         });
-
-        //subview
-        baseView.formView = new appComets.FormView({
-            el: baseView.$el.find("#cometsForm"),
-            model: this.model
-        });
-
     }
 });
-// view for the results displayed under the integrity check tab
-appComets.IntegrityView = Backbone.View.extend({
-    el: "#integrityDiv",
+
+appComets.CorrelateHeatmapView = Backbone.View.extend({
+    el: "#tab-heatmap",
     initialize: function () {
         var view = this;
         if (view.model) {
-            getTemplate('integrityCheckResult').then(function (templ) {
-                if (templ.length > 0) {
-                    document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
+            document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
 
-                    view.template = _.template(templ, {
-                        status: view.model.get('status'),
-                        statusMessage: view.model.get('integritymessage'),
-                        metabolites: view.model.get('metab'),
-                        metaboliteId: view.model.get('metabId'),
-                        subject: view.model.get('subjectdata'),
-                        subjectMeta: view.model.get('subjectmeta'),
-                        varMap: view.model.get('varmap'),
-                        dateRun: view.model.get('dateRun'),
-                        summary: view.model.get('integrityCheck')
-                    });
-                }
+            if (appComets.templatesList) {
+                view.template = _.template(appComets.templatesList.heatmapResult);
                 view.render();
-            });
+            }
         }
     },
     render: function () {
         this.$el.html(this.template);
-        var data = view.model.get('metab');
-        generateHistogram('varianceDist', 'log2 Variance', 'Log2 Variance Distribution', data.map(function(obj) { return obj.log2var; }));
-        generateHistogram('subjectDist', 'Number at minimum', 'Distribution of number of subject at min', data.map(function(obj) { return obj['num.min']; }));
+
+        data = {
+            acetylcholine: 0.7218,
+            acetylglycine: 0.6306,
+            aconitate: 0.7555,
+            adenine: 0.5432,
+            adenosine: 0.7163,
+            adipate: 0.6818,
+            adma: 1.097,
+            adp: 0.8087,
+            alanine: 0.9623,
+            allantoin: 0.4429,
+            alpha_glycerophosphate: 0.6553,
+            alpha_glycerophosphocholine: 0.9891,
+            alpha_hydroxybutyrate: 0.7611,
+            alpha_ketoglutarate: 0.7594,
+            aminoisobutyric_acid: 0.7941,
+            amp: 0.7018,
+            anserine: 0.9876,
+            anthranilic_acid: 0.5126
+        };
+
+        var values = _.values(data);
+        var metaboliteNames = _.keys(data);
+
+        minVal = _.min(values);
+        maxVal = _.max(values);
+
+        generateHeatmap("correlateHeatmap", 'age', metaboliteNames, "Correlation", minVal, maxVal, [values]);
     },
     events: {
-        "click #resultsDownload": 'startDownload',
-        'change #corr_cutoff': 'updateCorrelation'
+        "change #sortRow": "sortGraph",
+        "change #plotHeight": "resizeGraph",
     },
-    startDownload: function (e) {
-        alert("starting download");
+    sortGraph: function () {
+        console.log("sort graph");
     },
-    updateCorrelation: function (e) {
-            $("#corr_val").val(e.target.value);
-            view.model.set(e.target.id, e.target.value);
+    resizeGraph: function (e) {
+        if (e.target.value >= 200) {
+            Plotly.relayout("correlateHeatmap", {
+                height: e.target.value
+            });
         }
-        //  ,
-        //    generateBarPlots: function () {
-        //        var varianceGraphContainer = this.$el.find("#varianceDist");
-        //        var subjectGraphContainer = this.$el.find("#subjectDist");
-        //
-        //        Plotly.plot(varianceGraphContainer, [{
-        //                type: "bar",
-        //                title: "Log2 Variance Distribution",
-        //                x: [],
-        //                y: []
-        //        },
-        //            {
-        //                yaxis: {
-        //                    title: "Frequency",
-        //                },
-        //                xaxis: {
-        //                    title: 'log2 Variance'
-        //                },
-        //        }]);
-
-    //        Plotly.plot(subjectGraphContainer, [{
-    //                type: "bar",
-    //                title: "Distribution of number of subjects at min value",
-    //                x: [],
-    //                y: []
-    //            },
-    //            {
-    //                yaxis: {
-    //                    title: "Frequency",
-    //                },
-    //                xaxis: {
-    //                    title: 'number at minimum value'
-    //                },
-    //            }                                 
-    //        ]);
-    //    }
+    }
 });
 
 // the view to populate the options for the 'Choose Model' select control
@@ -376,23 +415,19 @@ appComets.SummaryView = Backbone.View.extend({
     el: "#tab-summary",
     initialize: function () {
         var view = this;
-        if (view.model) {
-            getTemplate('correlationResult').then(function (templ) {
-                if (templ.length > 0) {
-                    view.template = _.template(templ, view.model.attributes);
-                }
-                view.render();
-                var table = $('#correlationSummary table').DataTable({
-                    pageLength: 25
-                });
-                table.columns().every(function() {
-                    var column = this;
-                    $('input',this.footer()).on('keyup change',function() {
-                        if (column.search() !== this.value)
-                            column
-                                .search(this.value)
-                                .draw();
-                    });
+        if (appComets.templatesList) {
+            view.template = _.template(appComets.templatesList.correlationResult, view.model.attributes);
+            view.render();
+            var table = $('#correlationSummary table').DataTable({
+                pageLength: 25
+            });
+            table.columns().every(function() {
+                var column = this;
+                $('input',this.footer()).on('keyup change',function() {
+                    if (column.search() !== this.value)
+                        column
+                            .search(this.value)
+                            .draw();
                 });
             });
         }
@@ -407,3 +442,15 @@ appComets.SummaryView = Backbone.View.extend({
 // view for the "cluster and heatmap"
 
 // view for "network"
+
+$(function () {
+    templates = $.ajax({
+        type: "GET",
+        url: "/cometsRest/templates",
+    }).then(function (data) {
+        // attach templates array to module
+        appComets.templatesList = data;
+    }).done(function () {
+        var baseView = new appComets.LandingView();
+    });
+});

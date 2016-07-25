@@ -41,15 +41,15 @@
                 <% }); %>
         </tr>
     </table>
+    <div id="varianceDist"></div>
+    <div id="subjectDist"></div>
 
-    <div id="varianceDist">
+    <div id="varianceDist" >
     </div>
-    <div id="subjectDist">
+    <div id="subjectDist" >
     </div>
 
-    <p>Run date:
-        <%=  dateRun %>
-    </p>
+    <p>Run date: <%=  dateRun %></p>
     <% } %>
 
         <% if (!status) { %>
@@ -57,4 +57,4 @@
                 <span class="glyphicon glyphicon-warning-sign"></span>
                 <%= statusMessage %>
             </div>
-            <% } %>
+        <% } %>

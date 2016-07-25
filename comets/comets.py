@@ -42,7 +42,8 @@ def integrityCheck():
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
         response = buildFailure({"status": False, "error":"An unknown error occurred"})
-    return response
+    finally:
+        return response
 
 # takes previously uploaded file and 
 @app.route('/cometsRest/correlate', methods = ['POST'])
@@ -60,9 +61,9 @@ def correlate():
             inputData['model'] = parameters['modelSelection']
         elif (parameters['methodSelection'] == 'interactive'):
             inputData['model'] = parameters['modelDescription']
-            inputData['outcomes'] = parameters['outcome'].split(',')
-            inputData['exposures'] = parameters['exposure'].split(',')
-            inputData['covariates'] = parameters['covariates'].split(',')
+            inputData['outcomes'] = None if len(parameters['outcome']) == 0 else parameters['outcome'].split(',')
+            inputData['exposures'] = None if len(parameters['exposure']) == 0 else parameters['exposure'].split(',')
+            inputData['covariates'] = None if len(parameters['covariates']) == 0 else parameters['covariates'].split(',')
         else:
             return buildFailure({"status": False, "error": "An unknown or no method of analyses was selected."})
         result=json.loads(wrapper.runModel(json.dumps(inputData))[0])
@@ -79,8 +80,30 @@ def correlate():
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
         response = buildFailure({"status": False, "error":"An unknown error occurred"})
-    return response
+    finally:
+        return response
         
+@app.route('/cometsRest/templates', methods = ['GET'])
+def templates():
+    try:
+        templates = {}
+        if os.path.exists('templates'):
+            for templateFile in os.listdir("templates"):
+                if templateFile.endswith('.html'):
+                    with open(os.path.join('templates', templateFile), 'r') as content_file:
+                        content = content_file.read()
+                        filename = os.path.splitext(templateFile)[0]
+                        templates[filename] = content
+        return jsonify(templates)
+    except Exception as e:
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+
 import argparse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
