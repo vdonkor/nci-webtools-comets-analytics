@@ -78,3 +78,7 @@ input.input:valid {
 .plotly {
     width: 100%;
 }
+
+#correlationSummary {
+    overflow-x: auto;
+}

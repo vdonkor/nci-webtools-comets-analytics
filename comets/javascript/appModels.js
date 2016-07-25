@@ -1,30 +1,27 @@
-appComets.ResultsModel = Backbone.Model.extend({
+appComets.IntegrityResultsModel = Backbone.Model.extend({
     defaults: {
         csvFile: null,
-        metabolites: [],
-        subjectmetabolites: [],
-        subjectdata: [],
-        varmap: [],
-        models: [],
-        message: null,
-        success: null,
-        subjectmeta: [],
-        metaboliteID: null,
-        subjectID: null,
         dateRun: new Date().toLocaleDateString(),
+        integritymessage: null,
+        metab: [],
+        metabId: null,
+        models: [],
+        status: null,
+        subjectdata: [],
+        subjectmeta: [],
         subjectOptions: [],
+        subjectID: null,
+        varmap: [],
+        // form writebacks
         cohortSelection: "",
         methodSelection: null,
         modelSelection: null,
         modelDescription: "",
-        outcome:[],
+        outcome:[ "All metabolites" ],
         exposure: [],
-        covariates: [],
-        results: null,
-        batch: true,
-        interactive: false
+        covariates: []
     },
-    urlRoot: "/cometsRest/correlate/integrity",
+    urlRoot: "/cometsRest/integrityCheck",
     parse: function (response, xhr) {
         // Shiny used to handle this for us, but it makes more sense to do here anyway
         var subjectdataIds = response.allSubjectMetaData.slice();
@@ -62,16 +59,34 @@ appComets.ResultsModel = Backbone.Model.extend({
         response.status = response.integritymessage.toLowerCase().indexOf("error") < 0;
         response.models = response.mods;
         // options need to be array of objects for selectize plugin
-        options = response.allMetabolites.concat(response.allSubjectMetaData).map(function(subject) {
+        response.subjectOptions = response.allMetabolites.concat(response.allSubjectMetaData).map(function(subject) {
             return {
                 text: subject,
                 value: subject
             };
         });
-        this.set('subjectOptions', options);
         delete response.allMetabolites;
         delete response.allSubjectMetaData;
         delete response.allSubjects;
         delete response.mods;
+    }
+});
+
+appComets.CorrelationResultsModel = Backbone.Model.extend({
+    defaults: {
+        csvFile: null,
+        excorrdata: [],
+        status: false,
+        statusMessage: "An unknown error occurred",
+        tableOrder: [ "age", "age.n", "age.p", "model", "cohort", "adjvars", "metabolite_name", "hmdb_id", "rt", "m_z", "uid_01", "hmdb", "biochemical" ]
+    },
+    urlRoot: "/cometsRest/correlate",
+    parse: function (response, xhr) {
+        response.excorrdata = response.excorrdata.map(function(biochemical) {
+            biochemical.model = response.model;
+            return biochemical;
+        });
+        delete response.model;
+        console.log(response);
     }
 });

@@ -16,7 +16,7 @@ def buildSuccess(message):
   return response
 
 # takes excel workbook as input
-@app.route('/cometsRest/correlate/integrity', methods = ['POST'])
+@app.route('/cometsRest/integrityCheck', methods = ['POST'])
 def integrityCheck():
     try:
         userFile = request.files['inputFile']
@@ -26,8 +26,8 @@ def integrityCheck():
         filename = "cometsInput_" + time.strftime("%Y_%m_%d_%I_%M") + ext
         saveFile = userFile.save(os.path.join('uploads', filename))
         if os.path.isfile(os.path.join('uploads', filename)):
-            print "Successfully Uploaded"
-        result=json.loads(wrapper.loadWorkbook(os.path.join('uploads', filename))[0])
+            print("Successfully Uploaded")
+        result=json.loads(wrapper.checkIntegrity(os.path.join('uploads', filename))[0])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -40,8 +40,46 @@ def integrityCheck():
         filename = f.f_code.co_filename
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
-        print 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
-        response = buildFailure({"error":"An unknown error occurred"})
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        response = buildFailure({"status": False, "error":"An unknown error occurred"})
+    finally:
+        return response
+
+# takes previously uploaded file and 
+@app.route('/cometsRest/correlate', methods = ['POST'])
+def correlate():
+    try:
+        parameters = dict(request.form)
+        for field in parameters:
+            parameters[field] = parameters[field][0]
+        inputData = {
+            'cohort': parameters['cohortSelection'],
+            'filename': os.path.join('uploads', parameters['filename']+".xlsx"),
+            'method': parameters['methodSelection']
+        }
+        if (parameters['methodSelection'] == 'batch'):
+            inputData['model'] = parameters['modelSelection']
+        elif (parameters['methodSelection'] == 'interactive'):
+            inputData['model'] = parameters['modelDescription']
+            inputData['outcomes'] = None if len(parameters['outcome']) == 0 else parameters['outcome'].split(',')
+            inputData['exposures'] = None if len(parameters['exposure']) == 0 else parameters['exposure'].split(',')
+            inputData['covariates'] = None if len(parameters['covariates']) == 0 else parameters['covariates'].split(',')
+        else:
+            return buildFailure({"status": False, "error": "An unknown or no method of analyses was selected."})
+        result=json.loads(wrapper.runModel(json.dumps(inputData))[0])
+        if ("error" in result):
+            response = buildFailure(result['error'])
+        else:
+            response = buildSuccess(result['saveValue'])
+    except Exception as e:
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        response = buildFailure({"status": False, "error":"An unknown error occurred"})
     finally:
         return response
         
@@ -57,7 +95,6 @@ def templates():
                         filename = os.path.splitext(templateFile)[0]
                         templates[filename] = content
         return jsonify(templates)
-        
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame
@@ -65,7 +102,7 @@ def templates():
         filename = f.f_code.co_filename
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
-        print 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
 
 import argparse
 if __name__ == '__main__':

@@ -1,0 +1,47 @@
+<h3>Correlation Results</h3>
+<% if (status) { %>
+    <div id="resultStatus" class="alert alert-success">
+        <span class="glyphicon glyphicon-ok"></span>
+        <%= statusMessage %>
+    </div>
+    <% if (csvFile) { %>
+        <div class="button-group">
+            <button type="button" id="summaryDownload" class="btn btn-default btn-block"><span class="glyphicon glyphicon-download"></span> Download results in CSV and send to Harmonization Group</button>
+        </div>
+    <% } %>
+    <div id="correlationSummary">
+        <table class="table-striped table-hover">
+            <thead>
+                <tr>
+                    <% _.each(tableOrder,function(element,key,list) { %>
+                        <th><%= element %></th>
+                    <% }); %>
+                </tr>
+            </thead>
+            <tbody>
+                <% _.each(excorrdata,function(row,key,list) { %>
+                    <tr>
+                        <% _.each(tableOrder,function(element,key,list) { %>
+                            <td><%= row[element]||"" %></td>
+                        <% }); %>
+                    </tr>
+                <% }); %>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <% _.each(tableOrder,function(element,key,list) { %>
+                        <th>
+                            <input type="text" placeholder="Search <%= element %>" />
+                        </th>
+                    <% }); %>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+<% } %>
+<% if (!status) { %>
+    <div id="resultStatus" class="alert alert-warning">
+        <span class="glyphicon glyphicon-warning-sign"></span>
+        <%= statusMessage %>
+    </div>
+<% } %>
