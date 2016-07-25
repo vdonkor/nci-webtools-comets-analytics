@@ -17,11 +17,9 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         methodSelection: null,
         modelSelection: null,
         modelDescription: "",
-        outcome:[],
+        outcome:[ "All metabolites" ],
         exposure: [],
-        covariates: [],
-        batch: true,
-        interactive: false
+        covariates: []
     },
     urlRoot: "/cometsRest/integrityCheck",
     parse: function (response, xhr) {
@@ -77,9 +75,19 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
 
 appComets.CorrelationResultsModel = Backbone.Model.extend({
     defaults: {
+        csvFile: null,
+        excorrdata: [],
+        status: false,
+        statusMessage: "An unknown error occurred",
+        tableOrder: [ "age", "age.n", "age.p", "model", "cohort", "adjvars", "metabolite_name", "hmdb_id", "rt", "m_z", "uid_01", "hmdb", "biochemical" ]
     },
     urlRoot: "/cometsRest/correlate",
     parse: function (response, xhr) {
+        response.excorrdata = response.excorrdata.map(function(biochemical) {
+            biochemical.model = response.model;
+            return biochemical;
+        });
+        delete response.model;
         console.log(response);
     }
 });

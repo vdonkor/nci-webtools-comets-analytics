@@ -76,20 +76,20 @@ appComets.FormView = Backbone.View.extend({
     render: function () {
         if (view.model) {
             var interactiveOptionsCount = view.model.get("outcome").length + view.model.get("exposure").length + view.model.get("covariates").length;
-
             if (
                 ( view.model.get("methodSelection") == "interactive" && interactiveOptionsCount > 0 ) ||
-                ( view.model.get("methodSelection") == "batch" && view.model.get("batch") )
+                ( view.model.get("methodSelection") == "batch" && view.model.get("modelSelection") )
             ) {
                 view.$el.find("#runModel").removeAttr('disabled');
             } 
             else
                 view.$el.find("#runModel").attr('disabled', true);
             
-            if(view.model.get("batch") == true)
+            if(view.model.get("methodSelection") == "batch") {
                 view.model.set("modelSelection", view.$el.find("#modelSelection").val());
-            else
+            } else {
                 view.model.set("modelSelection", view.model.defaults.modelSelection);
+            }
 
             if (view.model.get('csvFile') === null || view.model.get('csvFile') === undefined) {
                 view.$el.find("#calcProgressbar").hide();
@@ -106,6 +106,7 @@ appComets.FormView = Backbone.View.extend({
         "change [name='methodSelection']": "analysisMethod",
         "change #cohortSelection": "cohortSelect",
         "change #modelDescription": "getDescription",
+        "change #modelSelection": "modelSelect",
         "change #outcome": "updateOptions",
         "change #exposure": "updateOptions",
         "change #covariates": "updateOptions",
@@ -160,10 +161,6 @@ appComets.FormView = Backbone.View.extend({
                     model: view.model
                 });
 
-                view.summaryView = new appComets.SummaryView({
-                    model: view.model
-                });
-
                 view.modelOptionsView = new appComets.ModelSelectionOptions({
                     modelsOptions: view.model.get("models")
                 });
@@ -179,11 +176,11 @@ appComets.FormView = Backbone.View.extend({
         var summaryModel = new appComets.CorrelationResultsModel();
         var formData = new FormData();
         formData.append('filename',view.model.get('filename'));
-        formData.append('cohortSelection',view.model.get('cohortSelection'));
+        formData.append('cohortSelection',view.model.get('cohort'));
         formData.append('methodSelection',view.model.get('methodSelection'));
-        if (view.model.get('batch')) {
+        if (view.model.get('methodSelection') == 'batch') {
             formData.append('modelSelection',view.model.get('modelSelection'));
-        } else if (view.model.get('interactive')) {
+        } else if (view.model.get('methodSelection') == 'interactive') {
             formData.append('modelDescription',view.model.get('modelDescription'));
             formData.append('outcome',view.model.get('outcome'));
             formData.append('exposure',view.model.get('exposure'));
@@ -211,6 +208,9 @@ appComets.FormView = Backbone.View.extend({
     },
     cohortSelect: function (e) {
         view.model.set('cohort', e.target.value);
+    },
+    modelSelect: function(e) {
+        view.model.set('modelSelection', e.target.value);
     },
     updateOptions: function (e) {
         var selectedOptions = e.target.value;
@@ -379,10 +379,21 @@ appComets.SummaryView = Backbone.View.extend({
         if (view.model) {
             getTemplate('correlationResult').then(function (templ) {
                 if (templ.length > 0) {
-                    view.template = _.template(templ, {
-                    });
+                    view.template = _.template(templ, view.model.attributes);
                 }
                 view.render();
+                var table = $('#correlationSummary table').DataTable({
+                    pageLength: 25
+                });
+                table.columns().every(function() {
+                    var column = this;
+                    $('input',this.footer()).on('keyup change',function() {
+                        if (column.search() !== this.value)
+                            column
+                                .search(this.value)
+                                .draw();
+                    });
+                });
             });
         }
     },

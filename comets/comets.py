@@ -26,7 +26,7 @@ def integrityCheck():
         filename = "cometsInput_" + time.strftime("%Y_%m_%d_%I_%M") + ext
         saveFile = userFile.save(os.path.join('uploads', filename))
         if os.path.isfile(os.path.join('uploads', filename)):
-            print "Successfully Uploaded"
+            print("Successfully Uploaded")
         result=json.loads(wrapper.checkIntegrity(os.path.join('uploads', filename))[0])
         if ("error" in result):
             response = buildFailure(result['error'])
@@ -40,8 +40,8 @@ def integrityCheck():
         filename = f.f_code.co_filename
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
-        print 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
-        response = buildFailure({"error":"An unknown error occurred"})
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        response = buildFailure({"status": False, "error":"An unknown error occurred"})
     return response
 
 # takes previously uploaded file and 
@@ -51,12 +51,24 @@ def correlate():
         parameters = dict(request.form)
         for field in parameters:
             parameters[field] = parameters[field][0]
-        filename = parameters['filename']
-        result=json.loads(wrapper.runModel(os.path.join('uploads', filename+".xlsx"))[0])
-        if ("error" in result):
-            response = buildFailure({"error": result['error']})
+        inputData = {
+            'cohort': parameters['cohortSelection'],
+            'filename': os.path.join('uploads', parameters['filename']+".xlsx"),
+            'method': parameters['methodSelection']
+        }
+        if (parameters['methodSelection'] == 'batch'):
+            inputData['model'] = parameters['modelSelection']
+        elif (parameters['methodSelection'] == 'interactive'):
+            inputData['model'] = parameters['modelDescription']
+            inputData['outcomes'] = parameters['outcome'].split(',')
+            inputData['exposures'] = parameters['exposure'].split(',')
+            inputData['covariates'] = parameters['covariates'].split(',')
         else:
-            print(result['saveValue'])
+            return buildFailure({"status": False, "error": "An unknown or no method of analyses was selected."})
+        result=json.loads(wrapper.runModel(json.dumps(inputData))[0])
+        if ("error" in result):
+            response = buildFailure(result['error'])
+        else:
             response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
@@ -65,8 +77,8 @@ def correlate():
         filename = f.f_code.co_filename
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
-        print 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
-        response = buildFailure({"error":"An unknown error occurred"})
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        response = buildFailure({"status": False, "error":"An unknown error occurred"})
     return response
         
 import argparse
@@ -77,18 +89,4 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', type = int, dest = 'port', default = 9200, help = 'Sets the Port')
     parser.add_argument('-d', '--debug', action = 'store_true', help = 'Enables debugging')
     args = parser.parse_args()
-    # remove this later
-    if (args.debug):
-        @app.route('/')
-        def index():
-            return app.send_static_file('index.html')
-
-        @app.route('/common/<path:path>')
-        def common_folder(path):
-            return send_from_directory("C:\\common\\",path)
-
-        @app.route('/<path:path>')
-        def static_files(path):
-            return send_from_directory(os.getcwd(),path)
-    #end remove
     app.run(host = '0.0.0.0', port = args.port, debug = args.debug, use_evalex = False)
