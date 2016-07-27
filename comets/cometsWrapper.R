@@ -55,7 +55,7 @@ runModel <- function(jsonData) {
                     }
                     exmodeldata <- getModelData(exmetabdata,rowvars=input$outcomes,colvars=input$exposures,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohort)
-                    makeOutputCSV("corr",excorrdata,input$cohort)
+                    CometsAnalyticsPackage:::makeOutputCSV("corr",excorrdata,input$cohort)
                     list(
                       excorrdata = excorrdata,
                       exposures = exmodeldata$ccovs,
