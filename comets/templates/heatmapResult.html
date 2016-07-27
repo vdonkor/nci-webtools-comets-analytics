@@ -1,6 +1,6 @@
 <div class="row">
-    <div class="col-xs-12 col-sm-3">
-        <div class="form-group">
+    <div class="col-xs-12 col-sm-6">
+        <div class="col-xs-12 col-sm-6">
             <label for="sortRow">Sort rows:</label>
             <select id="sortRow" class="form-control">
                 <option value="Alphabetic (asc)"<%= sortRow == "Alphabetic (asc)" ? "selected" : "" %>>Alphabetic (asc)</option>
@@ -11,7 +11,7 @@
             </select>
         </div>
 
-        <div class="form-group">
+        <div class="col-xs-12 col-sm-6">
             <label for="plotHeight">Plot height:</label>
             <input id="plotHeight" class="form-control" value="<%= plotHeight %>" type="number" min="200" max="9000" />
         </div>

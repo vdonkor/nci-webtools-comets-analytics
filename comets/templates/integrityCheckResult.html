@@ -5,16 +5,18 @@
         <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
     </div>
-    <div class="button-group">
-        <button type="button" id="resultsDownload" class="btn btn-default btn-block"><span class="glyphicon glyphicon-download"></span> Download results and send to COMETS harmonization group</button>
-    </div>
-    <h3>Input Data Summary</h3>
-    <table id="inputDataSummary" class="table table-bordered table-condensed">
-        <tr>
+
+    <button type="button" id="resultsDownload" class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download results and send to COMETS harmonization group</button>
+
+    <table id="inputDataSummary" class="table table-bordered table-condensed summaryTables">
+        <thead>
+            <th colspan="3">Input Data Summary</th>
+        </thead>
+        <thead>
             <th>Metabolites sheet</th>
             <th>Subject data sheet</th>
             <th>Subject metabolites sheet</th>
-        </tr>
+        </thead>
         <tr>
             <%  _.each(summary.inputDataSummary,function(summaryData) { %>
                 <td>
@@ -24,15 +26,19 @@
         </tr>
     </table>
 
-    <h3>Harmonization Summary</h3>
-    <table id="harmSummary" class="table table-bordered table-condensed">
-        <tr>
-            <th>N Metabolites</th>
-            <th>N Harmonized</th>
-            <th>N Non-Harmonizaed</th>
-            <th>N with zero variance</th>
-            <th>N with >25% at min</th>
-        </tr>
+    <table id="harmSummary" class="table table-bordered table-condensed summaryTables">
+        <thead>
+            <th colspan="5">Harmonization Summary</th>
+        </thead>
+        <thead>
+            <tr>
+                <th>N Metabolites</th>
+                <th>N Harmonized</th>
+                <th>N Non-Harmonizaed</th>
+                <th>N with zero variance</th>
+                <th>N with >25% at min</th>
+            </tr>
+        </thead>
         <tr>
             <%  _.each(summary.metaboliteSummary,function(summaryData) { %>
                 <td>
@@ -44,12 +50,14 @@
     <div id="varianceDist"></div>
     <div id="subjectDist"></div>
 
-    <div id="varianceDist" >
+    <div id="varianceDist">
     </div>
-    <div id="subjectDist" >
+    <div id="subjectDist">
     </div>
 
-    <p>Run date: <%=  dateRun %></p>
+    <p>Run date:
+        <%=  dateRun %>
+    </p>
     <% } %>
 
         <% if (!status) { %>
@@ -57,4 +65,4 @@
                 <span class="glyphicon glyphicon-warning-sign"></span>
                 <%= statusMessage %>
             </div>
-        <% } %>
+            <% } %>
