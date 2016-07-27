@@ -70,7 +70,10 @@ def correlate():
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
-            response = buildSuccess(result['saveValue'])
+            forReturn = result['saveValue']
+            if (not isinstance(forReturn['exposures'],list)):
+                forReturn['exposures'] = [forReturn['exposures']]
+            response = buildSuccess(forReturn)
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame
@@ -112,4 +115,17 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', type = int, dest = 'port', default = 9200, help = 'Sets the Port')
     parser.add_argument('-d', '--debug', action = 'store_true', help = 'Enables debugging')
     args = parser.parse_args()
+    if (args.debug):
+        @app.route('/')
+        def index():
+            return app.send_static_file('index.html')
+
+        @app.route('/common/<path:path>')
+        def common_folder(path):
+            return send_from_directory("C:\\common\\",path)
+
+        @app.route('/<path:path>')
+        def static_files(path):
+            return send_from_directory(os.getcwd(),path)
+    #end remove
     app.run(host = '0.0.0.0', port = args.port, debug = args.debug, use_evalex = False)
