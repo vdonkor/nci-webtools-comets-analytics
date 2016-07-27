@@ -1,6 +1,20 @@
+appComets.HarmonizationFormModel = Backbone.Model.extend({
+    defaults: {
+        cohortList: ["DPP","EPIC","PLCO-CRC","PLCO-breast","Shanghai","WHI","Other"],
+        cohortSelection: null,
+        covariates: [],
+        csvFile: null,
+        exposure: [],
+        methodSelection: null,
+        modelSelection: null,
+        modelDescription: "Unadjusted",
+        outcome:[ "All metabolites" ],
+        integrityChecked: false
+    }
+});
+
 appComets.IntegrityResultsModel = Backbone.Model.extend({
     defaults: {
-        csvFile: null,
         dateRun: new Date().toLocaleDateString(),
         integritymessage: null,
         metab: [],
@@ -11,17 +25,9 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         subjectmeta: [],
         subjectOptions: [],
         subjectID: null,
-        varmap: [],
-        // form writebacks
-        cohortSelection: "",
-        methodSelection: null,
-        modelSelection: null,
-        modelDescription: "",
-        outcome:[ "All metabolites" ],
-        exposure: [],
-        covariates: []
+        varmap: []
     },
-    urlRoot: "/cometsRest/integrityCheck",
+    url: "/cometsRest/integrityCheck",
     parse: function (response, xhr) {
         // Shiny used to handle this for us, but it makes more sense to do here anyway
         var subjectdataIds = response.allSubjectMetaData.slice();
@@ -69,6 +75,8 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         delete response.allSubjectMetaData;
         delete response.allSubjects;
         delete response.mods;
+        console.log(response);
+        return response;
     }
 });
 
@@ -78,7 +86,6 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         excorrdata: [],
         exposures: [],
         plotHeight: 500,
-        sortRow: "Alphabetic (asc)",
         status: false,
         statusMessage: "An unknown error occurred",
         tableOrder: [ "age", "age.n", "age.p", "model", "cohort", "adjvars", "metabolite_name", "hmdb_id", "rt", "m_z", "uid_01", "hmdb", "biochemical" ]
@@ -91,5 +98,6 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         });
         delete response.model;
         console.log(response);
+        return reponse;
     }
 });

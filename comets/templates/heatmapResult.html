@@ -3,8 +3,8 @@
         <div class="form-group">
             <label for="sortRow">Sort rows:</label>
             <select id="sortRow" class="form-control">
-                <option value="Alphabetic (asc)"<%= sortRow == "Alphabetic (asc)" ? "selected" : "" %>>Alphabetic (asc)</option>
-                <option value="Alphabetic (desc)"<%= sortRow == "Alphabetic (desc)" ? "selected" : "" %>>Alphabetic (desc)</option>
+                <option value="Alphabetic (asc)"<%= sortRow == "Alphabetic (asc)" ? " selected" : "" %>>Alphabetic (asc)</option>
+                <option value="Alphabetic (desc)"<%= sortRow == "Alphabetic (desc)" ? " selected" : "" %>>Alphabetic (desc)</option>
                 <% _.each(exposures,function(exposure,key,list) { %>
                     <option value="<%= exposure %>"<%= sortRow == exposure ? "selected" : "" %>><%= exposure %></option>
                 <% }); %>

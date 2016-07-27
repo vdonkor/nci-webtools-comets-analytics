@@ -1,0 +1,4 @@
+<option value="">-- Select Cohort --</option>
+<% _.each(cohortList,function(cohort,key,list) { %>
+    <option value="<%= cohort %>"<%= cohortSelection == cohort ? " selected=\"SELECTED\"" : "" %>><%= cohort %></option>
+<% }); %>

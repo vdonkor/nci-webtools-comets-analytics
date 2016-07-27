@@ -48,12 +48,12 @@ nav.navbar.navbar-default {
     box-shadow: 0 2px 4px 0 rgba(1, 90, 129, 0.4);
 }
 
-#messageBoard,
-#inputHelp,
-#calcProgressbar,
-#interactive,
-#batch,
-#analysisOptions,
+#messageBoard:not(.show),
+#inputHelp:not(.show),
+#calcProgressbar:not(.show),
+#interactive:not(.show),
+#batch:not(.show),
+#analysisOptions:not(.show),
 #loader:not(.show) {
     display: none;
 }
