@@ -36,7 +36,6 @@ nav.navbar.navbar-default {
     border-style: solid;
     border-color: #d9d9d9;
     border-radius: 0 0 4px 4px;
-    overflow: hidden;
 }
 
 .ui-widget {
@@ -77,8 +76,4 @@ input.input:valid {
 
 .plotly {
     width: 100%;
-}
-
-#correlationSummary {
-    overflow-x: auto;
 }
