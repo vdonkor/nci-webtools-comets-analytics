@@ -76,11 +76,14 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
     defaults: {
         csvFile: null,
         excorrdata: [],
+        exposures: [],
+        plotHeight: 500,
+        sortRow: "Alphabetic (asc)",
         status: false,
         statusMessage: "An unknown error occurred",
         tableOrder: [ "age", "age.n", "age.p", "model", "cohort", "adjvars", "metabolite_name", "hmdb_id", "rt", "m_z", "uid_01", "hmdb", "biochemical" ]
     },
-    urlRoot: "/cometsRest/correlate",
+    url: "/cometsRest/correlate",
     parse: function (response, xhr) {
         response.excorrdata = response.excorrdata.map(function(biochemical) {
             biochemical.model = response.model;

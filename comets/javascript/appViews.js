@@ -1,5 +1,19 @@
 // app namespace
-var appComets = {};
+var appComets = {
+    sorts: {
+        "Alphabetic (asc)": function(obj1,obj2) {
+            return ((obj1.metabolite_name > obj2.metabolite_name)?1:(obj1.metabolite_name < obj2.metabolite_name)?-1:0);
+        },
+        "Alphabetic (desc)": function(obj1,obj2) {
+            return ((obj1.metabolite_name < obj2.metabolite_name)?1:(obj1.metabolite_name > obj2.metabolite_name)?-1:0);
+        },
+        "default": function(property) {
+            return function(obj1,obj2) {
+                return obj2[property]-obj1[property];
+            }
+        }
+    }
+};
 
 appComets.ErrorsView = Backbone.View.extend({
     el: '#messageDiv',
@@ -175,7 +189,7 @@ appComets.FormView = Backbone.View.extend({
                 model: summaryModel
             });
             view.correlateHeatmapView = new appComets.CorrelateHeatmapView({
-                model: view.model
+                model: summaryModel
             });
         }).always(function () {
         });
@@ -337,61 +351,37 @@ appComets.CorrelateView = Backbone.View.extend({
 appComets.CorrelateHeatmapView = Backbone.View.extend({
     el: "#tab-heatmap",
     initialize: function () {
-        var view = this;
-        if (view.model) {
-            document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
-
-            if (appComets.templatesList) {
-                view.template = _.template(appComets.templatesList.heatmapResult);
-                view.render();
-            }
+        this.model.on('change',this.render,this);
+        document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
+        if (appComets.templatesList) {
+            this.render();
         }
     },
     render: function () {
+        this.model.set('plotHeight',Math.min(Math.max(this.model.get('plotHeight'),200),9000));
+        this.template = _.template(appComets.templatesList.heatmapResult,this.model.attributes);
         this.$el.html(this.template);
-
-        data = {
-            acetylcholine: 0.7218,
-            acetylglycine: 0.6306,
-            aconitate: 0.7555,
-            adenine: 0.5432,
-            adenosine: 0.7163,
-            adipate: 0.6818,
-            adma: 1.097,
-            adp: 0.8087,
-            alanine: 0.9623,
-            allantoin: 0.4429,
-            alpha_glycerophosphate: 0.6553,
-            alpha_glycerophosphocholine: 0.9891,
-            alpha_hydroxybutyrate: 0.7611,
-            alpha_ketoglutarate: 0.7594,
-            aminoisobutyric_acid: 0.7941,
-            amp: 0.7018,
-            anserine: 0.9876,
-            anthranilic_acid: 0.5126
-        };
-
-        var values = _.values(data);
-        var metaboliteNames = _.keys(data);
-
-        minVal = _.min(values);
-        maxVal = _.max(values);
-
-        generateHeatmap("correlateHeatmap", 'age', metaboliteNames, "Correlation", minVal, maxVal, [values]);
+        var correlationData = this.model.get('excorrdata');
+        var sortRow = this.model.get('sortRow');
+        correlationData = correlationData.sort((appComets.sorts[sortRow]||appComets.sorts.default(sortRow)));
+        var exposures = this.model.get('exposures');
+        var values = correlationData.map(function(biochem) {
+            return exposures.map(function(exposure) {
+              return biochem[exposure];
+            });
+        });
+        var metaboliteNames = correlationData.map(function(biochem) {
+            return biochem.metabolite_name;
+        });
+        generateHeatmap("correlateHeatmap", this.model.get('plotHeight'), exposures, metaboliteNames, "Correlation", values);
     },
     events: {
-        "change #sortRow": "sortGraph",
-        "change #plotHeight": "resizeGraph",
+        "change #sortRow": "updateView",
+        "change #plotHeight": "updateView"
     },
-    sortGraph: function () {
-        console.log("sort graph");
-    },
-    resizeGraph: function (e) {
-        if (e.target.value >= 200) {
-            Plotly.relayout("correlateHeatmap", {
-                height: e.target.value
-            });
-        }
+    updateView: function(e) {
+        var e = $(e.target);
+        this.model.set(e.attr("id"),e.val());
     }
 });
 

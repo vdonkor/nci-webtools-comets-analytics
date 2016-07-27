@@ -58,6 +58,7 @@ runModel <- function(jsonData) {
                     makeOutputCSV("corr",excorrdata,input$cohort)
                     list(
                       excorrdata = excorrdata,
+                      exposures = exmodeldata$ccovs,
                       model = input$model,
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis."

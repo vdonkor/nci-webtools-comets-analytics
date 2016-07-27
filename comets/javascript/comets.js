@@ -45,30 +45,32 @@ function generateHistogram(el, xLabels, yLabels, graphTitle, data) {
     });
 }
 
-function generateHeatmap(el, xLabels, yLabels, legendLabel, minVal, maxVal, data) {
+function generateHeatmap(el, height, xLabels, yLabels, legendLabel, data) {
     Plotly.newPlot(el, [{
-        transpose: true,
         z: data,
-        //        x: xLabels,
+        x: xLabels,
         y: yLabels,
         type: 'heatmap',
-        colorscale: "Viridis",
         colorbar: {
             title: legendLabel
         },
-        zmax: maxVal,
-        zmin: minVal,
-        text: yLabels,
-        height: 500,
-        connectgaps: true
+        colorscale: "Viridis"
     }], {
+        height: height,
         margin: {
             l: 200
         },
-        autosize: true,
+        title: " ",
         xaxis: {
-            title: "Age",
+            title: " ",
             showgrid: false
-        }
+        },
+        yaxis: {
+            title: " "
+        },
+        legend: {
+            title: legendLabel
+        },
+        autosize: true
     });
 }

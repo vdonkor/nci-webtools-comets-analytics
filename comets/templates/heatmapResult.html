@@ -3,15 +3,17 @@
         <div class="form-group">
             <label for="sortRow">Sort rows:</label>
             <select id="sortRow" class="form-control">
-                <option value="asc">Alphabetic (asc)</option>
-                <option value="desc">Alphabetic (desc)</option>
-                <option value="age">age</option>
+                <option value="Alphabetic (asc)"<%= sortRow == "Alphabetic (asc)" ? "selected" : "" %>>Alphabetic (asc)</option>
+                <option value="Alphabetic (desc)"<%= sortRow == "Alphabetic (desc)" ? "selected" : "" %>>Alphabetic (desc)</option>
+                <% _.each(exposures,function(exposure,key,list) { %>
+                    <option value="<%= exposure %>"<%= sortRow == exposure ? "selected" : "" %>><%= exposure %></option>
+                <% }); %>
             </select>
         </div>
 
         <div class="form-group">
             <label for="plotHeight">Plot height:</label>
-            <input id="plotHeight" class="form-control" value="500" type="number" min="200" max="9000" />
+            <input id="plotHeight" class="form-control" value="<%= plotHeight %>" type="number" min="200" max="9000" />
         </div>
     </div>
 </div>
