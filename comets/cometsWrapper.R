@@ -1,6 +1,6 @@
 library(stringr)
 library(jsonlite)
-library(CometsAnalyticsPackage)
+library(COMETS)
 
 checkIntegrity <- function(filename) {
     suppressWarnings(suppressMessages({

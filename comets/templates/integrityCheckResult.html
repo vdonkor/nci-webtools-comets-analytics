@@ -1,6 +1,5 @@
-<h3>Integrity Check Results</h3>
-
 <% if (status) { %>
+<h3>Integrity Check Results</h3>
     <div id="resultStatus" class="alert alert-success">
         <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
@@ -16,14 +15,13 @@
             <th>Subject metabolites sheet</th>
         </tr>
         <tr>
-            <%  _.each(summary.inputDataSummary,function(summaryData) { %>
+            <%  _.each(inputDataSummary,function(summaryData) { %>
                 <td>
                     <%= summaryData %>
                 </td>
                 <% }); %>
         </tr>
     </table>
-
     <h3>Harmonization Summary</h3>
     <table id="harmSummary" class="table table-bordered table-condensed">
         <tr>
@@ -34,11 +32,11 @@
             <th>N with >25% at min</th>
         </tr>
         <tr>
-            <%  _.each(summary.metaboliteSummary,function(summaryData) { %>
+            <%  _.each(metaboliteSummary,function(summaryData) { %>
                 <td>
                     <%= summaryData %>
                 </td>
-                <% }); %>
+            <% }); %>
         </tr>
     </table>
     <div id="varianceDist"></div>
@@ -48,13 +46,10 @@
     </div>
     <div id="subjectDist" >
     </div>
-
     <p>Run date: <%=  dateRun %></p>
-    <% } %>
-
-        <% if (!status) { %>
-            <div id="resultStatus" class="alert alert-warning">
-                <span class="glyphicon glyphicon-warning-sign"></span>
-                <%= statusMessage %>
-            </div>
-        <% } %>
+<% } else if (status !== null) { %>
+    <div id="resultStatus" class="alert alert-warning">
+        <span class="glyphicon glyphicon-warning-sign"></span>
+        <%= statusMessage %>
+    </div>
+<% } %>
