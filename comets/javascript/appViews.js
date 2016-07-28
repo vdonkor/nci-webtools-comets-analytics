@@ -54,11 +54,6 @@ appComets.FormView = Backbone.View.extend({
         "change select": "updateModel",
         "change input[type='text']": "updateModel",
         "change input[type='radio']": "updateModel",
-        /*
-        "change #outcome": "updateOptions",
-        "change #exposure": "updateOptions",
-        "change #covariates": "updateOptions",
-        */
         "click #load": "checkIntegrity",
         "click #runModel": "runModel",
         "click #toggleHelp": function () { this.$el.find("#inputHelp").toggle(); }
@@ -75,7 +70,7 @@ appComets.FormView = Backbone.View.extend({
     },
     updateModel: function(e) {
         var e = $(e.target);
-        this.model.set(e.attr('name')||e.attr('id'),e.val());
+        this.model.set(e.attr('name')||e.attr('id'),e.hasClass('selectized') ? e.val().split(',') : e.val());
     },
     checkIntegrity: function (e) {
         e.preventDefault();
@@ -151,14 +146,6 @@ appComets.FormView = Backbone.View.extend({
         }).always(function () {
         });
     },
-    updateOptions: function (e) {
-        var selectedOptions = e.target.value;
-        if (selectedOptions.length > 0)
-            selectedOptions = selectedOptions.split(",");
-        else
-            selectedOptions = this.model.defaults[e.target.id];
-        var inputs = this.model.set(e.target.id, selectedOptions);
-    },
     render: function () {
         var optionTemplate = _.template(appComets.templatesList['harmonizationForm.options']);
         this.$el.find('#cohortSelection').html(optionTemplate({
@@ -167,58 +154,41 @@ appComets.FormView = Backbone.View.extend({
             selectedOption: this.model.get("cohortSelection")
         }));
         if (this.model.get('status')) {
-            this.$el.find('#analysisOptions').addClass("show");
             var $that = this;
+            var methodSelection = this.model.get('methodSelection');
+            var modelSelection = this.model.get('modelSelection');
+            this.$el.find('#analysisOptions').addClass("show");
             this.$el.find('#batch,#interactive').each(function(i,e) {
                 var id = $(this).prop('id');
-                var state = id == $that.model.get('methodSelection');
+                var state = id == methodSelection;
                 $(this).toggleClass('show',state);
                 $that.$el.find('input[name="methodSelection"][value="'+id+'"]').prop('checked',state);
             });
             this.$el.find('#modelSelection').html(optionTemplate({
-                optionType: "Model",
-                optionList: this.model.get("modelList"),
-                selectedOption: this.model.get("modelSelection")
+                optionType: 'Model',
+                optionList: this.model.get('modelList'),
+                selectedOption: modelSelection
             }));
             this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
             this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
                 $(el).selectize({
-                    plugins: ["remove_button"],
+                    plugins: ['remove_button'],
+                    options: $that.model.get('modelOptions')
                 });
+                el.selectize.setValue($that.model.get(el.id),true);
             });
-        } else {
-            this.$el.find('#analysisOptions').removeClass("show");
-        }
-        /*
-        // retrieve the array of options
-        var results = data.subjectOptions;
-        _.each($that.$el.find('#outcome, #exposure, #covariates'), function (control, ind) {
-            control.selectize.addOption({
-                text: 'All Metabolites',
-                value: 'All metabolites'
-            });
-            control.selectize.addOption(results);
-            control.selectize.refreshOptions();
-            if (control.id == "outcome") {
-                control.selectize.addItem("all metabolites");
+            if (
+                (methodSelection == 'interactive'
+                    && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
+                (methodSelection == 'batch' && modelSelection)
+            ) {
+                this.$el.find('#runModel').removeAttr('disabled');
+            } else {
+                this.$el.find('#runModel').attr('disabled', true);
             }
-        });
-        */
-        /*
-        var interactiveOptionsCount = this.model.get("outcome").length + this.model.get("exposure").length + this.model.get("covariates").length;
-        if (
-            (this.model.get("methodSelection") == "interactive" && interactiveOptionsCount > 0) ||
-            (this.model.get("methodSelection") == "batch" && this.model.get("modelSelection"))
-        ) {
-            this.$el.find("#runModel").removeAttr('disabled');
-        } else
-            this.$el.find("#runModel").attr('disabled', true);
-        if(this.model.get("methodSelection") == "batch") {
-            this.model.set("modelSelection", this.$el.find("#modelSelection").val());
         } else {
-            this.model.set("modelSelection", this.model.defaults.modelSelection);
+            this.$el.find('#analysisOptions').removeClass('show');
         }
-        */
     }
 });
 

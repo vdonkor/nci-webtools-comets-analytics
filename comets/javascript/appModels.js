@@ -10,7 +10,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         modelList: [],
         modelOptions: [],
         modelSelection: null,
-        outcome:[ "All metabolites" ],
+        outcome:[ "all metabolites" ],
         status: false
     }
 });
