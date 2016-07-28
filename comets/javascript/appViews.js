@@ -166,16 +166,19 @@ appComets.FormView = Backbone.View.extend({
         e.preventDefault();
         var summaryModel = new appComets.CorrelationResultsModel();
         var formData = new FormData();
-        formData.append('filename', view.model.get('filename'));
-        formData.append('cohortSelection', view.model.get('cohort'));
-        formData.append('methodSelection', view.model.get('methodSelection'));
-        if (view.model.get('methodSelection') == 'batch') {
-            formData.append('modelSelection', view.model.get('modelSelection'));
-        } else if (view.model.get('methodSelection') == 'interactive') {
-            formData.append('modelDescription', view.model.get('modelDescription'));
-            formData.append('outcome', view.model.get('outcome'));
-            formData.append('exposure', view.model.get('exposure'));
-            formData.append('covariates', view.model.get('covariates'));
+
+        formData.append('filename',view.model.get('filename'));
+        formData.append('cohortSelection',view.model.get('cohort'));
+        formData.append('methodSelection',view.model.get('methodSelection'));
+        formData.append('modelSelection',view.model.get('modelSelection'));
+        formData.append('modelDescription',view.model.get('modelDescription'));
+        formData.append('outcome',JSON.stringify(view.model.get('outcome')));
+        formData.append('exposure',JSON.stringify(view.model.get('exposure')));
+        formData.append('covariates',JSON.stringify(view.model.get('covariates')));
+        if (view.model.get('methodSelection') == 'Batch') {
+            formData.append('modelName',view.model.get('modelSelection'));
+        } else if (view.model.get('methodSelection') == 'Interactive') {
+            formData.append('modelName',view.model.get('modelDescription'));
         }
         summaryModel.fetch({
             type: "POST",
@@ -203,7 +206,7 @@ appComets.FormView = Backbone.View.extend({
     analysisMethod: function (e) {
         view.model.set('methodSelection', e.target.value);
 
-        if (e.target.value == "batch") {
+        if (e.target.value == "Batch") {
             view.$el.find("#batch").show();
             view.$el.find("#interactive").hide();
         } else {
@@ -326,25 +329,25 @@ appComets.CorrelateView = Backbone.View.extend({
 
             switch (this.get("methodSelection")) {
 
-            case "batch":
+            case "Batch":
                 baseView.$el.find("#batch").show();
                 baseView.$el.find("#interactive").hide();
-                this.set("interactive", this.defaults.interactive);
+                this.set("Interactive", this.defaults.Interactive);
                 this.set("modelDescription", this.defaults.modelDescription);
                 this.set("outcome", this.defaults.outcome);
                 this.set("exposure", this.defaults.exposure);
                 this.set("covariates", this.defaults.covariates);
                 break;
-            case "interactive":
+            case "Interactive":
                 baseView.$el.find("#batch").hide();
                 baseView.$el.find("#interactive").show();
-                this.set("batch", this.defaults.batch);
+                this.set("Batch", this.defaults.Batch);
                 this.set("modelSelection", this.defaults.modelSelection)
                 break;
             default:
                 baseView.$el.find("#batch,#interactive").hide();
-                this.set("batch", this.defaults.batch);
-                this.set("interactive", this.defaults.interactive);
+                this.set("Batch", this.defaults.Batch);
+                this.set("Interactive", this.defaults.Interactive);
                 break;
             }
         });

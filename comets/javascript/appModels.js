@@ -15,7 +15,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         // form writebacks
         cohort: "",
         methodSelection: null,
-        modelSelection: null,
+        modelSelection: "1.1 Unadjusted",
         modelDescription: "Unadjusted",
         outcome:[ "All metabolites" ],
         exposure: [],
@@ -85,6 +85,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
     },
     url: "/cometsRest/correlate",
     parse: function (response, xhr) {
+        if (response.exposures.constructor !== Array) response.exposures = [response.exposures];
         response.excorrdata = response.excorrdata.map(function(biochemical) {
             biochemical.model = response.model;
             return biochemical;
