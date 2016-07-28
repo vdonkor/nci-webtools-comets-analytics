@@ -50,7 +50,7 @@
                     </nav>
                 </div>
             </div>
-            
+
             <div class="tab-content grey-border">
                 <div class="tab-pane active" id="tab-home">
                     <div class="container">
@@ -75,18 +75,20 @@
                             <h3>Conduct cohort-specific correlation analyses</h3>
                             <form id="cometsForm" class="well" name="cometsForm" enctype="multipart/form-data">
                                 <div class="form-group">
-                                    <label for="inputDataFile">1. Choose Input Data File:</label>
-                                    <input id="inputDataFile" type="file" accept=".xls,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+                                    <label for="inputDataFile">Choose Input Data File:</label>
+                                    <div class="row">
+                                        <input id="inputDataFile" type="file" accept=".xls,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="col-xs-12 col-sm-9">
+                                        <button id="load" class="btn btn-default col-xs-12 col-sm-3" disabled="true">Check Integrity</button>
+                                    </div>
                                     <div id="calcProgressbar" class="progress">
                                         <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
                                             Uploading....please wait
                                         </div>
                                     </div>
-                                    <button id="load" class="btn btn-default pull-right" disabled="true">Check Integrity</button>
                                 </div>
                                 <div id="analysisOptions">
                                     <div class="form-group">
-                                        <label for="cohortSelection">2. Specify Cohort:</label>
+                                        <label for="cohortSelection">Specify Cohort:</label>
                                         <select name="cohortSelection" id="cohortSelection" class="form-control">
                                             <option value="">-- Select Cohort --</option>
                                             <option value="DPP">DPP</option>
@@ -98,7 +100,7 @@
                                             <option value="Other">Other</option>
                                         </select>
                                     </div>
-                                    <b>3. Specify Method Of Analyses:</b>
+                                    <b>Specify Method Of Analyses:</b>
                                     <div class="radio">
                                         <label for="methodSelection1">
                                             <input type="radio" name="methodSelection" id="methodSelection1" value="Batch" checked="checked">Batch as specfied in the input file
