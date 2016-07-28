@@ -14,7 +14,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         varmap: [],
         // form writebacks
         cohort: "",
-        methodSelection: null,
+        methodSelection: "Batch",
         modelSelection: "1.1 Unadjusted",
         modelDescription: "Unadjusted",
         outcome:[ "All metabolites" ],

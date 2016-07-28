@@ -204,8 +204,10 @@ appComets.FormView = Backbone.View.extend({
         });
     },
     analysisMethod: function (e) {
+        console.log(e);
+        console.log(e.target.value);
         view.model.set('methodSelection', e.target.value);
-
+        console.log(view.model.get('methodSelection'));
         if (e.target.value == "Batch") {
             view.$el.find("#batch").show();
             view.$el.find("#interactive").hide();
@@ -244,11 +246,10 @@ appComets.FormView = Backbone.View.extend({
                 });
             });
 
-            view.model.set("methodSelection", view.$el.find("[name='methodSelection']").val());
+            view.$el.find("#" + view.model.get("methodSelection").toLowerCase()).show();
             view.model.set("modelSelection", view.$el.find("#modelSelection").val());
 
-            if (view.model.get("methodSelection") == "batch") {
-                view.$el.find("#" + view.model.get("methodSelection")).show();
+            if (view.model.get("methodSelection") == "Batch") {
                 view.model.set("modelSelection", view.$el.find("#modelSelection").val());
             } else
                 view.model.set("modelSelection", view.model.defaults.modelSelection);
