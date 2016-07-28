@@ -5,7 +5,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         covariates: [],
         csvFile: null,
         exposure: [],
-        methodSelection: "batch",
+        methodSelection: "Batch",
         modelDescription: "Unadjusted",
         modelList: [],
         modelOptions: [],
@@ -107,6 +107,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
     },
     url: "/cometsRest/correlate",
     parse: function (response, xhr) {
+        if (response.exposures.constructor !== Array) response.exposures = [response.exposures];
         response.excorrdata = response.excorrdata.map(function(biochemical) {
             biochemical.model = response.model;
             return biochemical;

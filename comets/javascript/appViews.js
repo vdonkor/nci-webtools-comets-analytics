@@ -2,15 +2,15 @@
 var appComets = {
     models: { },
     sorts: {
-        "Alphabetic (asc)": function(obj1,obj2) {
-            return ((obj1.metabolite_name > obj2.metabolite_name)?1:(obj1.metabolite_name < obj2.metabolite_name)?-1:0);
+        "Alphabetic (asc)": function (obj1, obj2) {
+            return ((obj1.metabolite_name > obj2.metabolite_name) ? 1 : (obj1.metabolite_name < obj2.metabolite_name) ? -1 : 0);
         },
-        "Alphabetic (desc)": function(obj1,obj2) {
-            return ((obj1.metabolite_name < obj2.metabolite_name)?1:(obj1.metabolite_name > obj2.metabolite_name)?-1:0);
+        "Alphabetic (desc)": function (obj1, obj2) {
+            return ((obj1.metabolite_name < obj2.metabolite_name) ? 1 : (obj1.metabolite_name > obj2.metabolite_name) ? -1 : 0);
         },
-        "default": function(property) {
-            return function(obj1,obj2) {
-                return obj2[property]-obj1[property];
+        "default": function (property) {
+            return function (obj1, obj2) {
+                return obj2[property] - obj1[property];
             }
         }
     },
@@ -70,7 +70,7 @@ appComets.FormView = Backbone.View.extend({
     },
     updateModel: function(e) {
         var e = $(e.target);
-        this.model.set(e.attr('name')||e.attr('id'),e.hasClass('selectized') ? e.val().split(',') : e.val());
+        this.model.set(e.attr('name')||e.attr('id'),!e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
     },
     checkIntegrity: function (e) {
         e.preventDefault();
@@ -124,23 +124,23 @@ appComets.FormView = Backbone.View.extend({
         formData.append('filename',this.model.get('filename'));
         formData.append('cohortSelection',this.model.get('cohort'));
         formData.append('methodSelection',this.model.get('methodSelection'));
-        if (this.model.get('methodSelection') == 'batch') {
-            formData.append('modelSelection',this.model.get('modelSelection'));
-        } else if (this.model.get('methodSelection') == 'interactive') {
-            formData.append('modelDescription',this.model.get('modelDescription'));
-            formData.append('outcome',this.model.get('outcome'));
-            formData.append('exposure',this.model.get('exposure'));
-            formData.append('covariates',this.model.get('covariates'));
-        }
+        formData.append('modelSelection',this.model.get('modelSelection'));
+        formData.append('modelDescription',this.model.get('modelDescription'));
+        formData.append('outcome',JSON.stringify(this.model.get('outcome')));
+        formData.append('exposure',JSON.stringify(this.model.get('exposure')));
+        formData.append('covariates',JSON.stringify(this.model.get('covariates')));
+        formData.append('modelName',view.model.get('methodSelection') == 'Batch'?view.model.get('modelSelection'):view.model.get('modelDescription'));
         summaryModel.fetch({
             type: "POST",
             data: formData,
             dataType: "json",
             cache: false,
             processData: false,
-            contentType: false
-        }).fail(function () {
-        }).then(function (data, statusText, xhr) {
+            contentType: false,
+            beforeSend: function () {
+                view.$el.find("#loader").addClass("show");
+            }
+        }).fail(function () {}).then(function (data, statusText, xhr) {
             summaryModel.set(data);
             this.summaryView = new appComets.SummaryView({
                 model: summaryModel
@@ -149,6 +149,7 @@ appComets.FormView = Backbone.View.extend({
                 model: summaryModel
             });
         }).always(function () {
+            view.$el.find("#loader").removeClass("show");
         });
     },
     render: function () {
@@ -165,7 +166,7 @@ appComets.FormView = Backbone.View.extend({
             var methodSelection = this.model.get('methodSelection');
             var modelSelection = this.model.get('modelSelection');
             this.$el.find('#analysisOptions').addClass("show");
-            this.$el.find('#batch,#interactive').each(function(i, el) {
+            this.$el.find('#Batch,#Interactive').each(function(i, el) {
                 var id = el.id;
                 var state = id == methodSelection;
                 $(el).toggleClass('show',state);
@@ -184,10 +185,11 @@ appComets.FormView = Backbone.View.extend({
                 });
                 el.selectize.setValue($that.model.get(el.id),true);
             });
-            if (
-                (methodSelection == 'interactive'
-                    && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
-                (methodSelection == 'batch' && modelSelection)
+            console.log(this.model.attributes)
+            if (this.model.get('cohortSelection') &&
+                    ((methodSelection == 'Interactive'
+                        && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
+                    (methodSelection == 'Batch' && modelSelection))
             ) {
                 this.$el.find('#runModel').removeAttr('disabled');
             } else {
@@ -223,10 +225,11 @@ appComets.IntegrityView = Backbone.View.extend({
         }
     },
     events: {
-        "click #resultsDownload": 'startDownload',
+        "click .download": 'startDownload',
         'change #corr_cutoff': 'updateCorrelation'
     },
     startDownload: function (e) {
+        e.preventDefault();
         alert("starting download");
     },
     updateCorrelation: function (e) {
@@ -238,26 +241,26 @@ appComets.IntegrityView = Backbone.View.extend({
 appComets.CorrelateHeatmapView = Backbone.View.extend({
     el: "#tab-heatmap",
     initialize: function () {
-        this.model.on('change',this.render,this);
+        this.model.on('change', this.render, this);
         document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
         if (appComets.templatesList) {
             this.render();
         }
     },
     render: function () {
-        this.model.set('plotHeight',Math.min(Math.max(this.model.get('plotHeight'),200),9000));
-        this.template = _.template(appComets.templatesList.heatmapResult,this.model.attributes);
+        this.model.set('plotHeight', Math.min(Math.max(this.model.get('plotHeight'), 200), 9000));
+        this.template = _.template(appComets.templatesList.heatmapResult, this.model.attributes);
         this.$el.html(this.template);
         var correlationData = this.model.get('excorrdata');
         var sortRow = this.model.get('sortRow');
-        correlationData = correlationData.sort((appComets.sorts[sortRow]||appComets.sorts.default(sortRow)));
+        correlationData = correlationData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
         var exposures = this.model.get('exposures');
-        var values = correlationData.map(function(biochem) {
-            return exposures.map(function(exposure) {
-              return biochem[exposure];
+        var values = correlationData.map(function (biochem) {
+            return exposures.map(function (exposure) {
+                return biochem[exposure];
             });
         });
-        var metaboliteNames = correlationData.map(function(biochem) {
+        var metaboliteNames = correlationData.map(function (biochem) {
             return biochem.metabolite_name;
         });
         generateHeatmap("correlateHeatmap", this.model.get('plotHeight'), exposures, metaboliteNames, "Correlation", values);
@@ -268,7 +271,7 @@ appComets.CorrelateHeatmapView = Backbone.View.extend({
     },
     updateModel: function(e) {
         var e = $(e.target);
-        this.model.set(e.attr("id"),e.val());
+        this.model.set(e.attr("id"), e.val());
     }
 });
 
@@ -298,19 +301,26 @@ appComets.SummaryView = Backbone.View.extend({
             var table = $('#correlationSummary table').DataTable({
                 pageLength: 25
             });
-            table.columns().every(function() {
+            table.columns().every(function () {
                 var column = this;
-                $('input',this.footer()).on('keyup change',function() {
+                $('input', this.footer()).on('keyup change', function () {
                     if (column.search() !== this.value)
                         column
-                            .search(this.value)
-                            .draw();
+                        .search(this.value)
+                        .draw();
                 });
             });
         }
     },
+    events: {
+        "click .download": 'startDownload',
+    },
     render: function () {
         this.$el.html(this.template);
+    },
+    startDownload: function (e) {
+        e.preventDefault();
+        alert("starting download");
     }
 });
 

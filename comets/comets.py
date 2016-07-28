@@ -5,7 +5,7 @@ from rpy2.robjects import r as wrapper
 app = Flask(__name__)
 wrapper.source('./cometsWrapper.R')
 
-def buildFailure(message,statusCode = 400):
+def buildFailure(message,statusCode = 500):
   response = jsonify(message)
   response.status_code = statusCode
   return response
@@ -52,28 +52,20 @@ def correlate():
         parameters = dict(request.form)
         for field in parameters:
             parameters[field] = parameters[field][0]
-        inputData = {
-            'cohort': parameters['cohortSelection'],
-            'filename': os.path.join('uploads', parameters['filename']+".xlsx"),
-            'method': parameters['methodSelection']
-        }
-        if (parameters['methodSelection'] == 'batch'):
-            inputData['model'] = parameters['modelSelection']
-        elif (parameters['methodSelection'] == 'interactive'):
-            inputData['model'] = parameters['modelDescription']
-            inputData['outcomes'] = None if len(parameters['outcome']) == 0 else parameters['outcome'].split(',')
-            inputData['exposures'] = None if len(parameters['exposure']) == 0 else parameters['exposure'].split(',')
-            inputData['covariates'] = None if len(parameters['covariates']) == 0 else parameters['covariates'].split(',')
-        else:
-            return buildFailure({"status": False, "error": "An unknown or no method of analyses was selected."})
-        result=json.loads(wrapper.runModel(json.dumps(inputData))[0])
+        if ('filename' in parameters):
+            parameters['filename'] = os.path.join('uploads', parameters['filename']+".xlsx")
+        if ('outcome' in parameters):
+            parameters['outcome'] = json.loads(parameters['outcome'])
+        if ('exposure' in parameters):
+            parameters['exposure'] = json.loads(parameters['exposure'])
+        if ('covariates' in parameters):
+            parameters['covariates'] = json.loads(parameters['covariates'])
+        print(parameters)
+        result = json.loads(wrapper.runModel(json.dumps(parameters))[0])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
-            forReturn = result['saveValue']
-            if (not isinstance(forReturn['exposures'],list)):
-                forReturn['exposures'] = [forReturn['exposures']]
-            response = buildSuccess(forReturn)
+            response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame

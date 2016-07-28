@@ -35,31 +35,13 @@ runModel <- function(jsonData) {
                 {
                     input = fromJSON(jsonData)
                     exmetabdata <- readCOMETSinput(input$filename)
-                    if (input$method == "batch") {
-                        model = subset(exmetabdata$mods,model==input$model)
-                        if (is.na(model$outcomes)) {
-                            input$outcomes = "All metabolites"
-                        } else {
-                            input$outcomes = model$outcomes
-                        }
-                        if (is.na(model$exposure)) {
-                            input$exposures = "age"
-                        } else {
-                            input$exposures = model$exposure
-                        }
-                        if (is.na(model$adjustment)) {
-                            input$covariates = NULL
-                        } else {
-                            input$covariates = model$adjustment
-                        }
-                    }
-                    exmodeldata <- getModelData(exmetabdata,rowvars=input$outcomes,colvars=input$exposures,adjvars=input$covariates)
-                    excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohort)
-                    makeOutputCSV("corr",excorrdata,input$cohort)
+                    exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
+                    excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
+                    #COMETS:::makeOutputCSV("corr",excorrdata,input$cohortSelection)
                     list(
                       excorrdata = excorrdata,
                       exposures = exmodeldata$ccovs,
-                      model = input$model,
+                      model = input$modelName,
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis."
                     )
