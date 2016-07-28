@@ -1,15 +1,15 @@
 // app namespace
 var appComets = {
     sorts: {
-        "Alphabetic (asc)": function(obj1,obj2) {
-            return ((obj1.metabolite_name > obj2.metabolite_name)?1:(obj1.metabolite_name < obj2.metabolite_name)?-1:0);
+        "Alphabetic (asc)": function (obj1, obj2) {
+            return ((obj1.metabolite_name > obj2.metabolite_name) ? 1 : (obj1.metabolite_name < obj2.metabolite_name) ? -1 : 0);
         },
-        "Alphabetic (desc)": function(obj1,obj2) {
-            return ((obj1.metabolite_name < obj2.metabolite_name)?1:(obj1.metabolite_name > obj2.metabolite_name)?-1:0);
+        "Alphabetic (desc)": function (obj1, obj2) {
+            return ((obj1.metabolite_name < obj2.metabolite_name) ? 1 : (obj1.metabolite_name > obj2.metabolite_name) ? -1 : 0);
         },
-        "default": function(property) {
-            return function(obj1,obj2) {
-                return obj2[property]-obj1[property];
+        "default": function (property) {
+            return function (obj1, obj2) {
+                return obj2[property] - obj1[property];
             }
         }
     }
@@ -42,12 +42,12 @@ appComets.LandingView = Backbone.View.extend({
         this.resultModel = new appComets.IntegrityResultsModel();
 
         //subviews
-        this.formView = new appComets.FormView({
-            el: this.$el.find("#cometsForm"),
-            model: this.resultModel
-        });
 
         this.correlateView = new appComets.CorrelateView({
+            model: this.resultModel
+        });
+        this.formView = new appComets.FormView({
+            el: this.$el.find("#cometsForm"),
             model: this.resultModel
         });
     },
@@ -69,6 +69,7 @@ appComets.FormView = Backbone.View.extend({
         view = this;
         // watch model for changes and trigger render
         view.model.on('change', view.render);
+
         view.render();
     },
     events: {
@@ -100,7 +101,7 @@ appComets.FormView = Backbone.View.extend({
     checkIntegrity: function (e) {
         e.preventDefault();
 
-        file = view.model.get("csvFile")
+        file = view.model.get("csvFile");
         if (file) {
             var formData = new FormData();
             formData.append("inputFile", file);
@@ -114,7 +115,8 @@ appComets.FormView = Backbone.View.extend({
                 contentType: false,
                 beforeSend: function () {
                     view.$el.find("#loader").addClass("show");
-                    view.$el.find("#calcProgressbar").show()
+                    view.$el.find("#calcProgressbar")
+                        .show()
                         .find("[role='progressbar']")
                         .removeClass("progress-bar-danger progress-bar-success")
                         .addClass("active").text("Uploading....Please Wait");
@@ -140,7 +142,7 @@ appComets.FormView = Backbone.View.extend({
                     control.selectize.refreshOptions();
 
                     if (control.id == "outcome") {
-                        control.selectize.addItem("all metabolites");
+                        control.selectize.setValue("All metabolites");
                     }
                 });
 
@@ -164,6 +166,7 @@ appComets.FormView = Backbone.View.extend({
         e.preventDefault();
         var summaryModel = new appComets.CorrelationResultsModel();
         var formData = new FormData();
+
         formData.append('filename',view.model.get('filename'));
         formData.append('cohortSelection',view.model.get('cohort'));
         formData.append('methodSelection',view.model.get('methodSelection'));
@@ -183,9 +186,11 @@ appComets.FormView = Backbone.View.extend({
             dataType: "json",
             cache: false,
             processData: false,
-            contentType: false
-        }).fail(function () {
-        }).then(function (data, statusText, xhr) {
+            contentType: false,
+            beforeSend: function () {
+                view.$el.find("#loader").addClass("show");
+            }
+        }).fail(function () {}).then(function (data, statusText, xhr) {
             summaryModel.set(data);
             view.summaryView = new appComets.SummaryView({
                 model: summaryModel
@@ -194,6 +199,8 @@ appComets.FormView = Backbone.View.extend({
                 model: summaryModel
             });
         }).always(function () {
+
+            view.$el.find("#loader").removeClass("show");
         });
     },
     analysisMethod: function (e) {
@@ -209,8 +216,9 @@ appComets.FormView = Backbone.View.extend({
     },
     cohortSelect: function (e) {
         view.model.set('cohort', e.target.value);
+
     },
-    modelSelect: function(e) {
+    modelSelect: function (e) {
         view.model.set('modelSelection', e.target.value);
     },
     updateOptions: function (e) {
@@ -236,19 +244,23 @@ appComets.FormView = Backbone.View.extend({
                 });
             });
 
-            var runAvailable = false;
-            if(view.model.get("methodSelection") == "Batch") {
-                view.model.set("modelSelection", view.$el.find("#modelSelection").val());
-                if (view.model.get("modelSelection")) runAvailable = true;
-            } else {
-                view.model.set("modelSelection", view.model.defaults.modelSelection);
-                if (interactiveOptionsCount > 0) runAvailable = true;
-            }
-            if (runAvailable) {
-                view.$el.find("#runModel").removeAttr('disabled');
-            } else
-                view.$el.find("#runModel").attr('disabled', true);
+            view.model.set("methodSelection", view.$el.find("[name='methodSelection']").val());
+            view.model.set("modelSelection", view.$el.find("#modelSelection").val());
 
+            if (view.model.get("methodSelection") == "batch") {
+                view.$el.find("#" + view.model.get("methodSelection")).show();
+                view.model.set("modelSelection", view.$el.find("#modelSelection").val());
+            } else
+                view.model.set("modelSelection", view.model.defaults.modelSelection);
+            
+            if(view.$el.find("#modelDescription").val().length === 0){
+                view.$el.find("#modelDescription").val(view.model.defaults.modelDescription);
+            }
+
+            if (view.model.get("cohort"))
+                view.$el.find("#runModel").removeAttr("disabled");
+            else
+                view.$el.find("#runModel").attr("disabled", true);
         }
     }
 });
@@ -353,26 +365,26 @@ appComets.CorrelateView = Backbone.View.extend({
 appComets.CorrelateHeatmapView = Backbone.View.extend({
     el: "#tab-heatmap",
     initialize: function () {
-        this.model.on('change',this.render,this);
+        this.model.on('change', this.render, this);
         document.title = "Integrity Check - Welcome to COMETS (COnsortium of METabolomics Studies)";
         if (appComets.templatesList) {
             this.render();
         }
     },
     render: function () {
-        this.model.set('plotHeight',Math.min(Math.max(this.model.get('plotHeight'),200),9000));
-        this.template = _.template(appComets.templatesList.heatmapResult,this.model.attributes);
+        this.model.set('plotHeight', Math.min(Math.max(this.model.get('plotHeight'), 200), 9000));
+        this.template = _.template(appComets.templatesList.heatmapResult, this.model.attributes);
         this.$el.html(this.template);
         var correlationData = this.model.get('excorrdata');
         var sortRow = this.model.get('sortRow');
-        correlationData = correlationData.sort((appComets.sorts[sortRow]||appComets.sorts.default(sortRow)));
+        correlationData = correlationData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
         var exposures = this.model.get('exposures');
-        var values = correlationData.map(function(biochem) {
-            return exposures.map(function(exposure) {
-              return biochem[exposure];
+        var values = correlationData.map(function (biochem) {
+            return exposures.map(function (exposure) {
+                return biochem[exposure];
             });
         });
-        var metaboliteNames = correlationData.map(function(biochem) {
+        var metaboliteNames = correlationData.map(function (biochem) {
             return biochem.metabolite_name;
         });
         generateHeatmap("correlateHeatmap", this.model.get('plotHeight'), exposures, metaboliteNames, "Correlation", values);
@@ -381,9 +393,9 @@ appComets.CorrelateHeatmapView = Backbone.View.extend({
         "change #sortRow": "updateView",
         "change #plotHeight": "updateView"
     },
-    updateView: function(e) {
+    updateView: function (e) {
         var e = $(e.target);
-        this.model.set(e.attr("id"),e.val());
+        this.model.set(e.attr("id"), e.val());
     }
 });
 
@@ -413,13 +425,13 @@ appComets.SummaryView = Backbone.View.extend({
             var table = $('#correlationSummary table').DataTable({
                 pageLength: 25
             });
-            table.columns().every(function() {
+            table.columns().every(function () {
                 var column = this;
-                $('input',this.footer()).on('keyup change',function() {
+                $('input', this.footer()).on('keyup change', function () {
                     if (column.search() !== this.value)
                         column
-                            .search(this.value)
-                            .draw();
+                        .search(this.value)
+                        .draw();
                 });
             });
         }
