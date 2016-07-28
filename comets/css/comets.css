@@ -80,11 +80,7 @@ input.input:valid {
     width: 100%;
 }
 
-#correlationSummary {
-    overflow-x: auto;
-}
-
-button#resultsDownload {
+button.download {
     float: right;
     margin: 10px auto;
 }
@@ -111,6 +107,9 @@ table.summaryTables thead:first-child th {
     filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#606c88', endColorstr='#3f4c6b', GradientType=0);
 }
 
+th,td {
+    padding: 0px 2px;
+}
 th input {
     min-width: 100px;
     max-width: 150px;

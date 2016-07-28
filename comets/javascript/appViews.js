@@ -204,10 +204,7 @@ appComets.FormView = Backbone.View.extend({
         });
     },
     analysisMethod: function (e) {
-        console.log(e);
-        console.log(e.target.value);
         view.model.set('methodSelection', e.target.value);
-        console.log(view.model.get('methodSelection'));
         if (e.target.value == "Batch") {
             view.$el.find("#batch").show();
             view.$el.find("#interactive").hide();
@@ -304,10 +301,11 @@ appComets.IntegrityView = Backbone.View.extend({
         }));
     },
     events: {
-        "click #resultsDownload": 'startDownload',
+        "click .download": 'startDownload',
         'change #corr_cutoff': 'updateCorrelation'
     },
     startDownload: function (e) {
+        e.preventDefault();
         alert("starting download");
     },
     updateCorrelation: function (e) {
@@ -437,8 +435,15 @@ appComets.SummaryView = Backbone.View.extend({
             });
         }
     },
+    events: {
+        "click .download": 'startDownload',
+    },
     render: function () {
         this.$el.html(this.template);
+    },
+    startDownload: function (e) {
+        e.preventDefault();
+        alert("starting download");
     }
 });
 
