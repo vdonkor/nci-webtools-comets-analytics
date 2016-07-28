@@ -93,14 +93,19 @@ appComets.FormView = Backbone.View.extend({
                         .removeClass("progress-bar-danger progress-bar-success")
                         .addClass("active").text("Uploading....Please Wait");
                 }
-            }).fail(function () {
+            }).fail(function (data) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
                 $that.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
                 $that.$el.find("#inputDataFile").unwrap();
-                $that.model.set('integrityChecked',false);
+                if (data.responseJSON && 'status' in data.responseJSON) {
+                    $.extend($that.model.attributes,{
+                        status: data.responseJSON.status
+                    });
+                    $that.render();
+                }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
-                $.extend($.extend($that.model.attributes,$that.model.defaults),{
+                $.extend($that.model.attributes,{
                     modelList: data.models.map(function(model) { return model.model; }),
                     modelOptions: data.modelOptions,
                     status: data.status
@@ -147,21 +152,23 @@ appComets.FormView = Backbone.View.extend({
         });
     },
     render: function () {
+        // Let's us update an options list using a templatized string instead of building one ourself or one at a time
         var optionTemplate = _.template(appComets.templatesList['harmonizationForm.options']);
         this.$el.find('#cohortSelection').html(optionTemplate({
             optionType: "Cohort",
             optionList: this.model.get("cohortList"),
             selectedOption: this.model.get("cohortSelection")
         }));
+        // only if we've successfully uploaded a file, because we need that data
         if (this.model.get('status')) {
             var $that = this;
             var methodSelection = this.model.get('methodSelection');
             var modelSelection = this.model.get('modelSelection');
             this.$el.find('#analysisOptions').addClass("show");
-            this.$el.find('#batch,#interactive').each(function(i,e) {
-                var id = $(this).prop('id');
+            this.$el.find('#batch,#interactive').each(function(i, el) {
+                var id = el.id;
                 var state = id == methodSelection;
-                $(this).toggleClass('show',state);
+                $(el).toggleClass('show',state);
                 $that.$el.find('input[name="methodSelection"][value="'+id+'"]').prop('checked',state);
             });
             this.$el.find('#modelSelection').html(optionTemplate({
@@ -204,12 +211,15 @@ appComets.IntegrityView = Backbone.View.extend({
         }
     },
     render: function () {
+        console.log(this.model.attributes);
         if (this.model.get('integrityChecked')){
             this.$el.html(this.template(this.model.attributes));
             var log2var = this.model.get('log2var');
             var numMin = this.model.get('num.min');
             if (log2var !== null) generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Log2 Variance Distribution', log2var);
             if (numMin !== null) generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of number of subject at min', numMin);
+        } else {
+            this.$el.html('');
         }
     },
     events: {
