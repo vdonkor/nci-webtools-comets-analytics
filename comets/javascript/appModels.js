@@ -6,11 +6,12 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         csvFile: null,
         exposure: [],
         methodSelection: "batch",
-        modelList: [],
-        modelSelection: null,
         modelDescription: "Unadjusted",
+        modelList: [],
+        modelOptions: [],
+        modelSelection: null,
         outcome:[ "All metabolites" ],
-        integrityChecked: false
+        status: false
     }
 });
 
@@ -27,7 +28,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         statusMessage: null,
         subjectdata: [],
         subjectmeta: [],
-        subjectOptions: [],
+        modelOptions: [],
         subjectID: null,
         varmap: []
     },
@@ -73,11 +74,15 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
             return newMetabolites;
         });
         // options need to be array of objects for selectize plugin
-        response.subjectOptions = response.allMetabolites.concat(response.allSubjectMetaData).map(function(subject) {
+        response.modelOptions = response.allMetabolites.concat(response.allSubjectMetaData).map(function(subject) {
             return {
                 text: subject,
                 value: subject
             };
+        });
+        response.modelOptions.unshift({
+            text: 'All Metabolites',
+            value: 'all metabolites'
         });
         response.log2var = response.metab.map(function (obj) { return obj.log2var; });
         response['num.min'] = response.metab.map(function (obj) { return obj['num.min']; });

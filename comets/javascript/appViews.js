@@ -105,27 +105,12 @@ appComets.FormView = Backbone.View.extend({
                 $that.model.set('integrityChecked',false);
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
-                $.extend($that.model.attributes,{
-                    integrityChecked: true,
+                $.extend($.extend($that.model.attributes,$that.model.defaults),{
                     modelList: data.models.map(function(model) { return model.model; }),
-                    modelSelection: null
+                    modelOptions: data.modelOptions,
+                    status: data.status
                 });
                 $that.render();
-                /*
-                // retrieve the array of options
-                var results = data.subjectOptions;
-                _.each($that.$el.find('#outcome, #exposure, #covariates'), function (control, ind) {
-                    control.selectize.addOption({
-                        text: 'All Metabolites',
-                        value: 'All metabolites'
-                    });
-                    control.selectize.addOption(results);
-                    control.selectize.refreshOptions();
-                    if (control.id == "outcome") {
-                        control.selectize.addItem("all metabolites");
-                    }
-                });
-                */
             }).always(function () {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
                 $that.$el.find("#loader").removeClass("show");
@@ -181,7 +166,7 @@ appComets.FormView = Backbone.View.extend({
             optionList: this.model.get("cohortList"),
             selectedOption: this.model.get("cohortSelection")
         }));
-        if (this.model.get('integrityChecked')) {
+        if (this.model.get('status')) {
             this.$el.find('#analysisOptions').addClass("show");
             var $that = this;
             this.$el.find('#batch,#interactive').each(function(i,e) {
@@ -195,18 +180,32 @@ appComets.FormView = Backbone.View.extend({
                 optionList: this.model.get("modelList"),
                 selectedOption: this.model.get("modelSelection")
             }));
-            console.log(this.model.attributes);
+            this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
+            this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+                $(el).selectize({
+                    plugins: ["remove_button"],
+                });
+            });
         } else {
             this.$el.find('#analysisOptions').removeClass("show");
         }
-        
+        /*
+        // retrieve the array of options
+        var results = data.subjectOptions;
+        _.each($that.$el.find('#outcome, #exposure, #covariates'), function (control, ind) {
+            control.selectize.addOption({
+                text: 'All Metabolites',
+                value: 'All metabolites'
+            });
+            control.selectize.addOption(results);
+            control.selectize.refreshOptions();
+            if (control.id == "outcome") {
+                control.selectize.addItem("all metabolites");
+            }
+        });
+        */
         /*
         var interactiveOptionsCount = this.model.get("outcome").length + this.model.get("exposure").length + this.model.get("covariates").length;
-        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
-            $(el).selectize({
-                plugins: ["remove_button"],
-            });
-        });
         if (
             (this.model.get("methodSelection") == "interactive" && interactiveOptionsCount > 0) ||
             (this.model.get("methodSelection") == "batch" && this.model.get("modelSelection"))
