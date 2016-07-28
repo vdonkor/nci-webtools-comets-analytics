@@ -50,7 +50,6 @@
                     </nav>
                 </div>
             </div>
-
             <div class="tab-content grey-border">
                 <div class="tab-pane active" id="tab-home">
                     <div class="container">
@@ -68,7 +67,7 @@
                         </p>
                     </div>
                 </div>
-                <!-- start correlate Tab -->
+				<!-- start correlate Tab -->
                 <div class="tab-pane" id="tab-correlate">
                     <div class="row">
                         <div class="col-xs-12 col-md-4">
@@ -91,13 +90,6 @@
                                         <label for="cohortSelection">Specify Cohort:</label>
                                         <select name="cohortSelection" id="cohortSelection" class="form-control">
                                             <option value="">-- Select Cohort --</option>
-                                            <option value="DPP">DPP</option>
-                                            <option value="EPIC">EPIC</option>
-                                            <option value="PLCO-CRC">PLCO-CRC</option>
-                                            <option value="PLCO-breast">PLCO-breast</option>
-                                            <option value="Shanghai">Shanghai</option>
-                                            <option value="WHI">WHI</option>
-                                            <option value="Other">Other</option>
                                         </select>
                                     </div>
                                     <b>Specify Method Of Analyses:</b>
@@ -110,19 +102,17 @@
                                         <label for="methodSelection2">
                                             <input type="radio" name="methodSelection" id="methodSelection2" value="Interactive">Interactive user input</label>
                                     </div>
-                                    <div id="batch">
+                                    <div id="Batch">
                                         <div class="form-group">
                                             <label for="modelSelection">Choose Model:</label>
                                             <select name="modelSelection" id="modelSelection" class="form-control"></select>
                                         </div>
                                     </div>
-
-                                    <div id="interactive">
+                                    <div id="Interactive">
                                         <div class="form-group">
                                             <label for="modelDescription">Describe Model:</label>
                                             <input type="text" name="modelDescription" id="modelDescription" class="form-control" />
                                         </div>
-
                                         <div class="form-group">
                                             <label for="outcome">Select Outcome(s):</label>
                                             <input type="text" name="outcome" id="outcome" />
@@ -134,11 +124,10 @@
                                         </div>
 
                                         <div class="form-group">
-                                            <label for="exposure">Adjusted Covariates:</label>
+                                            <label for="covariates">Adjusted Covariates:</label>
                                             <input type="text" name="covariates" id="covariates" />
                                         </div>
                                     </div>
-
                                     <button id="runModel" class="btn btn-default pull-right" disabled="true">Run Model</button>
                                 </div>
                                 <a id="toggleHelp" href="javascript:void(0);">Help</a>
@@ -160,7 +149,6 @@
                                 </div>
                                 <div id="loader"></div>
                             </form>
-
                         </div>
                         <!-- end of well -->
 
@@ -174,7 +162,7 @@
                                                 <li class="active"><a href="#tab-integrity" data-toggle="tab">Integrity Check</a></li>
                                                 <li><a href="#tab-summary" data-toggle="tab">Summary</a></li>
                                                 <li><a href="#tab-heatmap" data-toggle="tab" id="controlTabId">Heatmap</a></li>
-                                                <li><a href="#tab-cluster" data-toggle="tab" id="harmonizationTabId">Cluster and Heatmap</a></li>
+                                                <!--<li><a href="#tab-cluster" data-toggle="tab" id="harmonizationTabId">Cluster and Heatmap</a></li>-->
                                             </ul>
                                         </div>
                                     </nav>
@@ -198,10 +186,12 @@
                                             <div id="heatmapDiv" class="col-xs-12">
                                             </div>
                                         </div>
-                                        <div class="tab-pane" id="tab-cluster">
-                                            <div id="clusterDiv" class="col-xs-12">
+                                        <!--
+                                            <div class="tab-pane" id="tab-cluster">
+                                                <div id="clusterDiv" class="col-xs-12">
+                                                </div>
                                             </div>
-                                        </div>
+                                        -->
                                     </div>
                                 </div>
                             </div>

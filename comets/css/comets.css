@@ -47,12 +47,12 @@ nav.navbar.navbar-default {
     box-shadow: 0 2px 4px 0 rgba(1, 90, 129, 0.4);
 }
 
-#messageBoard,
-#inputHelp,
-#calcProgressbar,
-#interactive,
-#batch,
-#analysisOptions,
+#messageBoard:not(.show),
+#inputHelp:not(.show),
+#calcProgressbar:not(.show),
+#Interactive:not(.show),
+#Batch:not(.show),
+#analysisOptions:not(.show),
 #loader:not(.show) {
     display: none;
 }
@@ -90,7 +90,7 @@ table th {
     text-align: center;
 }
 
-table.summaryTables thead th {
+table.summaryTables thead tr th {
     background: #ffffff;
     background: -moz-linear-gradient(top, #ffffff 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%);
     background: -webkit-linear-gradient(top, #ffffff 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%);
@@ -98,7 +98,7 @@ table.summaryTables thead th {
     filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f6f6f6', GradientType=0);
 }
 
-table.summaryTables thead:first-child th {
+table.summaryTables thead tr:first-child th {
     color: #FFF;
     background: #606c88;
     background: -moz-linear-gradient(top, #606c88 0%, #3f4c6b 100%);

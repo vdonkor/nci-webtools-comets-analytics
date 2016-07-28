@@ -1,6 +1,7 @@
 .Rhistory
 *.sh
 *.wsgi
+*.csv
 app/
 tmp/
 uploads/
