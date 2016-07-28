@@ -101,7 +101,7 @@ appComets.FormView = Backbone.View.extend({
     checkIntegrity: function (e) {
         e.preventDefault();
 
-        file = view.model.get("csvFile")
+        file = view.model.get("csvFile");
         if (file) {
             var formData = new FormData();
             formData.append("inputFile", file);
@@ -115,7 +115,8 @@ appComets.FormView = Backbone.View.extend({
                 contentType: false,
                 beforeSend: function () {
                     view.$el.find("#loader").addClass("show");
-                    view.$el.find("#calcProgressbar").show()
+                    view.$el.find("#calcProgressbar")
+                        .show()
                         .find("[role='progressbar']")
                         .removeClass("progress-bar-danger progress-bar-success")
                         .addClass("active").text("Uploading....Please Wait");
@@ -141,7 +142,7 @@ appComets.FormView = Backbone.View.extend({
                     control.selectize.refreshOptions();
 
                     if (control.id == "outcome") {
-                        control.selectize.addItem("all metabolites");
+                        control.selectize.setValue("All metabolites");
                     }
                 });
 
@@ -182,7 +183,10 @@ appComets.FormView = Backbone.View.extend({
             dataType: "json",
             cache: false,
             processData: false,
-            contentType: false
+            contentType: false,
+            beforeSend: function () {
+                view.$el.find("#loader").addClass("show");
+            }
         }).fail(function () {}).then(function (data, statusText, xhr) {
             summaryModel.set(data);
             view.summaryView = new appComets.SummaryView({
@@ -191,7 +195,10 @@ appComets.FormView = Backbone.View.extend({
             view.correlateHeatmapView = new appComets.CorrelateHeatmapView({
                 model: summaryModel
             });
-        }).always(function () {});
+        }).always(function () {
+
+            view.$el.find("#loader").removeClass("show");
+        });
     },
     analysisMethod: function (e) {
         view.model.set('methodSelection', e.target.value);
@@ -199,14 +206,14 @@ appComets.FormView = Backbone.View.extend({
         if (e.target.value == "batch") {
             view.$el.find("#batch").show();
             view.$el.find("#interactive").hide();
-        }
-        else {
+        } else {
             view.$el.find("#interactive").show();
             view.$el.find("#batch").hide();
         }
     },
     cohortSelect: function (e) {
         view.model.set('cohort', e.target.value);
+
     },
     modelSelect: function (e) {
         view.model.set('modelSelection', e.target.value);
@@ -238,11 +245,19 @@ appComets.FormView = Backbone.View.extend({
             view.model.set("modelSelection", view.$el.find("#modelSelection").val());
 
             if (view.model.get("methodSelection") == "batch") {
-                view.$el.find("#" + view.model.get("methodSelection") ).show();
+                view.$el.find("#" + view.model.get("methodSelection")).show();
                 view.model.set("modelSelection", view.$el.find("#modelSelection").val());
-            } else {
+            } else
                 view.model.set("modelSelection", view.model.defaults.modelSelection);
+            
+            if(view.$el.find("#modelDescription").val().length === 0){
+                view.$el.find("#modelDescription").val(view.model.defaults.modelDescription);
             }
+
+            if (view.model.get("cohort"))
+                view.$el.find("#runModel").removeAttr("disabled");
+            else
+                view.$el.find("#runModel").attr("disabled", true);
         }
     }
 });
