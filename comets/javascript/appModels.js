@@ -1,6 +1,6 @@
 appComets.HarmonizationFormModel = Backbone.Model.extend({
     defaults: {
-        cohortList: ["DPP","EPIC","PLCO-CRC","PLCO-breast","Shanghai","WHI","Other"],
+        cohortList: ["DPP", "EPIC", "PLCO-CRC", "PLCO-breast", "Shanghai", "WHI", "Other"],
         cohortSelection: null,
         covariates: [],
         csvFile: null,
@@ -11,7 +11,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         modelList: [],
         modelOptions: [],
         modelSelection: null,
-        outcome:[ "All metabolites" ],
+        outcome: ["All metabolites"],
         status: false
     }
 });
@@ -36,42 +36,66 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
     url: "/cometsRest/integrityCheck",
     parse: function (response, xhr) {
         // options need to be array of objects for selectize plugin
-        var modelOptions = [{ text: 'All Metabolites', value: 'All metabolites' }].concat(
-            response.allMetabolites.concat(response.allSubjectMetaData).map(function(subject) {
-                return { text: subject, value: subject }; 
+        var modelOptions = [{
+            text: 'All Metabolites',
+            value: 'All metabolites'
+        }].concat(
+            response.allMetabolites.concat(response.allSubjectMetaData).map(function (subject) {
+                return {
+                    text: subject,
+                    value: subject
+                };
             })
         );
-        var sum = function(prev,curr,index,arr) { return prev+curr; };
-        var subjectdata = response.subjdata.map(function(subject) {
+        var sum = function (prev, curr, index, arr) {
+            return prev + curr;
+        };
+        var subjectdata = response.subjdata.map(function (subject) {
             var newSubject = {};
             newSubject[response.subjId] = subject[response.subjId];
-            response.allSubjectMetaData.forEach(function(index) { newSubject[index] = subject[index]; });
+            response.allSubjectMetaData.forEach(function (index) {
+                newSubject[index] = subject[index];
+            });
             return newSubject;
         });
-        var subjectmeta = response.subjdata.map(function(subject) {
+        var subjectmeta = response.subjdata.map(function (subject) {
             var newMetabolites = {};
             newMetabolites[response.subjId] = subject[response.subjId];
-            response.allMetabolites.forEach(function(index) { newMetabolites[index] = subject[index]; });
+            response.allMetabolites.forEach(function (index) {
+                newMetabolites[index] = subject[index];
+            });
             return newMetabolites;
         });
-        $.extend(response,{
+        $.extend(response, {
             inputDataSummary: {
                 'Metabolites Sheet': response.metab.length + ' metabolites',
                 'Subject data sheet': response.allSubjects.length + ' subjects with ' + response.allSubjectMetaData.length + ' covariates',
-                'Subject metabolites sheet': response.subjdata.length + ' subjects with ' + (Object.keys(response.subjdata[0]).length-response.allSubjectMetaData.length-1) + ' metabolites'
+                'Subject metabolites sheet': response.subjdata.length + ' subjects with ' + (Object.keys(response.subjdata[0]).length - response.allSubjectMetaData.length - 1) + ' metabolites'
             },
             integrityChecked: true,
-            log2var: response.metab.map(function (obj) { return obj.log2var; }),
+            log2var: response.metab.map(function (obj) {
+                return obj.log2var;
+            }),
             metaboliteSummary: {
                 'N Metabolites': response.metab.length,
-                'N Harmonized': response.metab.map(function(obj) { return 'uid_01' in obj ? 1 : 0; }).reduce(sum),
-                'N Non-Harmonized': response.metab.map(function(obj) { return 'uid_01' in obj ? 0 : 1; }).reduce(sum),
-                'N with zero variance': response.metab.map(function(obj) { return obj.log2var==0 ? 1 : 0; }).reduce(sum),
-                'N with >25% at min': response.metab.map(function(obj) { return obj['num.min']>response.subjdata.length*.25; }).reduce(sum)
+                'N Harmonized': response.metab.map(function (obj) {
+                    return 'uid_01' in obj ? 1 : 0;
+                }).reduce(sum),
+                'N Non-Harmonized': response.metab.map(function (obj) {
+                    return 'uid_01' in obj ? 0 : 1;
+                }).reduce(sum),
+                'N with zero variance': response.metab.map(function (obj) {
+                    return obj.log2var == 0 ? 1 : 0;
+                }).reduce(sum),
+                'N with >25% at min': response.metab.map(function (obj) {
+                    return obj['num.min'] > response.subjdata.length * .25;
+                }).reduce(sum)
             },
             modelOptions: modelOptions,
             models: response.mods,
-            'num.min': response.metab.map(function (obj) { return obj['num.min']; }),
+            'num.min': response.metab.map(function (obj) {
+                return obj['num.min'];
+            }),
             status: response.integritymessage.toLowerCase().indexOf("error") < 0,
             statusMessage: response.integritymessage,
             subjectdata: subjectdata,
@@ -84,7 +108,56 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         delete response.mods;
         console.log(response);
         return response;
-    }
+    },
+//
+//    validate: function (attrs, options) {
+//        var errors = [];
+//
+//        if (attrs.csvFile == null) {
+//            errors.push({
+//                name: 'inputDataFile',
+//                message: "You must upload a data file"
+//            });
+//        } else {
+//            if (attrs.csvFile.type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || (attrs.csvFile.name.split(".")[1] != "xlsx" || attrs.csvFile.name.split(".")[1] != "xls")) {
+//                errors.push({
+//                    name: 'inputDataFile',
+//                    message: "Incorrect file type loaded. You must upload an excel (.xls/x) file."
+//                });
+//            }
+//        }
+//
+//        if (attrs.cohort == "") {
+//            errors.push({
+//                name: 'cohort',
+//                message: "You must select a cohort"
+//            });
+//        } else {
+//            if (attrs.methodSelection == "Batch" && attrs.modelSelection.length === 0) {
+//                errors.push({
+//                    name: 'methodSelection',
+//                    message: "You must select a model to process in 'Batch' mode"
+//                });
+//            }
+//            if (attrs.methodSelection == "Interactive") {
+//                if (attrs.exposure.length === 0) {
+//                    errors.push({
+//                        name: 'exposure',
+//                        message: "You must select at least one 'Exposure' variable to process in 'Interative' mode"
+//                    });
+//                }
+//                if (attrs.outcome.length === 0) {
+//                    errors.push({
+//                        name: 'outcome',
+//                        message: "You must select at least one 'Outcome' variable to process in 'Interative' mode"
+//                    });
+//                }
+//            }
+//        }
+//
+//        return errors.length > 0 ? errors : false;
+//    }
+
 });
 
 appComets.CorrelationResultsModel = Backbone.Model.extend({
@@ -97,13 +170,17 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         sortRow: null,
         status: false,
         statusMessage: "An unknown error occurred",
-        tableOrder: [ "age", "age.n", "age.p", "model", "cohort", "adjvars", "metabolite_name", "hmdb_id", "rt", "m_z", "uid_01", "hmdb", "biochemical" ]
+        tableOrder: ["age", "age.n", "age.p", "model", "cohort", "adjvars", "metabolite_name", "hmdb_id", "rt", "m_z", "uid_01", "hmdb", "biochemical"]
     },
     url: "/cometsRest/correlate",
     parse: function (response, xhr) {
-        $.extend(response,{
+        $.extend(response, {
             correlationRun: true,
-            excorrdata: response.excorrdata.map(function(biochemical) { return $.extend(biochemical,{model:response.model}); }),
+            excorrdata: response.excorrdata.map(function (biochemical) {
+                return $.extend(biochemical, {
+                    model: response.model
+                });
+            }),
             exposures: response.exposures.constructor === Array ? response.exposures : [response.exposures]
         });
         delete response.model;
