@@ -53,9 +53,16 @@ appComets.FormView = Backbone.View.extend({
         "change #inputDataFile": "uploadInputDataFile",
         "change select": "updateModel",
         "change input:not([type='button'])": "updateModel",
+        "keypress input:not([type='button'])": "noSubmit",
         "click #load": "checkIntegrity",
         "click #runModel": "runModel",
         "click #toggleHelp": function () { this.$el.find("#inputHelp").toggle(); }
+    },
+    noSubmit: function (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            return false;
+        }
     },
     uploadInputDataFile: function (e) {
         //add file to model
@@ -96,15 +103,17 @@ appComets.FormView = Backbone.View.extend({
                 $that.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
                 $that.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
                 $that.$el.find("#inputDataFile").unwrap();
-                var response = data.responseJSON;
+                var response = data.responseJSON,
+                    integrityResults = appComets.models.integrityResults,
+                    correlationResults = appComets.models.correlationResults;
                 if (response && 'status' in response) {
-                    $.extend($that.model.attributes,{ status: response.status });
-                    $that.render();
-                    $.extend(appComets.models.integrityResults.attributes,{ integrityChecked: true },response);
-                    $.extend(appComets.models.correlationResults.attributes, { correlationRun: false });
-                    appComets.views.integrity.render();
-                    appComets.views.summary.render();
-                    appComets.views.heatmap.render();
+                    $that.model.set($.extend($that.model.attributes,{ status: response.status }));
+                    integrityResults.set($.extend(integrityResults.attributes,{
+                        integrityChecked: true,
+                        status: response.status,
+                        statusMessage: response.integritymessage
+                    }));
+                    correlationResults.set($.extend(correlationResults.attributes, { correlationRun: false }));
                 }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
@@ -149,7 +158,16 @@ appComets.FormView = Backbone.View.extend({
             beforeSend: function () {
                 $that.$el.find("#loader").addClass("show");
             }
-        }).fail(function () {}).then(function (data, statusText, xhr) {
+        }).fail(function (data) {
+            var response = data.responseJSON,
+                correlationResults = appComets.models.correlationResults;
+            if (response && 'status' in response) {
+                correlationResults.set($.extend(correlationResults.attributes,{
+                    modelRun: true,
+                    status: response.status,
+                    statusMessage: response.statusMessage
+                }));
+            }
         }).always(function () {
             $that.$el.find("#loader").removeClass("show");
         });
