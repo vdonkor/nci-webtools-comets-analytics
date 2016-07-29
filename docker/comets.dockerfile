@@ -1,13 +1,25 @@
-FROM cbiitss:r-base
+FROM ncias-d1661-v.nci.nih.gov/cbiitss/python27:base0
 
-COPY COMETS_0.0.0.8001.tar.gz /tmp/
+RUN yum -y upgrade \
+ && yum -y install \
+        gcc \
+        gcc-c++ \
+        gcc-gfortran \
+        httpd-devel \
+        libcurl-devel \
+        openssl-devel \
+        R \
+ && yum clean all
 
-RUN R -e "install.packages('/tmp/COMETS_0.0.0.8001.tar.gz', repos=NULL)"
+RUN pip install --upgrade pip rpy2 mod_wsgi flask
+RUN R -e "install.packages(c('jsonlite', 'plyr', 'dplyr', 'psych', 'readxl', 'stringr', 'tidyr', 'plotly'), repos='http://cran.rstudio.com')"
 
 RUN adduser -u 4004 ncianalysis
 
 RUN mkdir -p /deploy \
  && chown -R ncianalysis:ncianalysis /deploy
+
+RUN touch /tmp/luw01
 
 USER ncianalysis
 WORKDIR /deploy
