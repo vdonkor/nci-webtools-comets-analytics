@@ -3,7 +3,7 @@
 }
 
 #loader {
-    background-color: transparent;
+    background-color: rgba(0,0,0,0.5);
     background-image: url("../images/loader.gif");
     background-position: center;
     background-repeat: no-repeat;
@@ -14,8 +14,7 @@
 }
 
 header {
-    padding-left: 2em;
-    margin: 1em auto;
+    margin: 1em 0 1em 1em;
 }
 
 header img {
@@ -59,7 +58,7 @@ nav.navbar.navbar-default {
 
 #page-head {
     color: #FFF;
-    font-weight: bold;
+    font-size: 14pt;
     background: #2A71A5;
     padding: 5px 0 5px 10px;
 }
@@ -110,7 +109,7 @@ table.summaryTables thead tr:first-child th {
 th,td {
     padding: 0px 2px;
 }
-th input {
+td input {
     min-width: 100px;
     max-width: 150px;
 }

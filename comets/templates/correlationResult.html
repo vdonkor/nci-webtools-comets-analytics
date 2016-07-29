@@ -7,7 +7,7 @@
     <div class="button-group">
         <button type="button" id="summaryDownload" class="btn btn-default download"><span class="glyphicon glyphicon-download"></span> Download results in CSV and send to Harmonization Group</button>
     </div>
-    <table id="correlationSummary" class="table-striped table-hover">
+    <table id="correlationSummary" class="table table-striped table-bordered table-hover">
         <thead>
             <tr>
                 <% _.each(tableOrder,function(element,key,list) { %>
@@ -27,9 +27,9 @@
         <tfoot>
             <tr>
                 <% _.each(tableOrder,function(element,key,list) { %>
-                    <th>
-                        <input type="text" placeholder="Search <%= element %>" />
-                    </th>
+                    <td>
+                        <input aria-label="Search <%= element %> column" type="text" placeholder="Search <%= element %>" />
+                    </td>
                 <% }); %>
             </tr>
         </tfoot>

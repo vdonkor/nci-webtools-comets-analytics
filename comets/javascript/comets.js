@@ -1,76 +1,85 @@
-function fileUpload(e) {
-    if (window.FileReader) {
-        var file = e.target.files[0];
-        var reader = new FileReader();
+    appComets.showLoader = function () {
+        $("#loader").addClass('show');
+    };
 
-        reader.onload = function (event) {
-            var contents = event.target.result;
+    appComets.hideLoader = function () {
+        $("#loader").removeClass('show');
+    };
+
+    appComets.fileUpload = function (e) {
+        if (window.FileReader) {
+            var file = e.target.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function (event) {
+                var contents = event.target.result;
+            };
+
+            if (file) {
+                reader.readAsText(file);
+                return file;
+            }
         }
+    };
 
-        if (file) {
-            reader.readAsText(file);
-            return file;
-        }
-    }
-}
+    appComets.generateDataTable = function (el, dtData, dtCols) {
+        var table = $("<table></table>");
 
-function generateDataTable(el, dtData, dtCols) {
-    var table = $("<table></table>");
+        el.empty().append(table);
 
-    el.empty().append(table);
+        el.find("table").DataTable({
+            dom: '<"top"i>rt<"bottom"flp><"clear">',
+            data: dtData,
+            responsive: true,
+            colReorder: true,
+            scroller: true,
+            scrollY: 200
+        });
+    };
 
-    el.find("table").DataTable({
-        dom: '<"top"i>rt<"bottom"flp><"clear">',
-        data: dtData,
-    });
-}
-
-function generateHistogram(el, xLabels, yLabels, graphTitle, data) {
-    Plotly.newPlot(el, [{
-        x: data,
-        type: 'histogram'
+    appComets.generateHistogram = function (el, xLabels, yLabels, graphTitle, data) {
+        Plotly.newPlot(el, [{
+            x: data,
+            type: 'histogram'
     }], {
-        margin: {
-            l: 50,
-            t: 100
-        },
-        title: graphTitle,
-        xaxis: {
-            title: xLabels,
-            showgrid: false
-        },
-        yaxis: {
-            title: yLabels
-        }
-    });
-}
+            title: graphTitle,
+            xaxis: {
+                title: xLabels,
+                showgrid: false
+            },
+            yaxis: {
+                title: yLabels
+            }
+        });
+    };
 
-function generateHeatmap(el, height, xLabels, yLabels, legendLabel, data) {
-    Plotly.newPlot(el, [{
-        z: data,
-        x: xLabels,
-        y: yLabels,
-        type: 'heatmap',
-        colorbar: {
-            title: legendLabel
-        },
-        colorscale: "Viridis"
+    appComets.generateHeatmap = function (el, height, xLabels, yLabels, legendLabel, data) {
+        Plotly.newPlot(el, [{
+            z: data,
+            x: xLabels,
+            y: yLabels,
+            type: 'heatmap',
+            colorbar: {
+                title: legendLabel
+            },
+            colorscale: "Viridis"
     }], {
-        height: height,
-        margin: {
-            l: 200
-        },
-        title: " ",
-        xaxis: {
+            margin: {
+                t: 0,
+                l: 200
+            },
+            height: height,
             title: " ",
-            showgrid: false
-        },
-        yaxis: {
-            title: " "
-        },
-        legend: {
-            title: legendLabel
-        },
-        autosize: true
-    });
-}
+            xaxis: {
+                title: " ",
+                showgrid: false
+            },
+            yaxis: {
+                title: " "
+            },
+            legend: {
+                title: legendLabel
+            },
+            autosize: true
+        });
+    };

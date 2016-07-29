@@ -37,15 +37,13 @@
                 <th>N Harmonized</th>
                 <th>N Non-Harmonizaed</th>
                 <th>N with zero variance</th>
-                <th>N with >25% at min</th>
+                <th>N with > 25% at min</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <%  _.each(metaboliteSummary,function(summaryData) { %>
-                    <td>
-                        <%= summaryData %>
-                    </td>
+                    <td><%= summaryData %></td>
                 <% }); %>
             </tr>
         </tbody>
