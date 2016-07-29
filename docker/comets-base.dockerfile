@@ -1,4 +1,4 @@
-FROM ncias-d1661-v.nci.nih.gov/cbiitss/python27:base0
+FROM cbiitss/python27:base0
 
 RUN yum -y upgrade \
  && yum -y install \
@@ -18,8 +18,6 @@ RUN adduser -u 4004 ncianalysis
 
 RUN mkdir -p /deploy \
  && chown -R ncianalysis:ncianalysis /deploy
-
-RUN touch /tmp/luw01
 
 USER ncianalysis
 WORKDIR /deploy
