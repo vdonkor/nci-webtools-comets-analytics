@@ -56,9 +56,9 @@
     <div id="subjectDist">
     </div>
     <p>Run date: <%=  dateRun %></p>
-<% } else if (status !== null) { %>
+<% } else if (status !== null && statusMessage) { %>
     <div id="resultStatus" class="alert alert-warning">
         <span class="glyphicon glyphicon-warning-sign"></span>
         <%= statusMessage %>
     </div>
-<% } %>
+<% } else{} %>
