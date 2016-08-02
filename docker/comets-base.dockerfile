@@ -1,4 +1,4 @@
-FROM cbiitss/python27:base0
+FROM cbiitss:python27
 
 RUN yum -y upgrade \
  && yum -y install \
@@ -7,21 +7,24 @@ RUN yum -y upgrade \
         gcc-gfortran \
         httpd-devel \
         libcurl-devel \
+        libssh2-devel \
         openssl-devel \
         R \
  && yum clean all
 
 RUN pip install --upgrade pip rpy2 mod_wsgi flask
-RUN R -e "install.packages(c( \
-  'https://cran.rstudio.com/src/contrib/00Archive/jsonlite/jsonlite_0.9.22.tar.gz', \
-  'https://cran.rstudio.com/src/contrib/00Archive/plyr/plyr_1.8.3.tar.gz', \
-  'https://cran.rstudio.com/src/contrib/00Archive/dplyr/dplyr_0.4.3.tar.gz', \
-  'https://cran.rstudio.com/src/contrib/00Archive/psych/psych_1.6.4.tar.gz', \
-  'https://cran.rstudio.com/src/contrib/00Archive/readxl/readxl_0.1.0.tar.gz', \
-  'https://cran.rstudio.com/src/contrib/00Archive/stringr/stringr_0.6.tar.gz', \
-  'https://cran.rstudio.com/src/contrib/00Archive/tidyr/tidyr_0.5.0.tar.gz', \
-  'https://cran.rstudio.com/src/contrib/00Archive/plotly/plotly_3.4.13.tar.gz' \
-), repos='http://cran.rstudio.com')"
+
+RUN R -e "install.packages('devtools', repos = 'http://cran.rstudio.com')"
+
+RUN R -e "require(devtools); \ 
+            install_version('jsonlite',  version = '0.9.22',  repos = 'http://cran.rstudio.com'); \
+            install_version('plyr',      version = '1.8.3',   repos = 'http://cran.rstudio.com'); \
+            install_version('dplyr',     version = '0.4.3',   repos = 'http://cran.rstudio.com'); \
+            install_version('psych',     version = '1.6.4',   repos = 'http://cran.rstudio.com'); \
+            install_version('readxl',    version = '0.1.0',   repos = 'http://cran.rstudio.com'); \
+            install_version('stringr',   version = '0.6',     repos = 'http://cran.rstudio.com'); \
+            install_version('tidyr',     version = '0.5.0',   repos = 'http://cran.rstudio.com'); \
+            install_version('plotly',    version = '3.4.13',  repos = 'http://cran.rstudio.com'); "
 
 RUN adduser -u 4004 ncianalysis
 
