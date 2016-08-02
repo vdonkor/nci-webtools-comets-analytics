@@ -58,16 +58,8 @@
                 <div class="tab-pane active" id="tab-home">
                     <div class="container">
                         <div class="row">
-                            <h1>About</h1>
                             <p>THis web-based application will support all cohort-specific analyses of the COMETS consortium. Data are not saved in the system, but output must be downloaded and submitted for meta-analyses. This collaborative work is done via the COMETS harmonization group activities. For more informationon the consortium, see <a href=" http://epi.grants.cancer.gov/comets/" target="_blank">COMETS website</a></p>
                         </div>
-                        <b>For Questions or help:</b>
-                        <p>COMETS: Steven Moore
-                            <br> UID file: Adam Risch
-                            <br> Harmonization: Ewy Mathe
-                            <br> Correlation: Ella Temprosa
-                            <br> Email: <a href="mailto:cometsanalytics@gmail.com">cometsanalytics@gmail.com</a>
-                        </p>
                     </div>
                 </div>
                 <!-- start correlate Tab -->
@@ -79,7 +71,7 @@
                                 <div class="form-group">
                                     <label for="inputDataFile">Choose Input Data File:</label>
                                     <div class="row">
-                                        <input id="inputDataFile" type="file" accept=".xls,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="col-xs-12 col-sm-7">
+                                        <input id="inputDataFile" type="file" accept=".xls,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="col-xs-12 col-sm-7" required>
                                         <button id="load" class="btn btn-default pull-right" disabled="true">Check Integrity</button>
                                     </div>
                                     <div id="calcProgressbar" class="progress">
@@ -171,9 +163,6 @@
                                     <div class="tab-content grey-border">
                                         <div class="row">
                                             <div id="messageDiv"></div>
-                                        </div>
-                                        <div id="inputNotice" class="alert alert-info">
-                                            <b>Please import an Excel file on the left panel</b>
                                         </div>
                                         <div class="tab-pane active" id="tab-integrity">
                                             <div id="integrityDiv" class="col-xs-12">
