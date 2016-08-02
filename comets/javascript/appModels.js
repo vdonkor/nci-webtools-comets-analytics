@@ -14,6 +14,24 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         outcome: ["All metabolites"],
         status: false
     }
+//    , validate: function (attributes, options) {
+//        errors = [];
+//        if (attributes.csvFile === null && attributes.csvFile === undefined) {
+//            errors.push({
+//                name: "csvFile",
+//                message: "You must upload a data file"
+//            });
+//        } else {
+//            if (attributes.csvFile.type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+//                errors.push({
+//                    name: "csvFile",
+//                    message: "You must upload an excel (xks, xlsx) workbook"
+//                });
+//            }
+//        }
+//
+//        return errors.length > 0 ? errors : false;
+//    }
 });
 
 appComets.IntegrityResultsModel = Backbone.Model.extend({
@@ -108,12 +126,13 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         delete response.mods;
         console.log(response);
         return response;
-    },
+    }
+//    ,
 //
 //    validate: function (attrs, options) {
 //        var errors = [];
 //
-//        if (attrs.csvFile == null) {
+//        if (attrs.csvFile == null || attrs.csvFile == undefined) {
 //            errors.push({
 //                name: 'inputDataFile',
 //                message: "You must upload a data file"
@@ -143,13 +162,13 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
 //                if (attrs.exposure.length === 0) {
 //                    errors.push({
 //                        name: 'exposure',
-//                        message: "You must select at least one 'Exposure' variable to process in 'Interative' mode"
+//                        message: "You must select at least one 'Exposure' variable to process in 'Interactive' mode"
 //                    });
 //                }
 //                if (attrs.outcome.length === 0) {
 //                    errors.push({
 //                        name: 'outcome',
-//                        message: "You must select at least one 'Outcome' variable to process in 'Interative' mode"
+//                        message: "You must select at least one 'Outcome' variable to process in 'Interactive' mode"
 //                    });
 //                }
 //            }
@@ -187,4 +206,23 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         console.log(response);
         return response;
     }
+//    ,
+//    validate: function (attributes) {
+//        errors = [];
+//        if (attributes.csvFile === null || attributes.csvFile == undefined) {
+//            errors.push({
+//                name: "csvFile",
+//                message: "You must upload a data file"
+//            });
+//        } else {
+//            if (attributes.csvFile.type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+//                errors.push({
+//                    name: "csvFile",
+//                    message: "You must upload an excel (xks, xlsx) workbook"
+//                });
+//            }
+//        }
+//
+//        return errors.length > 0 ? errors : false;
+//    }
 });
