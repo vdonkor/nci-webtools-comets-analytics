@@ -323,9 +323,6 @@ appComets.SummaryView = Backbone.View.extend({
             this.render();
         }
     },
-    events: {
-        "click .download": 'startDownload',
-    },
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
