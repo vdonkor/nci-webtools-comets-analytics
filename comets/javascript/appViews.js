@@ -1,5 +1,14 @@
 // app namespace
 var appComets = {
+    events: {
+        reauthenticate: function (e) {
+            var newWindow = window.open("reauth.html");
+            window.reauthCallback = function() {
+                delete window.reauthCallback;
+                $(e.target).trigger(e.type);
+            };
+        }
+    },
     models: { },
     sorts: {
         "Alphabetic (asc)": function (obj1, obj2) {
@@ -116,6 +125,9 @@ appComets.FormView = Backbone.View.extend({
                     }));
                     correlationResults.set($.extend(correlationResults.attributes, { correlationRun: false }));
                 }
+                if (data.status === 401) {
+                    appComets.events.reauthenticate(e);
+                }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
                 $that.model.set($.extend($that.model.attributes,{
@@ -167,6 +179,9 @@ appComets.FormView = Backbone.View.extend({
                     status: response.status,
                     statusMessage: response.statusMessage
                 }));
+            }
+            if (data.status === 401) {
+                appComets.events.reauthenticate(e);
             }
         }).always(function () {
             $that.$el.find("#loader").removeClass("show");
