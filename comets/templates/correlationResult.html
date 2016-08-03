@@ -4,11 +4,15 @@
         <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
     </div>
-    <div class="button-group">
-        <button type="button" id="summaryDownload" class="btn btn-default download"><span class="glyphicon glyphicon-download"></span> Download results in CSV and send to Harmonization Group</button>
-    </div>
     <table id="correlationSummary" class="table-striped table-hover">
         <thead>
+            <tr>
+                <% _.each(tableOrder,function(element,key,list) { %>
+                    <th>
+                        <input type="text" placeholder="Search <%= element %>" />
+                    </th>
+                <% }); %>
+            </tr>
             <tr>
                 <% _.each(tableOrder,function(element,key,list) { %>
                     <th><%= element %></th>
@@ -24,15 +28,6 @@
                 </tr>
             <% }); %>
         </tbody>
-        <tfoot>
-            <tr>
-                <% _.each(tableOrder,function(element,key,list) { %>
-                    <th>
-                        <input type="text" placeholder="Search <%= element %>" />
-                    </th>
-                <% }); %>
-            </tr>
-        </tfoot>
     </table>
 <% } %>
 <% if (!status) { %>
