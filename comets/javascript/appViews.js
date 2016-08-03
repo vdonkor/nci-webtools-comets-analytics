@@ -326,22 +326,26 @@ appComets.SummaryView = Backbone.View.extend({
     events: {
         "click .download": 'startDownload',
     },
-    startDownload: function (e) {
-        e.preventDefault();
-        alert("starting download");
-    },
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
                 var table = this.$el.find('#correlationSummary').DataTable({
+                    buttons: [],
+                    dom: 'lfrBtip',
                     pageLength: 25
                 });
                 table.columns().every(function () {
                     var column = this;
-                    $('input', this.footer()).on('keyup change', function () {
+                    $(table.table().header()).children().eq(0).children().eq(this.selector.cols).find('input').on('keyup change', function () {
                         if (column.search() !== this.value) column.search(this.value).draw();
                     });
+                });
+                table.button().add(0,{
+                    action: function() {
+                        alert("starting download");
+                    },
+                    text: 'Download Results in CSV'
                 });
             }
         } else {

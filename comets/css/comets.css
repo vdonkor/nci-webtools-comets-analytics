@@ -107,6 +107,18 @@ table.summaryTables thead tr:first-child th {
     filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#606c88', endColorstr='#3f4c6b', GradientType=0);
 }
 
+#correlationSummary_wrapper.dataTables_wrapper .dataTables_length {
+    line-height: 26px;
+    margin-right: 2em;
+}
+#correlationSummary_wrapper.dataTables_wrapper .dataTables_filter {
+    float: left;
+}
+
+#correlationSummary_wrapper.dataTables_wrapper .dt-buttons {
+    float: right;
+}
+
 th,td {
     padding: 0px 2px;
 }
