@@ -113,10 +113,11 @@ appComets.FormView = Backbone.View.extend({
                 $that.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
                 $that.$el.find("#inputDataFile").unwrap();
                 var response = data.responseJSON,
-                    integrityResults = this.model,
+                    integrityResults = appComets.models.integrityResults,
                     correlationResults = appComets.models.correlationResults;
                 if (response && 'status' in response) {
                     $that.model.set($.extend($that.model.attributes,{ status: response.status }));
+                    console.log(this);
                     integrityResults.set($.extend(integrityResults.attributes,{
                         csv: null,
                         integrityChecked: true,
@@ -124,6 +125,7 @@ appComets.FormView = Backbone.View.extend({
                         statusMessage: response.integritymessage
                     }));
                     correlationResults.set($.extend(correlationResults.attributes, { correlationRun: false }));
+                    $('[href="#tab-integrity"]').trigger('click');
                 }
                 if (data.status === 401) {
                     appComets.events.reauthenticate(e);
@@ -136,6 +138,7 @@ appComets.FormView = Backbone.View.extend({
                     modelOptions: data.modelOptions,
                     status: data.status
                 }));
+                $('[href="#tab-integrity"]').trigger('click');
             }).always(function () {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
                 $that.$el.find("#loader").removeClass("show");
@@ -172,19 +175,21 @@ appComets.FormView = Backbone.View.extend({
             }
         }).fail(function (data) {
             var response = data.responseJSON,
-                correlationResults = this.model;
+                correlationResults = appComets.models.correlationResults;
             if (response && 'status' in response) {
                 correlationResults.set($.extend(correlationResults.attributes,{
                     modelRun: true,
                     status: response.status,
                     statusMessage: response.statusMessage
                 }));
+                $('[href="#tab-summary"]').trigger('click');
             }
             if (data.status === 401) {
                 appComets.events.reauthenticate(e);
             }
         }).always(function () {
             $that.$el.find("#loader").removeClass("show");
+            $('[href="#tab-summary"]').trigger('click');
         });
     },
     render: function () {
