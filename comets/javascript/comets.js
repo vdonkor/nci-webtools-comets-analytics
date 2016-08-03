@@ -58,6 +58,7 @@ function generateHeatmap(el, height, xLabels, yLabels, legendLabel, data) {
     }], {
         height: height,
         margin: {
+            t: 32,
             l: 200
         },
         title: " ",
