@@ -109,6 +109,7 @@ appComets.FormView = Backbone.View.extend({
                 if (response && 'status' in response) {
                     $that.model.set($.extend($that.model.attributes,{ status: response.status }));
                     integrityResults.set($.extend(integrityResults.attributes,{
+                        csv: null,
                         integrityChecked: true,
                         status: response.status,
                         statusMessage: response.integritymessage
