@@ -21,7 +21,7 @@ appComets.ErrorsView = Backbone.View.extend({
     el: '#messageDiv',
     render: function () {
         if (this.options.errors && this.options.errors.length > 0) {
-            this.template = _.template("<%_.each(errors, function(error, i) { %><%= error %> <br/><%}) %>",this.options);
+            this.template = _.template("<%_.each(errors, function(error, i) { %><%= error %> <br/><%}) %>", this.options);
             this.$el.html("<div class='alert alert-danger'>" + this.template + "</div>");
         } else {
             this.$el.html("");
@@ -72,12 +72,19 @@ appComets.FormView = Backbone.View.extend({
     },
     updateModel: function (e) {
         var el = $(e.target);
-        this.model.set(el.attr('name') || el.attr('id'), !el.hasClass('selectized') ? el.val() : el.val().length > 0 ? el.val().split(',') : []);
+        valid = el.valid();
+        if(valid)
+            this.model.set(el.attr('name') || el.attr('id'), !el.hasClass('selectized') ? el.val() : el.val().length > 0 ? el.val().split(',') : []);
+        else
+            console.log("Invalid");
     },
     checkIntegrity: function (e) {
         e.preventDefault();
-        file = this.model.get("csvFile");
-        if (file) {
+
+        var valid = this.$el.validate().valid();
+
+        if (valid) {
+            file = this.model.get("csvFile");
             var $that = this;
             var formData = new FormData();
             formData.append("inputFile", file);
@@ -128,7 +135,7 @@ appComets.FormView = Backbone.View.extend({
                     appComets.views.integrity.render();
                     appComets.views.summary.render();
                     appComets.views.heatmap.render();
-                    
+
                     appComets.requestFail(data, statusText, errorThrown);
                 }
             }).then(function (data, statusText, xhr) {
@@ -185,9 +192,9 @@ appComets.FormView = Backbone.View.extend({
                     statusMessage: response.statusMessage
                 }));
             }
-            
+
             appComets.requestFail(data, statusText, errorThrown);
-            
+
         }).always(function () {
             appComets.hideLoader();
         });
@@ -258,7 +265,7 @@ appComets.IntegrityView = Backbone.View.extend({
         alert("starting download");
     },
     render: function () {
-            this.$el.html(this.template(this.model.attributes));
+        this.$el.html(this.template(this.model.attributes));
         if (this.model.get('integrityChecked')) {
             if (this.model.get('status')) {
                 appComets.generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Log2 Variance Distribution', this.model.get('log2var'));
@@ -272,7 +279,7 @@ appComets.IntegrityView = Backbone.View.extend({
 appComets.HeatmapView = Backbone.View.extend({
     el: "#tab-heatmap",
     initialize: function () {
-        this.model.on('change',this.render,this);
+        this.model.on('change', this.render, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.heatmapResult);
             this.render();
@@ -305,7 +312,7 @@ appComets.HeatmapView = Backbone.View.extend({
         "change select": "updateModel",
         "change input:not([type='button'])": "updateModel"
     },
-    updateModel: function(e) {
+    updateModel: function (e) {
         var e = $(e.target);
         this.model.set(e.attr("id"), e.val());
     }
@@ -363,9 +370,9 @@ $(function () {
         };
         $('#pageContent').on('show.bs.tab', '#comets-tab-nav', setTitle);
         $('#pageContent').on('show.bs.tab', '#correlate-tab-nav', setTitle);
-        $("#pageContent").on("click", "#runModel", function(){
+        $("#pageContent").on("click", "#runModel", function () {
             $('a[href="#tab-summary"]').tab('show');
-            
+
         });
         appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
         appComets.models.integrityResults = new appComets.IntegrityResultsModel();
@@ -382,5 +389,20 @@ $(function () {
         appComets.views.heatmap = new appComets.HeatmapView({
             model: appComets.models.correlationResults
         });
+
+        $(appComets.views.formView.el).validate({
+            debug: true,
+            ignoreTitle: true,
+            ignore: ".ignore",
+            rules: appComets.validation.rules,
+            messages: appComets.validation.messages,
+            highlight: appComets.validation.highlightElement,
+            unhighlight: appComets.validation.unhighlightElement,
+            errorLabelContainer: '#error',
+            wrapper: 'p',
+            invalidHandler: appComets.validation.validationFail,
+            submitHandler: appComets.validation.validSuccess
+        });
+
     });
 });

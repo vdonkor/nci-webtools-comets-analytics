@@ -88,6 +88,87 @@
         appComets.views.errorsDisplay = new appComets.ErrorsView({
             errors: [textStatus, errorThrown]
         });
-        
+
         appComets.views.errorsDisplay.render();
+    };
+
+    appComets.validation = {
+        rules: {
+            inputDataFile: {
+                required: true,
+                accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            },
+            cohortSelection: {
+                required: true
+            },
+            methodSelection: {
+                required: true
+            },
+            modelSelection: {
+                required: {
+                    depends: function (el) {
+                        return (appComets.models.harmonizationForm.get("methodSelection") == appComets.models.harmonizationForm.defaults.methodSelection) || (appComets.models.harmonizationForm.get("modelSelection").length <= 0);
+                    }
+                }
+            },
+            outcome: {
+                required: {
+                    depends: function (el) {
+                        return (appComets.models.harmonizationForm.get("methodSelection") == "Interactive") && (appComets.models.harmonizationForm.get("outcome") === appComets.models.harmonizationForm.defaults.outcome || appComets.models.harmonizationForm.get("outcome").length <= 0);
+                    }
+                }
+            },
+            exposure: {
+                required: {
+                    depends: function (el) {
+                        return (appComets.models.harmonizationForm.get("methodSelection") == "Interactive") && (appComets.models.harmonizationForm.get("exposure") === appComets.models.harmonizationForm.defaults.exposure || appComets.models.harmonizationForm.get("exposure").length <= 0);
+                    }
+                }
+            }
+        },
+        messages: {
+            inputDataFile: {
+                required: "an input file is required",
+                accept: "You must upload an Excel workbook file (.xls, .xlsx)"
+            },
+            cohortSelection: {
+                required: "A Cohort must be selected"
+            },
+
+            modelSelection: {
+                required: "You must choose an existing 'Model' in order to run the model using the 'Batch' method"
+            },
+            methodSelection: {
+                required: "Method Of Analysis is required"
+            },
+            outcome: {
+                required: "You must select at least one metabolite for the 'Outcomes' in order to run the model using the 'Interactive' method"
+            },
+            exposure: {
+                required: "You must select at least one metabolite for the 'Exposures' in order to run the model using the 'Interactive' method"
+            }
+        },
+        highlightElement: function (element, errorClass, validClass) {
+            if (element.type != "radio") {
+                $(element).addClass(errorClass).removeClass(validClass);
+            }
+            $(element.form).find("label[for='" + element.name + "']")
+                .addClass(errorClass);
+        },
+        unhighlightElement: function (element, errorClass, validClass) {
+            if (element.type != "radio") {
+                $(element).removeClass(errorClass).addClass(validClass);
+            }
+            $(element.form).find("label[for='" + element.name + "']")
+                .removeClass(errorClass);
+        },
+        validationFail: function (event, validator) {
+            console.log(validator);
+//appComets.views.errorsDisplay({errors});
+        },
+        validSuccess: function (form) {
+            $('#error').empty().css('display', 'none');
+            $('#result').empty();
+            $('.error').removeClass('error');
+        }
     };

@@ -14,24 +14,6 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         outcome: ["All metabolites"],
         status: false
     }
-//    , validate: function (attributes, options) {
-//        errors = [];
-//        if (attributes.csvFile === null && attributes.csvFile === undefined) {
-//            errors.push({
-//                name: "csvFile",
-//                message: "You must upload a data file"
-//            });
-//        } else {
-//            if (attributes.csvFile.type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-//                errors.push({
-//                    name: "csvFile",
-//                    message: "You must upload an excel (xks, xlsx) workbook"
-//                });
-//            }
-//        }
-//
-//        return errors.length > 0 ? errors : false;
-//    }
 });
 
 appComets.IntegrityResultsModel = Backbone.Model.extend({
@@ -127,55 +109,6 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         console.log(response);
         return response;
     }
-//    ,
-//
-//    validate: function (attrs, options) {
-//        var errors = [];
-//
-//        if (attrs.csvFile == null || attrs.csvFile == undefined) {
-//            errors.push({
-//                name: 'inputDataFile',
-//                message: "You must upload a data file"
-//            });
-//        } else {
-//            if (attrs.csvFile.type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || (attrs.csvFile.name.split(".")[1] != "xlsx" || attrs.csvFile.name.split(".")[1] != "xls")) {
-//                errors.push({
-//                    name: 'inputDataFile',
-//                    message: "Incorrect file type loaded. You must upload an excel (.xls/x) file."
-//                });
-//            }
-//        }
-//
-//        if (attrs.cohort == "") {
-//            errors.push({
-//                name: 'cohort',
-//                message: "You must select a cohort"
-//            });
-//        } else {
-//            if (attrs.methodSelection == "Batch" && attrs.modelSelection.length === 0) {
-//                errors.push({
-//                    name: 'methodSelection',
-//                    message: "You must select a model to process in 'Batch' mode"
-//                });
-//            }
-//            if (attrs.methodSelection == "Interactive") {
-//                if (attrs.exposure.length === 0) {
-//                    errors.push({
-//                        name: 'exposure',
-//                        message: "You must select at least one 'Exposure' variable to process in 'Interactive' mode"
-//                    });
-//                }
-//                if (attrs.outcome.length === 0) {
-//                    errors.push({
-//                        name: 'outcome',
-//                        message: "You must select at least one 'Outcome' variable to process in 'Interactive' mode"
-//                    });
-//                }
-//            }
-//        }
-//
-//        return errors.length > 0 ? errors : false;
-//    }
 
 });
 
@@ -206,23 +139,4 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         console.log(response);
         return response;
     }
-//    ,
-//    validate: function (attributes) {
-//        errors = [];
-//        if (attributes.csvFile === null || attributes.csvFile == undefined) {
-//            errors.push({
-//                name: "csvFile",
-//                message: "You must upload a data file"
-//            });
-//        } else {
-//            if (attributes.csvFile.type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-//                errors.push({
-//                    name: "csvFile",
-//                    message: "You must upload an excel (xks, xlsx) workbook"
-//                });
-//            }
-//        }
-//
-//        return errors.length > 0 ? errors : false;
-//    }
 });

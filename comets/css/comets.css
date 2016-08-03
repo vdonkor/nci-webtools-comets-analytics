@@ -3,7 +3,7 @@
 }
 
 #loader {
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     background-image: url("../images/loader.gif");
     background-position: center;
     background-repeat: no-repeat;
@@ -106,9 +106,11 @@ table.summaryTables thead tr:first-child th {
     filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#606c88', endColorstr='#3f4c6b', GradientType=0);
 }
 
-th,td {
+th,
+td {
     padding: 0px 2px;
 }
+
 td input {
     min-width: 100px;
     max-width: 150px;
@@ -120,4 +122,21 @@ hr {
 
 .progress {
     margin: 10px 0;
+}
+
+input.error:before,
+select.error:before {
+    content: "*";
+    color: red;
+    font-weight: bold;
+    vertical-align: middle;
+    font-size: 1.3em;
+    float: left;
+    padding: 0 10px;
+}
+
+input.error,
+select.error {
+    border: 2px solid #fc7878;
+    background: rgba(255, 0, 0, 0.25);
 }
