@@ -104,7 +104,7 @@ appComets.FormView = Backbone.View.extend({
                 $that.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
                 $that.$el.find("#inputDataFile").unwrap();
                 var response = data.responseJSON,
-                    integrityResults = appComets.models.integrityResults,
+                    integrityResults = this.model,
                     correlationResults = appComets.models.correlationResults;
                 if (response && 'status' in response) {
                     $that.model.set($.extend($that.model.attributes,{ status: response.status }));
@@ -118,13 +118,12 @@ appComets.FormView = Backbone.View.extend({
                 }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
-                $.extend($that.model.attributes,{
+                $that.model.set($.extend($that.model.attributes,{
                     filename: data.filename,
                     modelList: data.models.map(function(model) { return model.model; }),
                     modelOptions: data.modelOptions,
                     status: data.status
-                });
-                $that.render();
+                }));
             }).always(function () {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
                 $that.$el.find("#loader").removeClass("show");
@@ -161,7 +160,7 @@ appComets.FormView = Backbone.View.extend({
             }
         }).fail(function (data) {
             var response = data.responseJSON,
-                correlationResults = appComets.models.correlationResults;
+                correlationResults = this.model;
             if (response && 'status' in response) {
                 correlationResults.set($.extend(correlationResults.attributes,{
                     modelRun: true,
