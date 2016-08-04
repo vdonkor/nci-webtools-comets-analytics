@@ -1,4 +1,4 @@
-FROM cbiitss:python27
+FROM cbiitss/python27:base0
 
 RUN yum -y upgrade \
  && yum -y install \
@@ -10,6 +10,7 @@ RUN yum -y upgrade \
         libssh2-devel \
         openssl-devel \
         R \
+        R-devel \
  && yum clean all
 
 RUN pip install --upgrade pip rpy2 mod_wsgi flask
@@ -44,4 +45,5 @@ CMD ["start-server", "app/deploy.wsgi", \
   "--working-directory", "app", \
   "--directory-index", "index.html", \
   "--log-directory", "logs", \
+  "--reload-on-changes", \
   "--rotate-logs"]
