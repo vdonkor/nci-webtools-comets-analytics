@@ -56,6 +56,12 @@ appComets.FormView = Backbone.View.extend({
             else
                 $("#inputNotice").show();
         });
+        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+            $(el).selectize({
+                plugins: ['remove_button'],
+                sortField: 'order'
+            });
+        });
         this.render();
     },
     events: {
@@ -141,7 +147,6 @@ appComets.FormView = Backbone.View.extend({
                     filename: data.filename,
                     metaboliteIds: data.metaboliteIds,
                     modelList: data.models.map(function(model) { return model.model; }),
-                    modelOptions: data.modelOptions,
                     status: data.status,
                     subjectIds: data.subjectIds
                 }));
@@ -228,13 +233,29 @@ appComets.FormView = Backbone.View.extend({
             this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
             this.$el.find('#showMetabolites').prop('checked',showMetabolites);
             var modelOptions = [{ text: 'All Metabolites', value: 'All metabolites' }].concat(this.model.get('subjectIds'));
-            if (showMetabolites) modelOptions = modelOptions.concat(this.model.get('metaboliteIds'));
+            if (showMetabolites) modelOptions = modelOptions.concat(this.model.get('metaboliteIds'))
+            modelOptions = modelOptions.map(function(option,key) {
+                return {
+                    text: option.text,
+                    value: option.value,
+                    order: key
+                };
+            });
             this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
-                $(el).selectize({
-                    plugins: ['remove_button'],
-                    options: modelOptions
+                var sEl = el.selectize;
+                var oldOptions = $.extend({},sEl.options);
+                _.each(modelOptions,function(option,key,list) {
+                    if (sEl.options[option.value] === undefined) {
+                        sEl.addOption(option);
+                    } else {
+                        sEl.updateOption(option.value,option);
+                    }
+                    delete oldOptions[option.value];
                 });
-                el.selectize.setValue($that.model.get(el.id),true);
+                for (var option in oldOptions) {
+                    sEl.removeOption(option);
+                }
+                sEl.setValue($that.model.get(el.id),true);
             });
             if (this.model.get('cohortSelection') &&
                     ((methodSelection == 'Interactive'
@@ -333,9 +354,6 @@ appComets.SummaryView = Backbone.View.extend({
             this.template = _.template(appComets.templatesList.correlationResult);
             this.render();
         }
-    },
-    events: {
-        "click .download": 'startDownload',
     },
     render: function () {
         if (this.model.get('correlationRun')) {
