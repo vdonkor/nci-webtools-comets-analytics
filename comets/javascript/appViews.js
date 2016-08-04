@@ -391,9 +391,9 @@ appComets.SummaryView = Backbone.View.extend({
                         if (column.search() !== this.value) column.search(this.value).draw();
                     });
                 });
-                table.button().add(0, {
-                    action: function () {
-                        alert("starting download");
+                table.button().add(0,{
+                    action: function(e) {
+                        if ($that.model.get('csv')) window.location = $that.model.get('csv');
                     },
                     text: 'Download Results in CSV'
                 });
