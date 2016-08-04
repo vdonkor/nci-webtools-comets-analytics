@@ -56,6 +56,12 @@ appComets.FormView = Backbone.View.extend({
             else
                 $("#inputNotice").show();
         });
+        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+            $(el).selectize({
+                plugins: ['remove_button'],
+                sortField: 'order'
+            });
+        });
         this.render();
     },
     events: {
@@ -85,7 +91,11 @@ appComets.FormView = Backbone.View.extend({
     },
     updateModel: function(e) {
         var e = $(e.target);
-        this.model.set(e.attr('name')||e.attr('id'),!e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
+        if (e.attr('type') == 'checkbox') {
+            this.model.set(e.attr('name')||e.attr('id'),e.prop('checked'));
+        } else {
+            this.model.set(e.attr('name')||e.attr('id'),!e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
+        }
     },
     checkIntegrity: function (e) {
         e.preventDefault();
@@ -132,11 +142,13 @@ appComets.FormView = Backbone.View.extend({
                 }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
-                $that.model.set($.extend($that.model.attributes,{
+                $that.model.set($.extend({},$that.model.attributes,$that.model.defaults,{
+                    csvFile: $that.model.get('csvFile'),
                     filename: data.filename,
+                    metaboliteIds: data.metaboliteIds,
                     modelList: data.models.map(function(model) { return model.model; }),
-                    modelOptions: data.modelOptions,
-                    status: data.status
+                    status: data.status,
+                    subjectIds: data.subjectIds
                 }));
                 $('[href="#tab-integrity"]').trigger('click');
             }).always(function () {
@@ -202,9 +214,10 @@ appComets.FormView = Backbone.View.extend({
         }));
         // only if we've successfully uploaded a file, because we need that data
         if (this.model.get('status')) {
-            var $that = this;
-            var methodSelection = this.model.get('methodSelection');
-            var modelSelection = this.model.get('modelSelection');
+            var $that = this,
+                methodSelection = this.model.get('methodSelection'),
+                modelSelection = this.model.get('modelSelection'),
+                showMetabolites = this.model.get('showMetabolites');
             this.$el.find('#analysisOptions').addClass("show");
             this.$el.find('#Batch,#Interactive').each(function(i, el) {
                 var id = el.id;
@@ -218,12 +231,31 @@ appComets.FormView = Backbone.View.extend({
                 selectedOption: modelSelection
             }));
             this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
+            this.$el.find('#showMetabolites').prop('checked',showMetabolites);
+            var modelOptions = [{ text: 'All Metabolites', value: 'All metabolites' }].concat(this.model.get('subjectIds'));
+            if (showMetabolites) modelOptions = modelOptions.concat(this.model.get('metaboliteIds'))
+            modelOptions = modelOptions.map(function(option,key) {
+                return {
+                    text: option.text,
+                    value: option.value,
+                    order: key
+                };
+            });
             this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
-                $(el).selectize({
-                    plugins: ['remove_button'],
-                    options: $that.model.get('modelOptions')
+                var sEl = el.selectize;
+                var oldOptions = $.extend({},sEl.options);
+                _.each(modelOptions,function(option,key,list) {
+                    if (sEl.options[option.value] === undefined) {
+                        sEl.addOption(option);
+                    } else {
+                        sEl.updateOption(option.value,option);
+                    }
+                    delete oldOptions[option.value];
                 });
-                el.selectize.setValue($that.model.get(el.id),true);
+                for (var option in oldOptions) {
+                    sEl.removeOption(option);
+                }
+                sEl.setValue($that.model.get(el.id),true);
             });
             if (this.model.get('cohortSelection') &&
                     ((methodSelection == 'Interactive'

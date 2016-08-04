@@ -12,6 +12,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         modelOptions: [],
         modelSelection: null,
         outcome:[ "All metabolites" ],
+        showMetabolites: false,
         status: false
     }
 });
@@ -36,11 +37,6 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
     url: "/cometsRest/integrityCheck",
     parse: function (response, xhr) {
         // options need to be array of objects for selectize plugin
-        var modelOptions = [{ text: 'All Metabolites', value: 'All metabolites' }].concat(
-            response.allMetabolites.concat(response.allSubjectMetaData).map(function(subject) {
-                return { text: subject, value: subject }; 
-            })
-        );
         var sum = function(prev,curr,index,arr) { return prev+curr; };
         var subjectdata = response.subjdata.map(function(subject) {
             var newSubject = {};
@@ -62,6 +58,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
             },
             integrityChecked: true,
             log2var: response.metab.map(function (obj) { return obj.log2var; }),
+            metaboliteIds: response.allMetabolites.map(function(subject) { return { text: subject, value: subject }; }),
             metaboliteSummary: {
                 'N Metabolites': response.metab.length,
                 'N Harmonized': response.metab.map(function(obj) { return 'uid_01' in obj ? 1 : 0; }).reduce(sum),
@@ -69,12 +66,12 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
                 'N with zero variance': response.metab.map(function(obj) { return obj.log2var==0 ? 1 : 0; }).reduce(sum),
                 'N with >25% at min': response.metab.map(function(obj) { return obj['num.min']>response.subjdata.length*.25; }).reduce(sum)
             },
-            modelOptions: modelOptions,
             models: response.mods,
             'num.min': response.metab.map(function (obj) { return obj['num.min']; }),
             status: response.integritymessage.toLowerCase().indexOf("error") < 0,
             statusMessage: response.integritymessage,
             subjectdata: subjectdata,
+            subjectIds: response.allSubjectMetaData.map(function(subject) { return { text: subject, value: subject }; }),
             subjectmeta: subjectmeta
         });
         delete response.allMetabolites;
