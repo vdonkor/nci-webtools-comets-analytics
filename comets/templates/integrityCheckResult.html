@@ -37,15 +37,13 @@
                 <th>N Harmonized</th>
                 <th>N Non-Harmonizaed</th>
                 <th>N with zero variance</th>
-                <th>N with >25% at min</th>
+                <th>N with > 25% at min</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <%  _.each(metaboliteSummary,function(summaryData) { %>
-                    <td>
-                        <%= summaryData %>
-                    </td>
+                    <td><%= summaryData %></td>
                 <% }); %>
             </tr>
         </tbody>
@@ -58,9 +56,9 @@
     <div id="subjectDist">
     </div>
     <p>Run date: <%=  dateRun %></p>
-<% } else if (status !== null) { %>
+<% } else if (status !== null && statusMessage) { %>
     <div id="resultStatus" class="alert alert-warning">
         <span class="glyphicon glyphicon-warning-sign"></span>
         <%= statusMessage %>
     </div>
-<% } %>
+<% } else{} %>
