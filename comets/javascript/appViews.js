@@ -78,7 +78,13 @@ appComets.FormView = Backbone.View.extend({
         "click #load": "checkIntegrity",
         "click #runModel": "runModel",
         "click #toggleHelp": function () { this.$el.find("#inputHelp").toggle(); },
-        "click #sampleDownload": function(e) { appComets.events.preauthenticate(e,function() {}); },
+        "click #sampleDownload": 'authenticateDownload',
+    },
+    authenticateDownload: function(e) {
+        appComets.events.preauthenticate(e,function(e) {
+            window.location = e.target.href;
+            e.preventDefault();
+        });
     },
     noSubmit: function (e) {
         if (e.keyCode == 13) {
