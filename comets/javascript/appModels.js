@@ -110,18 +110,27 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         sortRow: null,
         status: false,
         statusMessage: "An unknown error occurred",
-        tableOrder: ["age", "age.n", "age.p", "model", "cohort", "adjvars", "metabolite_name", "hmdb_id", "rt", "m_z", "uid_01", "hmdb", "biochemical"]
+        tableOrder: []
     },
     url: "/cometsRest/correlate",
     parse: function (response, xhr) {
+        var excorrdata = response.excorrdata.map(function (biochemical) {
+            return $.extend(biochemical, {
+                model: response.model
+            });
+        });
+        var tableOrder = [];
+        for (var header in excorrdata[0]) {
+            if (["cname","log2var","num.min"].indexOf(header) < 0) {
+                tableOrder[tableOrder.length] = header;
+            }
+        }
+        console.log(tableOrder);
         $.extend(response, {
             correlationRun: true,
-            excorrdata: response.excorrdata.map(function (biochemical) {
-                return $.extend(biochemical, {
-                    model: response.model
-                });
-            }),
-            exposures: response.exposures.constructor === Array ? response.exposures : [response.exposures]
+            excorrdata: excorrdata,
+            exposures: response.exposures.constructor === Array ? response.exposures : [response.exposures],
+            tableOrder: tableOrder
         });
         delete response.model;
         console.log(response);

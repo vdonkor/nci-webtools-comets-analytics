@@ -405,7 +405,7 @@ appComets.SummaryView = Backbone.View.extend({
             if (this.model.get('status')) {
                 var table = this.$el.find('#correlationSummary').DataTable({
                     buttons: [],
-                    dom: 'lfrBtip',
+                    dom: 'lfBtip',
                     pageLength: 25
                 });
                 table.columns().every(function () {
