@@ -1,15 +1,15 @@
 // app namespace
 var appComets = {
     events: {
-        preauthenticate: function(e,callback) {
+        preauthenticate: function (e, callback) {
             $.ajax({
                 url: 'ping.txt'
-            }).fail(function(data) {
+            }).fail(function (data) {
                 if (data.status === 401) {
                     appComets.events.reauthenticate(e);
                     e.preventDefault();
                 }
-            }).then(function(data) {
+            }).then(function (data) {
                 callback(e);
             });
         },
@@ -56,12 +56,7 @@ appComets.FormView = Backbone.View.extend({
     initialize: function () {
         // watch model for changes and trigger render
         this.model.on("change", this.render, this);
-        this.model.on("change:csvFile", function () {
-            if (this.get("csvFile"))
-                $("#inputNotice").hide();
-            else
-                $("#inputNotice").show();
-        });
+
         this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
             $(el).selectize({
                 plugins: ['remove_button'],
@@ -77,11 +72,13 @@ appComets.FormView = Backbone.View.extend({
         "keypress input:not([type='button'])": "noSubmit",
         "click #load": "checkIntegrity",
         "click #runModel": "runModel",
-        "click #toggleHelp": function () { this.$el.find("#inputHelp").toggle(); },
+        "click #toggleHelp": function () {
+            this.$el.find("#inputHelp").toggle();
+        },
         "click #sampleDownload": 'authenticateDownload',
     },
-    authenticateDownload: function(e) {
-        appComets.events.preauthenticate(e,function(e) {
+    authenticateDownload: function (e) {
+        appComets.events.preauthenticate(e, function (e) {
             window.location = e.target.href;
             e.preventDefault();
         });
@@ -106,16 +103,25 @@ appComets.FormView = Backbone.View.extend({
     updateModel: function (e) {
         var e = $(e.target);
 
-        valid = e.valid();
-        if (valid) {
-            if (e.attr('type') == 'checkbox') {
-                this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'));
-            } else {
-                this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
-            }
+        if (e.attr('type') == 'checkbox') {
+            this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'));
+        } else {
+            this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
         }
-        else {
-            e.validate().showErrors()
+        if (!e.valid())
+            e.validate().showErrors();
+
+        var methodSelection = this.model.get('methodSelection');
+        var modelSelection = this.model.get('modelSelection');
+
+        if (this.model.get('cohortSelection') &&
+            ((methodSelection == 'Interactive' &&
+                    this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
+                (methodSelection == 'Batch' && modelSelection))
+        ) {
+            this.$el.find('#runModel').removeAttr('disabled');
+        } else {
+            this.$el.find('#runModel').attr('disabled', true);
         }
     },
     checkIntegrity: function (e) {
@@ -294,6 +300,7 @@ appComets.FormView = Backbone.View.extend({
                 }
                 sEl.setValue($that.model.get(el.id), true);
             });
+
             if (this.model.get('cohortSelection') &&
                 ((methodSelection == 'Interactive' &&
                         this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
@@ -303,6 +310,7 @@ appComets.FormView = Backbone.View.extend({
             } else {
                 this.$el.find('#runModel').attr('disabled', true);
             }
+
         } else {
             this.$el.find('#analysisOptions').removeClass('show');
         }
@@ -407,9 +415,11 @@ appComets.SummaryView = Backbone.View.extend({
                     });
                 });
                 var $that = this;
-                table.button().add(0,{
-                    action: function(e) {
-                        if ($that.model.get('csv')) appComets.events.preauthenticate(e,function() { window.location = $that.model.get('csv'); });
+                table.button().add(0, {
+                    action: function (e) {
+                        if ($that.model.get('csv')) appComets.events.preauthenticate(e, function () {
+                            window.location = $that.model.get('csv');
+                        });
                     },
                     text: 'Download Results in CSV'
                 });
@@ -453,7 +463,7 @@ $(function () {
         appComets.views.heatmap = new appComets.HeatmapView({
             model: appComets.models.correlationResults
         });
-        
+
         appComets.views.errorsDisplay = new appComets.ErrorsView();
 
         $(appComets.views.formView.el).validate({
