@@ -1,4 +1,54 @@
-    appComets.showLoader = function () {
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>QUnit Test Results for: comets.js</title>
+<link rel="stylesheet" href="qunit.css">
+<script src='qunit.js'></script>
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+
+<script>
+    var myParent = window.parent,
+        myFailures = 0;
+    
+    QUnit.done(function (obj) {
+        var result = {};
+        if (obj.failed) {
+            result.status = "failed";
+            result.message = myFailures + " failures";
+        } else {
+            result.status = "passed";
+            result.message = "Success! " + obj.passed + " passed";
+        }
+        if(myParent.reportComplete) {
+            myParent.reportComplete(result);
+        }
+        var totals = document.querySelectorAll(".grand-total .rs");
+        if(myParent.coverageComplete) {
+            myParent.coverageComplete({
+                message: totals && totals[0] ? totals[0].innerHTML + " coverage" : "No coverage"
+            });
+        }
+    });
+    QUnit.testDone(function (obj) {
+        var msg = "Running",
+            result = {};
+        if (obj.failed) {
+            myFailures++;
+            msg += " with " + myFailures + " failures";
+        }
+        result.message = msg;
+        if(myParent.reportUpdate) {
+            myParent.reportUpdate(result);
+        }
+       
+    }); 
+
+    
+        appComets.showLoader = function () {
         $("#loader").addClass('show');
     };
 
@@ -64,11 +114,14 @@
             },
             colorscale: "Viridis"
     }], {
-            margin: {
-                t: 0,
-                l: 200
-            },
-            height: height,
+
+        height: height,
+        margin: {
+            t: 32,
+            l: 200
+        },
+        title: " ",
+        xaxis: {
             title: " ",
             xaxis: {
                 title: " ",
@@ -172,3 +225,7 @@
             $('.error').removeClass('error');
         }
     };
+
+</script>
+</body>
+</html>

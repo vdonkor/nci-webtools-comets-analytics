@@ -6,7 +6,7 @@
 #  -p 8100:8000 \
 #  -v /local/content/apps/comets:/deploy/app \
 #  -v /local/content/logs/comets:/deploy/logs \
-#  -v /local/content/apps/comets/rcode/COMETS_0.0.0.8001.tar.gz:/deploy/CometsAnalyticsPackage.tar.gz \
+#  -v /local/content/apps/comets/rcode/package:/deploy/app/rcode/package \
 #  cbiitss:comets-dev
 # 
 # This image has the same dependencies as the comets.dockerfile image:
@@ -25,7 +25,9 @@ USER ncianalysis
 WORKDIR /deploy
 
 RUN echo " \n\
-R -e "install.packages('/deploy/CometsAnalyticsPackage.tar.gz', repos=NULL) \n\
+cd /deploy/app/rcode/package
+R -e "devtools::document()" \n\
+R CMD INSTALL . \n\
 mod_wsgi-express start-server app/deploy.wsgi --port 8000 --user ncianalysis --group ncianalysis --server-root wsgi --document-root app --working-directory app --directory-index index.html --log-directory logs --rotate-logs \n\
 " >> /deploy/run.sh
 

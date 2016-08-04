@@ -1,5 +1,14 @@
 // app namespace
 var appComets = {
+    events: {
+        reauthenticate: function (e) {
+            var newWindow = window.open("reauth.html");
+            window.reauthCallback = function () {
+                delete window.reauthCallback;
+                $(e.target).trigger(e.type);
+            };
+        }
+    },
     models: {},
     sorts: {
         "Alphabetic (asc)": function (obj1, obj2) {
@@ -41,6 +50,12 @@ appComets.FormView = Backbone.View.extend({
             else
                 $("#inputNotice").show();
         });
+        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+            $(el).selectize({
+                plugins: ['remove_button'],
+                sortField: 'order'
+            });
+        });
         this.render();
     },
     events: {
@@ -70,13 +85,21 @@ appComets.FormView = Backbone.View.extend({
             this.$el.find("#load").removeAttr('disabled');
         }
     },
+
     updateModel: function (e) {
-        var el = $(e.target);
-        valid = el.valid();
-        if(valid)
-            this.model.set(el.attr('name') || el.attr('id'), !el.hasClass('selectized') ? el.val() : el.val().length > 0 ? el.val().split(',') : []);
-        else
-            console.log("Invalid");
+        var e = $(e.target);
+
+        valid = e.valid();
+        if (valid) {
+            if (e.attr('type') == 'checkbox') {
+                this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'));
+            } else {
+                this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
+            }
+        }
+        else {
+            e.validate().showErrors()
+        }
     },
     checkIntegrity: function (e) {
         e.preventDefault();
@@ -110,44 +133,39 @@ appComets.FormView = Backbone.View.extend({
                     integrityResults = appComets.models.integrityResults,
                     correlationResults = appComets.models.correlationResults;
                 if (response && 'status' in response) {
+
                     $that.model.set($.extend($that.model.attributes, {
                         status: response.status
                     }));
+                    console.log(this);
                     integrityResults.set($.extend(integrityResults.attributes, {
+                        csv: null,
                         integrityChecked: true,
                         status: response.status,
                         statusMessage: response.integritymessage
                     }));
+
                     correlationResults.set($.extend(correlationResults.attributes, {
                         correlationRun: false
                     }));
-
-                    $.extend($that.model.attributes, {
-                        status: response.status
-                    });
-                    $that.render();
-                    $.extend(appComets.models.integrityResults.attributes, {
-                        integrityChecked: true
-                    }, response);
-                    $.extend(appComets.models.correlationResults.attributes, {
-                        correlationRun: false
-                    });
-                    appComets.views.integrity.render();
-                    appComets.views.summary.render();
-                    appComets.views.heatmap.render();
-
-                    appComets.requestFail(data, statusText, errorThrown);
+                    $('[href="#tab-integrity"]').trigger('click');
+                }
+                if (data.status === 401) {
+                    appComets.events.reauthenticate(e);
                 }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
-                $that.model.set("filename", data.filename);
-                $that.model.set("modelList", data.models.map(function (model) {
-                    return model.model;
+                $that.model.set($.extend({}, $that.model.attributes, $that.model.defaults, {
+                    csvFile: $that.model.get('csvFile'),
+                    filename: data.filename,
+                    metaboliteIds: data.metaboliteIds,
+                    modelList: data.models.map(function (model) {
+                        return model.model;
+                    }),
+                    status: data.status,
+                    subjectIds: data.subjectIds
                 }));
-                $that.model.set("modelOptions", data.modelOptions);
-                $that.model.set("status", data.status);
-
-                $that.render();
+                $('[href="#tab-integrity"]').trigger('click');
             }).always(function () {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("active");
                 appComets.hideLoader();
@@ -191,12 +209,17 @@ appComets.FormView = Backbone.View.extend({
                     status: response.status,
                     statusMessage: response.statusMessage
                 }));
+                $('a[href="#tab-summary"]').tab('show');
+            }
+            if (data.status === 401) {
+                appComets.events.reauthenticate(e);
             }
 
             appComets.requestFail(data, statusText, errorThrown);
 
         }).always(function () {
             appComets.hideLoader();
+            $('a[href="#tab-summary"]').tab('show');
         });
     },
     render: function () {
@@ -209,9 +232,10 @@ appComets.FormView = Backbone.View.extend({
         }));
         // only if we've successfully uploaded a file, because we need that data
         if (this.model.get('status')) {
-            var $that = this;
-            var methodSelection = this.model.get('methodSelection');
-            var modelSelection = this.model.get('modelSelection');
+            var $that = this,
+                methodSelection = this.model.get('methodSelection'),
+                modelSelection = this.model.get('modelSelection'),
+                showMetabolites = this.model.get('showMetabolites');
             this.$el.find('#analysisOptions').addClass("show");
             this.$el.find('#Batch,#Interactive').each(function (i, el) {
                 var id = el.id;
@@ -225,12 +249,35 @@ appComets.FormView = Backbone.View.extend({
                 selectedOption: modelSelection
             }));
             this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
+            this.$el.find('#showMetabolites').prop('checked', showMetabolites);
+            var modelOptions = [{
+                text: 'All Metabolites',
+                value: 'All metabolites'
+            }].concat(this.model.get('subjectIds'));
+            if (showMetabolites) modelOptions = modelOptions.concat(this.model.get('metaboliteIds'))
+            modelOptions = modelOptions.map(function (option, key) {
+                return {
+                    text: option.text,
+                    value: option.value,
+                    order: key
+                };
+            });
             this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
-                $(el).selectize({
-                    plugins: ['remove_button'],
-                    options: $that.model.get('modelOptions')
+                var sEl = el.selectize;
+                var oldOptions = $.extend({}, sEl.options);
+                _.each(modelOptions, function (option, key, list) {
+                    if (sEl.options[option.value] === undefined) {
+                        sEl.addOption(option);
+                    } else {
+                        sEl.updateOption(option.value, option);
+                    }
+                    delete oldOptions[option.value];
                 });
-                el.selectize.setValue($that.model.get(el.id), true);
+
+                for (var option in oldOptions) {
+                    sEl.removeOption(option);
+                }
+                sEl.setValue($that.model.get(el.id), true);
             });
             if (this.model.get('cohortSelection') &&
                 ((methodSelection == 'Interactive' &&
@@ -329,25 +376,26 @@ appComets.SummaryView = Backbone.View.extend({
             this.render();
         }
     },
-    events: {
-        "click .download": 'startDownload',
-    },
-    startDownload: function (e) {
-        e.preventDefault();
-        alert("starting download");
-    },
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
                 var table = this.$el.find('#correlationSummary').DataTable({
+                    buttons: [],
+                    dom: 'lfrBtip',
                     pageLength: 25
                 });
                 table.columns().every(function () {
                     var column = this;
-                    $('input', this.footer()).on('keyup change', function () {
+                    $(table.table().header()).children().eq(0).children().eq(this.selector.cols).find('input').on('keyup change', function () {
                         if (column.search() !== this.value) column.search(this.value).draw();
                     });
+                });
+                table.button().add(0, {
+                    action: function () {
+                        alert("starting download");
+                    },
+                    text: 'Download Results in CSV'
                 });
             }
         } else {
@@ -389,6 +437,8 @@ $(function () {
         appComets.views.heatmap = new appComets.HeatmapView({
             model: appComets.models.correlationResults
         });
+        
+        appComets.views.errorsDisplay = new appComets.ErrorsView();
 
         $(appComets.views.formView.el).validate({
             debug: true,
@@ -398,7 +448,7 @@ $(function () {
             messages: appComets.validation.messages,
             highlight: appComets.validation.highlightElement,
             unhighlight: appComets.validation.unhighlightElement,
-            errorLabelContainer: '#error',
+            errorLabelContainer: '#messageDiv',
             wrapper: 'p',
             invalidHandler: appComets.validation.validationFail,
             submitHandler: appComets.validation.validSuccess

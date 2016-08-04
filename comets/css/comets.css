@@ -4,13 +4,19 @@
 
 #loader {
     background-color: rgba(0, 0, 0, 0.5);
-    background-image: url("../images/loader.gif");
     background-position: center;
-    background-repeat: no-repeat;
-    position: absolute;
+    position: fixed;
     top: 0;
+    left: 0;
     height: 100%;
     width: 100%;
+}
+#loader img {
+    position: inherit;
+    top: 50%;
+    left: 50%;
+    border-radius: 10px;
+    background: #fff;
 }
 
 header {
@@ -106,8 +112,20 @@ table.summaryTables thead tr:first-child th {
     filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#606c88', endColorstr='#3f4c6b', GradientType=0);
 }
 
-th,
-td {
+
+#correlationSummary_wrapper.dataTables_wrapper .dataTables_length {
+    line-height: 26px;
+    margin-right: 2em;
+}
+#correlationSummary_wrapper.dataTables_wrapper .dataTables_filter {
+    float: left;
+}
+
+#correlationSummary_wrapper.dataTables_wrapper .dt-buttons {
+    float: right;
+}
+
+th,td {
     padding: 0px 2px;
 }
 

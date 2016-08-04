@@ -11,7 +11,8 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         modelList: [],
         modelOptions: [],
         modelSelection: null,
-        outcome: ["All metabolites"],
+        outcome:[ "All metabolites" ],
+        showMetabolites: false,
         status: false
     }
 });
@@ -36,21 +37,9 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
     url: "/cometsRest/integrityCheck",
     parse: function (response, xhr) {
         // options need to be array of objects for selectize plugin
-        var modelOptions = [{
-            text: 'All Metabolites',
-            value: 'All metabolites'
-        }].concat(
-            response.allMetabolites.concat(response.allSubjectMetaData).map(function (subject) {
-                return {
-                    text: subject,
-                    value: subject
-                };
-            })
-        );
-        var sum = function (prev, curr, index, arr) {
-            return prev + curr;
-        };
-        var subjectdata = response.subjdata.map(function (subject) {
+
+        var sum = function(prev,curr,index,arr) { return prev+curr; };
+        var subjectdata = response.subjdata.map(function(subject) {
             var newSubject = {};
             newSubject[response.subjId] = subject[response.subjId];
             response.allSubjectMetaData.forEach(function (index) {
@@ -73,9 +62,8 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
                 'Subject metabolites sheet': response.subjdata.length + ' subjects with ' + (Object.keys(response.subjdata[0]).length - response.allSubjectMetaData.length - 1) + ' metabolites'
             },
             integrityChecked: true,
-            log2var: response.metab.map(function (obj) {
-                return obj.log2var;
-            }),
+            log2var: response.metab.map(function (obj) { return obj.log2var; }),
+            metaboliteIds: response.allMetabolites.map(function(subject) { return { text: subject, value: subject }; }),
             metaboliteSummary: {
                 'N Metabolites': response.metab.length,
                 'N Harmonized': response.metab.map(function (obj) {
@@ -91,7 +79,6 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
                     return obj['num.min'] > response.subjdata.length * .25;
                 }).reduce(sum)
             },
-            modelOptions: modelOptions,
             models: response.mods,
             'num.min': response.metab.map(function (obj) {
                 return obj['num.min'];
@@ -99,6 +86,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
             status: response.integritymessage.toLowerCase().indexOf("error") < 0,
             statusMessage: response.integritymessage,
             subjectdata: subjectdata,
+            subjectIds: response.allSubjectMetaData.map(function(subject) { return { text: subject, value: subject }; }),
             subjectmeta: subjectmeta
         });
         delete response.allMetabolites;

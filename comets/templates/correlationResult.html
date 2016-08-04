@@ -1,46 +1,38 @@
-<% if(correlationRun) { %>
-    <h3>Correlation Results</h3>
-    <% if (status) { %>
-        <div id="resultStatus" class="alert alert-success">
-            <span class="glyphicon glyphicon-ok"></span>
-            <%= statusMessage %>
-        </div>
-        <div class="button-group">
-            <button type="button" id="summaryDownload" class="btn btn-default download"><span class="glyphicon glyphicon-download"></span> Download results in CSV and send to Harmonization Group</button>
-        </div>
-        <table id="correlationSummary" class="table table-striped table-bordered table-hover">
-            <thead>
-                <tr>
-                    <% _.each(tableOrder,function(element,key,list) { %>
-                        <th><%= element %></th>
-                    <% }); %>
-                </tr>
-            </thead>
-            <tbody>
-                <% _.each(excorrdata,function(row,key,list) { %>
-                    <tr>
-                        <% _.each(tableOrder,function(element,key,list) { %>
-                            <td><%= row[element]||"" %></td>
-                        <% }); %>
-                    </tr>
+<h3>Correlation Results</h3>
+<% if (status) { %>
+    <div id="resultStatus" class="alert alert-success">
+        <span class="glyphicon glyphicon-ok"></span>
+        <%= statusMessage %>
+    </div>
+    <table id="correlationSummary" class="table-striped table-hover">
+        <thead>
+            <tr>
+                <% _.each(tableOrder,function(element,key,list) { %>
+                    <th>
+                        <input type="text" placeholder="Search <%= element %>" />
+                    </th>
                 <% }); %>
-            </tbody>
-            <tfoot>
+            </tr>
+            <tr>
+                <% _.each(tableOrder,function(element,key,list) { %>
+                    <th><%= element %></th>
+                <% }); %>
+            </tr>
+        </thead>
+        <tbody>
+            <% _.each(excorrdata,function(row,key,list) { %>
                 <tr>
                     <% _.each(tableOrder,function(element,key,list) { %>
-                        <td>
-                            <input aria-label="Search <%= element %> column" type="text" placeholder="Search <%= element %>" />
-                        </td>
+                        <td><%= row[element]||"" %></td>
                     <% }); %>
                 </tr>
-            </tfoot>
-        </table>
-    <% } %>
-        
-    <% if (!status) { %>
-        <div id="resultStatus" class="alert alert-warning">
-            <span class="glyphicon glyphicon-warning-sign"></span>
-            <%= statusMessage %>
-        </div>
-<%     } 
-} %>
+            <% }); %>
+        </tbody>
+    </table>
+<% } %>
+<% if (!status) { %>
+    <div id="resultStatus" class="alert alert-warning">
+        <span class="glyphicon glyphicon-warning-sign"></span>
+        <%= statusMessage %>
+    </div>
+<% } %>
