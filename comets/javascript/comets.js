@@ -7,7 +7,7 @@
     };
 
     appComets.fileUpload = function (e) {
-        if (window.FileReader) {
+        if (window.FileReader) {            
             var file = e.target.files[0];
             var reader = new FileReader();
 
@@ -95,7 +95,7 @@
     appComets.validation = {
         rules: {
             inputDataFile: {
-                required: true,
+                //required: true,
                 accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
             },
             cohortSelection: {
@@ -128,7 +128,7 @@
         },
         messages: {
             inputDataFile: {
-                required: "an input file is required",
+//                required: "an input file is required",
                 accept: "You must upload an Excel workbook file (.xls, .xlsx)"
             },
             cohortSelection: {
