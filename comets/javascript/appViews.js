@@ -77,9 +77,8 @@ appComets.FormView = Backbone.View.extend({
         "keypress input:not([type='button'])": "noSubmit",
         "click #load": "checkIntegrity",
         "click #runModel": "runModel",
-        "click #toggleHelp": function () {
-            this.$el.find("#inputHelp").toggle();
-        }
+        "click #toggleHelp": function () { this.$el.find("#inputHelp").toggle(); },
+        "click #sampleDownload": function(e) { appComets.events.preauthenticate(e,function() {}); },
     },
     noSubmit: function (e) {
         if (e.keyCode == 13) {
@@ -226,9 +225,7 @@ appComets.FormView = Backbone.View.extend({
             if (data.status === 401) {
                 appComets.events.reauthenticate(e);
             }
-
             appComets.requestFail(data, statusText, errorThrown);
-
         }).always(function () {
             appComets.hideLoader();
             $('a[href="#tab-summary"]').tab('show');
