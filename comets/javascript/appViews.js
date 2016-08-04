@@ -1,6 +1,18 @@
 // app namespace
 var appComets = {
     events: {
+        preauthenticate: function(e,callback) {
+            $.ajax({
+                url: 'ping.txt'
+            }).fail(function(data) {
+                if (data.status === 401) {
+                    appComets.events.reauthenticate(e);
+                    e.preventDefault();
+                }
+            }).then(function(data) {
+                callback(e);
+            });
+        },
         reauthenticate: function (e) {
             var newWindow = window.open("reauth.html");
             window.reauthCallback = function () {
@@ -391,9 +403,10 @@ appComets.SummaryView = Backbone.View.extend({
                         if (column.search() !== this.value) column.search(this.value).draw();
                     });
                 });
+                var $that = this;
                 table.button().add(0,{
                     action: function(e) {
-                        if ($that.model.get('csv')) window.location = $that.model.get('csv');
+                        if ($that.model.get('csv')) appComets.events.preauthenticate(e,function() { window.location = $that.model.get('csv'); });
                     },
                     text: 'Download Results in CSV'
                 });
