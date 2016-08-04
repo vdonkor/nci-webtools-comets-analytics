@@ -1,35 +1,45 @@
 ####Deploying with Docker
 
-This dockerfile is based on the cbiitss:r-base image provided in the docker feasibility study repository (https://github.com/CBIIT/nci-webtools-docker-feasibility).
-To build all the dependencies, run the centos_6.7/build.sh script in a docker-enabled linux host, and then run the following commands to build the image:
+The tech stack for COMETS is available as an image on [Dockerhub](https://hub.docker.com/r/cbiitss/comets/). To deploy the COMETS web application, simply pull the [code](https://github.com/CBIIT/nci-webtools-comets-analytics) and [R package](https://github.com/CBIIT/R-cometsAnalytics) from Github and mount their respective directories as volumes during startup. You will then need to install the package in the running container through docker exec, and then restart the running container to re-initialize the application with the new package. This approach ensures that the package and code are maintained separately, allowing for a more controlled deployment procedure. 
 
-```
-git clone https://github.com/CBIIT/nci-webtools-comets-analytics.git
-cd nci-webtools-comets-analytics/docker
-
-docker build -t cbiitss:comets -f comets.dockerfile .
-```
-
-To start a container, first check out the comets repository code to a a directory and mount it to the /deploy/app directory at run-time. You may also mount a logs directory from an arbitrary location on the host to the /deploy/logs directory found within the container.
 The deployment procedure may look something like this: 
 
-```
-git clone https://github.com/CBIIT/nci-webtools-comets-analytics /tmp/comets_repo
+```bash
 
-mkdir -p /local/content/apps/comets /local/content/logs/comets
-cp -r /tmp/comets_repo/comets/* /local/content/apps/comets/
+# Create deployment directories for the application, package, and logs
+mkdir -p /docker_apps/comets/app /docker_apps/comets/package /docker_apps/comets/logs
 
-chown -r apache:apache /local/content/apps /local/content/logs
-```
+# Clone the repositories containing the application and package code
+git clone https://github.com/CBIIT/nci-webtools-comets-analytics /tmp/comets_app
+git clone https://github.com/CBIIT/R-cometsAnalytics /tmp/comets_package
 
-To start a container using these directories:
+# Copy the application code and package to the deployment directories
+cp -r /tmp/comets_app/comets/* /docker_apps/comets/app/
+cp -r /tmp/comets_package/* /docker_apps/comets/package/
 
-```
-docker run -d \
-  -p 8100:8000 \
-  -v /local/content/apps/comets:/deploy/app \
-  -v /local/content/logs/comets:/deploy/logs \
-  cbiitss:comets
 ```
 
-By default, this container will run on port 8000 but this may be bound to any free port on the host (in this case, port 8100)
+To start application, use the docker run command:
+
+```bash
+
+# Start docker container
+docker run --detached \
+  --name comets
+  --publish 8100:8000 \
+  --volume /docker_apps/comets/app:/deploy/app \
+  --volume /docker_apps/comets/logs:/deploy/logs \
+  --volume /docker_apps/comets/package:/deploy/package \
+  cbiitss/comets:base0
+
+# Rebuild package documentation
+docker exec --user root comets "cd /deploy/package && R -e 'devtools::document()'"
+
+# Install COMETS package
+docker exec --user root comets "cd /deploy && R CMD INSTALL package"
+
+# Restart container to initialize package
+docker restart comets
+  
+```
+
