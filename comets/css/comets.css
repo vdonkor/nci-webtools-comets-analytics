@@ -11,6 +11,7 @@
     height: 100%;
     width: 100%;
 }
+
 #loader img {
     position: inherit;
     top: 50%;
@@ -112,11 +113,11 @@ table.summaryTables thead tr:first-child th {
     filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#606c88', endColorstr='#3f4c6b', GradientType=0);
 }
 
-
 #correlationSummary_wrapper.dataTables_wrapper .dataTables_length {
     line-height: 26px;
     margin-right: 2em;
 }
+
 #correlationSummary_wrapper.dataTables_wrapper .dataTables_filter {
     float: left;
 }
@@ -125,11 +126,12 @@ table.summaryTables thead tr:first-child th {
     float: right;
 }
 
-th,td {
+th,
+td {
     padding: 0px 2px;
 }
 
-td input {
+td input, th input {
     min-width: 100px;
     max-width: 150px;
 }
@@ -140,6 +142,10 @@ hr {
 
 .progress {
     margin: 10px 0;
+}
+
+#messageDiv p {
+    color: red;
 }
 
 input.error:before,
