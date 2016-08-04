@@ -125,7 +125,6 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
                 tableOrder[tableOrder.length] = header;
             }
         }
-        console.log(tableOrder);
         $.extend(response, {
             correlationRun: true,
             excorrdata: excorrdata,

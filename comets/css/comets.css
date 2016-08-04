@@ -86,11 +86,6 @@ input.input:valid {
     width: 100%;
 }
 
-button.download {
-    float: right;
-    margin: 10px auto;
-}
-
 table td,
 table th {
     text-align: center;
@@ -116,14 +111,6 @@ table.summaryTables thead tr:first-child th {
 #correlationSummary_wrapper.dataTables_wrapper .dataTables_length {
     line-height: 26px;
     margin-right: 2em;
-}
-
-#correlationSummary_wrapper.dataTables_wrapper .dataTables_filter {
-    float: left;
-}
-
-#correlationSummary_wrapper.dataTables_wrapper .dt-buttons {
-    float: right;
 }
 
 th,
@@ -163,4 +150,10 @@ input.error,
 select.error {
     border: 2px solid #fc7878;
     background: rgba(255, 0, 0, 0.25);
+}
+.header {
+    clear:both;
+    content: '';
+    display: table;
+    width: 100%;
 }

@@ -65,7 +65,7 @@
             colorscale: "Viridis"
     }], {
             margin: {
-                t: 0,
+                t: 32,
                 l: 200
             },
             height: height,

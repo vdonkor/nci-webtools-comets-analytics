@@ -1,12 +1,12 @@
 <% if (status) { %>
-<h3>Integrity Check Results</h3>
+    <div class="header">
+        <h3 class="pull-left">Integrity Check Results</h3>
+        <button type="button" id="resultsDownload" class="btn btn-default pull-right"><span class="glyphicon glyphicon-download"></span> Download Results in CSV</button>
+    </div>
     <div id="resultStatus" class="alert alert-success">
         <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
     </div>
-
-    <button type="button" id="resultsDownload" class="btn btn-default download"><span class="glyphicon glyphicon-download"></span> Download results and send to COMETS harmonization group</button>
-
     <table id="inputDataSummary" class="table table-bordered table-condensed summaryTables">
         <thead>
             <tr>
