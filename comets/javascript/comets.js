@@ -53,6 +53,21 @@
     };
 
     appComets.generateHeatmap = function (el, options, xLabels, yLabels, legendLabel, data) {
+        var minmax = function(prev,curr) {
+            return {
+                min: Math.min(prev.min,curr.min),
+                max: Math.max(prev.max,curr.max)
+            };
+        };
+        var avg = data.map(function(e) {
+            return e.map(function(e2) {
+                return {
+                    min: e2,
+                    max: e2
+                };
+            }).reduce(minmax);
+        }).reduce(minmax);
+        avg = (avg.min+avg.max)/2;
         Plotly.newPlot(el, [{
             z: data,
             x: xLabels,
@@ -62,7 +77,26 @@
                 title: legendLabel
             },
             colorscale: options.colorscale
-    }], {
+        }], {
+            annotations: data.map(function(e,y) {
+                return e.map(function(e2,x) {
+                    return {
+                        xref: 'x1',
+                        yref: 'y1',
+                        x: xLabels[x],
+                        y: yLabels[y],
+                        text: e2,
+                        showarrow: false,
+                        font: {
+                            family: 'Arial',
+                            size: 12,
+                            color: e2 > avg ? 'rgb(0,0,0)' : 'rgb(255,255,255)'
+                        }
+                    };
+                });
+            }).reduce(function(prev,curr) {
+                return prev.concat(curr);
+            }),
             margin: {
                 t: 32,
                 l: 200
@@ -82,6 +116,7 @@
             },
             autosize: true
         });
+        
     };
 
     appComets.requestFail = function (xhr, textStatus, errorThrown) {
