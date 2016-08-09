@@ -329,11 +329,11 @@ appComets.IntegrityView = Backbone.View.extend({
         }
     },
     events: {
-        "click #resultsDownload": 'startDownload'
+        'click #resultsDownload': 'startDownload'
     },
-    startDownload: function (e) {
-        e.preventDefault();
-        alert("starting download");
+    startDownload: function(e) {
+        var $that = this;
+        if (this.model.get('csvDownload')) appComets.events.preauthenticate(e,function() { window.location = $that.model.get('csvDownload'); });
     },
     render: function () {
         this.$el.html(this.template(this.model.attributes));

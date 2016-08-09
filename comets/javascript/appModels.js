@@ -19,6 +19,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
 
 appComets.IntegrityResultsModel = Backbone.Model.extend({
     defaults: {
+        csvDownload: null,
         dateRun: new Date().toLocaleDateString(),
         integrityChecked: false,
         log2var: null,

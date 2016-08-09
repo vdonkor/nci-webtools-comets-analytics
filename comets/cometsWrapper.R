@@ -7,7 +7,11 @@ checkIntegrity <- function(filename) {
         returnValue <- list()
         returnValue$saveValue <- tryCatch(
             withCallingHandlers(
-                readCOMETSinput(filename),
+                {
+                  exmetabdata = readCOMETSinput(filename)
+                  exmetabdata$csvDownload = OutputCSVResults(paste0('downloads/Harm',as.integer(Sys.time())),exmetabdata$metab,'')
+                  exmetabdata
+                },
                 message=function(m) {
                     print(m$message)
                 },
@@ -37,7 +41,7 @@ runModel <- function(jsonData) {
                     exmetabdata <- readCOMETSinput(input$filename)
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
-                    csv <- OutputCorrResults(type_output="CSVfile","corr",excorrdata,input$cohortSelection)
+                    csv <- OutputCSVResults(paste0('downloads/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
                     list(
                       csv = csv,
                       excorrdata = excorrdata,
