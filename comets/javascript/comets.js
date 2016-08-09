@@ -10,7 +10,6 @@
         if (window.FileReader) {            
             var file = e.target.files[0];
             var reader = new FileReader();
-
             reader.onload = function (event) {
                 var contents = event.target.result;
             };
@@ -96,7 +95,7 @@
         rules: {
             inputDataFile: {
                 //required: true,
-                accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,"
             },
             cohortSelection: {
                 required: true
