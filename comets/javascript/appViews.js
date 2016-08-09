@@ -109,31 +109,19 @@ appComets.FormView = Backbone.View.extend({
         } else {
             this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
         }
-        if (!e.valid())
-            e.validate().showErrors();
+        //        if (!e.valid())
+        //            e.validate().showErrors();
 
         var methodSelection = this.model.get('methodSelection');
         var modelSelection = this.model.get('modelSelection');
-        // Why are we doing this here when its already being done in render?
-        /*
-        if (this.model.get('cohortSelection') &&
-            ((methodSelection == 'Interactive' &&
-                    this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
-                (methodSelection == 'Batch' && modelSelection))
-        ) {
-            this.$el.find('#runModel').removeAttr('disabled');
-        } else {
-            this.$el.find('#runModel').attr('disabled', true);
-        }
-        */
     },
     checkIntegrity: function (e) {
         e.preventDefault();
 
-        var valid = this.$el.validate().valid();
+        //var valid = this.$el.validate().valid();
 
-        if (valid) {
-            file = this.model.get("csvFile");
+        file = this.model.get("csvFile");
+        if (file) {
             var $that = this;
             var formData = new FormData();
             formData.append("inputFile", file);
@@ -145,6 +133,9 @@ appComets.FormView = Backbone.View.extend({
                 processData: false,
                 contentType: false,
                 beforeSend: function () {
+                    appComets.views.errorsDisplay = new appComets.ErrorsView();
+                    appComets.views.errorsDisplay.render();
+
                     appComets.showLoader();
                     $that.$el.find("#calcProgressbar").show()
                         .find("[role='progressbar']")
@@ -331,9 +322,11 @@ appComets.IntegrityView = Backbone.View.extend({
     events: {
         'click #resultsDownload': 'startDownload'
     },
-    startDownload: function(e) {
+    startDownload: function (e) {
         var $that = this;
-        if (this.model.get('csvDownload')) appComets.events.preauthenticate(e,function() { window.location = $that.model.get('csvDownload'); });
+        if (this.model.get('csvDownload')) appComets.events.preauthenticate(e, function () {
+            window.location = $that.model.get('csvDownload');
+        });
     },
     render: function () {
         this.$el.html(this.template(this.model.attributes));
@@ -364,8 +357,10 @@ appComets.HeatmapView = Backbone.View.extend({
                 var sortRow = this.model.get('sortRow');
                 var exposures = this.model.get('exposures');
                 var correlationData = {};
-                _.each(this.model.get('excorrdata'), function(metabolite,key,list) {
-                    correlationData[metabolite.metabolite_name] = correlationData[metabolite.metabolite_name]||{'metabolite_name':metabolite.metabolite_name};
+                _.each(this.model.get('excorrdata'), function (metabolite, key, list) {
+                    correlationData[metabolite.metabolite_name] = correlationData[metabolite.metabolite_name] || {
+                        'metabolite_name': metabolite.metabolite_name
+                    };
                     correlationData[metabolite.metabolite_name][metabolite.exposure] = metabolite.corr;
                 });
                 var heatmapData = [];
@@ -415,9 +410,11 @@ appComets.SummaryView = Backbone.View.extend({
     events: {
         'click #summaryDownload': 'startDownload'
     },
-    startDownload: function(e) {
+    startDownload: function (e) {
         var $that = this;
-        if (this.model.get('csv')) appComets.events.preauthenticate(e,function() { window.location = $that.model.get('csv'); });
+        if (this.model.get('csv')) appComets.events.preauthenticate(e, function () {
+            window.location = $that.model.get('csv');
+        });
     },
     render: function () {
         if (this.model.get('correlationRun')) {
@@ -476,19 +473,19 @@ $(function () {
 
         appComets.views.errorsDisplay = new appComets.ErrorsView();
 
-        $(appComets.views.formView.el).validate({
-            debug: true,
-            ignoreTitle: true,
-            ignore: ".ignore",
-            rules: appComets.validation.rules,
-            messages: appComets.validation.messages,
-            highlight: appComets.validation.highlightElement,
-            unhighlight: appComets.validation.unhighlightElement,
-            errorLabelContainer: '#messageDiv',
-            wrapper: 'p',
-            invalidHandler: appComets.validation.validationFail,
-            submitHandler: appComets.validation.validSuccess
-        });
+        //        $(appComets.views.formView.el).validate({
+        //            debug: true,
+        //            ignoreTitle: true,
+        //            ignore: ".ignore",
+        //            rules: appComets.validation.rules,
+        //            messages: appComets.validation.messages,
+        //            highlight: appComets.validation.highlightElement,
+        //            unhighlight: appComets.validation.unhighlightElement,
+        //            errorLabelContainer: '#messageDiv',
+        //            wrapper: 'p',
+        //            invalidHandler: appComets.validation.validationFail,
+        //            submitHandler: appComets.validation.validSuccess
+        //        });
 
     });
 });
