@@ -381,7 +381,11 @@ appComets.HeatmapView = Backbone.View.extend({
                 var metaboliteNames = heatmapData.map(function (biochem) {
                     return biochem.metabolite_name;
                 });
-                appComets.generateHeatmap("correlateHeatmap", this.model.get('plotHeight'), exposures, metaboliteNames, "Correlation", values);
+                appComets.generateHeatmap("correlateHeatmap", {
+                    colorscale: this.model.get('plotColorscale'),
+                    height: this.model.get('plotHeight'),
+                    width: this.model.get('plotWidth')
+                }, exposures, metaboliteNames, "Correlation", values);
             }
         } else {
             this.$el.html('');

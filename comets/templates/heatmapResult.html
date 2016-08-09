@@ -1,20 +1,29 @@
 
 <% if(correlationRun) { %>
     <div class="row">
-        <div class="col-xs-12 col-sm-6">
-            <div class="col-xs-12 col-sm-6">
-                <label for="sortRow">Sort rows:</label>
-                <select id="sortRow" class="form-control">
-                    <% _.each(exposures,function(exposure,key,list) { %>
-                        <option value="<%= exposure %>"<%= sortRow == exposure ? "selected" : "" %>><%= exposure %></option>
-                    <% }); %>
-                </select>
-            </div>
-
-            <div class="col-xs-12 col-sm-6">
-                <label for="plotHeight">Plot height:</label>
-                <input id="plotHeight" class="form-control" value="<%= plotHeight %>" type="number" min="200" max="9000" step="10" />
-            </div>
+        <div class="col-xs-12 col-sm-6 col-md-3">
+            <label for="sortRow">Sort rows:</label>
+            <select id="sortRow" class="form-control">
+                <% _.each(exposures,function(exposure,key,list) { %>
+                    <option value="<%= exposure %>"<%= sortRow == exposure ? "selected" : "" %>><%= exposure %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-3">
+            <label for="plotColorscale">Chose colorscale:</label>
+            <select id="plotColorscale" class="form-control">
+                <% _.each(colorscales,function(colorscale,key,list) { %>
+                    <option value="<%= colorscale %>"<%= plotColorscale == colorscale ? "selected" : "" %>><%= colorscale %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-3">
+            <label for="plotHeight">Plot height:</label>
+            <input id="plotHeight" class="form-control" value="<%= plotHeight %>" type="number" min="200" max="9000" step="10" />
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-3">
+            <label for="plotWidth">Plot width:</label>
+            <input id="plotWidth" class="form-control" value="<%= plotWidth %>" type="number" min="200" max="9000" step="10" />
         </div>
     </div>
     <hr />
