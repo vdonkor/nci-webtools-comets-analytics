@@ -121,14 +121,16 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         });
         var tableOrder = [];
         for (var header in excorrdata[0]) {
-            if (["cname","log2var","num.min"].indexOf(header) < 0) {
+            if (["cname","log2var","num.min","uidsource"].indexOf(header) < 0) {
                 tableOrder[tableOrder.length] = header;
             }
         }
+        var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
         $.extend(response, {
             correlationRun: true,
             excorrdata: excorrdata,
-            exposures: response.exposures.constructor === Array ? response.exposures : [response.exposures],
+            exposures: exposures,
+            sortRow: exposures[0],
             tableOrder: tableOrder
         });
         delete response.model;

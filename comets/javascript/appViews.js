@@ -361,16 +361,24 @@ appComets.HeatmapView = Backbone.View.extend({
             this.model.set('plotHeight', Math.min(Math.max(this.model.get('plotHeight'), 200), 9000));
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
-                var correlationData = this.model.get('excorrdata');
                 var sortRow = this.model.get('sortRow');
-                correlationData = correlationData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
                 var exposures = this.model.get('exposures');
-                var values = correlationData.map(function (biochem) {
+                var correlationData = {};
+                _.each(this.model.get('excorrdata'), function(metabolite,key,list) {
+                    correlationData[metabolite.metabolite_name] = correlationData[metabolite.metabolite_name]||{'metabolite_name':metabolite.metabolite_name};
+                    correlationData[metabolite.metabolite_name][metabolite.exposure] = metabolite.corr;
+                });
+                var heatmapData = [];
+                for (var prop in correlationData) {
+                    heatmapData[heatmapData.length] = correlationData[prop];
+                }
+                heatmapData = heatmapData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
+                var values = heatmapData.map(function (biochem) {
                     return exposures.map(function (exposure) {
                         return biochem[exposure];
                     });
                 });
-                var metaboliteNames = correlationData.map(function (biochem) {
+                var metaboliteNames = heatmapData.map(function (biochem) {
                     return biochem.metabolite_name;
                 });
                 appComets.generateHeatmap("correlateHeatmap", this.model.get('plotHeight'), exposures, metaboliteNames, "Correlation", values);
