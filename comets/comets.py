@@ -56,11 +56,16 @@ def correlate():
             parameters['filename'] = os.path.join('uploads', parameters['filename']+".xlsx")
         if ('outcome' in parameters):
             parameters['outcome'] = json.loads(parameters['outcome'])
+            if (len(parameters['outcome']) == 0):
+                parameters['outcome'] = None
         if ('exposure' in parameters):
             parameters['exposure'] = json.loads(parameters['exposure'])
+            if (len(parameters['exposure']) == 0):
+                parameters['exposure'] = None
         if ('covariates' in parameters):
             parameters['covariates'] = json.loads(parameters['covariates'])
-        print(parameters)
+            if (len(parameters['covariates']) == 0):
+                parameters['covariates'] = None
         result = json.loads(wrapper.runModel(json.dumps(parameters))[0])
         if ("error" in result):
             response = buildFailure(result['error'])

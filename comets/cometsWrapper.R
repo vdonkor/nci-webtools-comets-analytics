@@ -37,7 +37,7 @@ runModel <- function(jsonData) {
                     exmetabdata <- readCOMETSinput(input$filename)
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
-                    csv <- makeOutputCSV("corr",excorrdata,input$cohortSelection)
+                    csv <- OutputCorrResults(type_output="CSVfile","corr",excorrdata,input$cohortSelection)
                     list(
                       csv = csv,
                       excorrdata = excorrdata,
