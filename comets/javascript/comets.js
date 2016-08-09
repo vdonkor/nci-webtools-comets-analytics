@@ -52,7 +52,7 @@
         });
     };
 
-    appComets.generateHeatmap = function (el, height, xLabels, yLabels, legendLabel, data) {
+    appComets.generateHeatmap = function (el, options, xLabels, yLabels, legendLabel, data) {
         Plotly.newPlot(el, [{
             z: data,
             x: xLabels,
@@ -61,13 +61,14 @@
             colorbar: {
                 title: legendLabel
             },
-            colorscale: "Viridis"
+            colorscale: options.colorscale
     }], {
             margin: {
                 t: 32,
                 l: 200
             },
-            height: height,
+            height: options.height,
+            width: options.width,
             title: " ",
             xaxis: {
                 title: " ",

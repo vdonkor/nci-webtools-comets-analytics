@@ -102,11 +102,14 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
 
 appComets.CorrelationResultsModel = Backbone.Model.extend({
     defaults: {
+        plotColorscale: "Viridis",
+        colorscales: ["Blackbody", "Bluered", "Blues", "Earth", "Electric", "Greens", "Greys", "Hot", "Jet", "Picnic", "Portland", "Rainbow", "RdBu", "Reds", "Viridis", "YlGnBu", "YlOrRd"],
         correlationRun: false,
         csvFile: null,
         excorrdata: [],
         exposures: [],
         plotHeight: 500,
+        plotWidth: 500,
         sortRow: null,
         status: false,
         statusMessage: "An unknown error occurred",
