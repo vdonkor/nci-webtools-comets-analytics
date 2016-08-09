@@ -93,6 +93,7 @@ appComets.FormView = Backbone.View.extend({
         //add file to model
         var file = appComets.fileUpload(e);
         this.model.set("csvFile", file);
+        // We should probably do this in render too?
         if (file === null || file === undefined) {
             this.$el.find("#load").attr('disabled', true);
         } else {
@@ -113,7 +114,8 @@ appComets.FormView = Backbone.View.extend({
 
         var methodSelection = this.model.get('methodSelection');
         var modelSelection = this.model.get('modelSelection');
-
+        // Why are we doing this here when its already being done in render?
+        /*
         if (this.model.get('cohortSelection') &&
             ((methodSelection == 'Interactive' &&
                     this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
@@ -123,6 +125,7 @@ appComets.FormView = Backbone.View.extend({
         } else {
             this.$el.find('#runModel').attr('disabled', true);
         }
+        */
     },
     checkIntegrity: function (e) {
         e.preventDefault();
