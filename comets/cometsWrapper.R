@@ -48,7 +48,8 @@ runModel <- function(jsonData) {
                       exposures = exmodeldata$ccovs,
                       model = input$modelName,
                       status = TRUE,
-                      statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis."
+                      statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
+                      tableOrder = names(excorrdata)
                     )
                 },
                 message=function(m) {
