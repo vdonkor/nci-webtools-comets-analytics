@@ -1,12 +1,10 @@
 <% if (status) { %>
-    <div class="header">
-        <h3 class="pull-left">Correlation Results</h3>
-        <button type="button" id="summaryDownload" class="btn btn-default pull-right"><span class="glyphicon glyphicon-download"></span> Download Results in CSV</button>
-    </div>
+    <h3>Correlation Results</h3>
     <div id="resultStatus" class="alert alert-success">
         <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
     </div>
+    <button type="button" id="summaryDownload" class="btn btn-default pull-right"><span class="glyphicon glyphicon-download"></span> Download Results in CSV</button>
     <table id="correlationSummary" class="table-striped table-hover">
         <thead>
             <tr>

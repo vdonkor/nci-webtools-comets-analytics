@@ -172,10 +172,7 @@ select:valid:before,
 input:valid:before {
     content: "";
 }
-
-.header {
-    clear:both;
-    content: '';
-    display: table;
-    width: 100%;
+#resultsDownload,
+#summaryDownload {
+    margin-bottom: 20px;
 }
