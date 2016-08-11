@@ -20,14 +20,14 @@ def buildSuccess(message):
 def integrityCheck():
     try:
         userFile = request.files['inputFile']
-        if not os.path.exists('uploads'):
-            os.makedirs('uploads')
+        if not os.path.exists('tmp'):
+            os.makedirs('tmp')
         name, ext = os.path.splitext(userFile.filename)
         filename = "cometsInput_" + time.strftime("%Y_%m_%d_%I_%M") + ext
-        saveFile = userFile.save(os.path.join('uploads', filename))
-        if os.path.isfile(os.path.join('uploads', filename)):
+        saveFile = userFile.save(os.path.join('tmp', filename))
+        if os.path.isfile(os.path.join('tmp', filename)):
             print("Successfully Uploaded")
-        result=json.loads(wrapper.checkIntegrity(os.path.join('uploads', filename))[0])
+        result=json.loads(wrapper.checkIntegrity(os.path.join('tmp', filename))[0])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -53,7 +53,7 @@ def correlate():
         for field in parameters:
             parameters[field] = parameters[field][0]
         if ('filename' in parameters):
-            parameters['filename'] = os.path.join('uploads', parameters['filename']+".xlsx")
+            parameters['filename'] = os.path.join('tmp', parameters['filename']+".xlsx")
         if ('outcome' in parameters):
             parameters['outcome'] = json.loads(parameters['outcome'])
             if (len(parameters['outcome']) == 0):
