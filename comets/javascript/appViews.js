@@ -436,7 +436,10 @@ appComets.SummaryView = Backbone.View.extend({
 });
 
 $(function () {
-
+    $('#logoutBtn').on('click',function(e) {
+        e.preventDefault();
+        window.location="/auth0_redirect?logout="+encodeURIComponent(window.location.href);
+    });
     templates = $.ajax({
         type: "GET",
         url: "/cometsRest/templates",
