@@ -12,7 +12,7 @@
             <tr>
                 <% _.each(tableOrder,function(element,key,list) { %>
                     <th>
-                        <input type="text" placeholder="Search <%= element %>" />
+                        <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
                     </th>
                 <% }); %>
             </tr>
