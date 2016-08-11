@@ -10,7 +10,7 @@
             </select>
         </div>
         <div class="col-xs-12 col-sm-6 col-md-3">
-            <label for="plotColorscale">Chose colorscale:</label>
+            <label for="plotColorscale">Palette:</label>
             <select id="plotColorscale" class="form-control">
                 <% _.each(colorscales,function(colorscale,key,list) { %>
                     <option value="<%= colorscale %>"<%= plotColorscale == colorscale ? "selected" : "" %>><%= colorscale %></option>

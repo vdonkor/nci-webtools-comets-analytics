@@ -176,3 +176,13 @@ input:valid:before {
 #summaryDownload {
     margin-bottom: 20px;
 }
+label[for="showMetabolites"] {
+    font-weight: normal;
+}
+label[for="showMetabolites"] input {
+    display: inline-block;
+    vertical-align: top;
+}
+label[for="showMetabolites"] div {
+    display: inline-block;
+}
