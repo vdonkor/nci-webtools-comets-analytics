@@ -1,4 +1,3 @@
-
 <% if(correlationRun) { %>
     <div class="row">
         <div class="col-xs-12 col-sm-6 col-md-3">
@@ -24,6 +23,13 @@
         <div class="col-xs-12 col-sm-6 col-md-3">
             <label for="plotWidth">Plot width:</label>
             <input id="plotWidth" class="form-control" value="<%= plotWidth %>" type="number" min="200" max="9000" step="10" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-cs-12 col-sm-6 col-md-3">
+            <label for="displayAnnotations">
+                <input type="checkbox" id="displayAnnotations"<%= displayAnnotations ? " checked" : ""%>/><span> Display annotations</span>
+            </label>
         </div>
     </div>
     <hr />

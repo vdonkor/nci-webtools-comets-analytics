@@ -19,6 +19,14 @@ var appComets = {
                 delete window.reauthCallback;
                 $(e.target).trigger(e.type);
             };
+        },
+        updateModel: function (e) {
+            var e = $(e.target);
+            if (e.attr('type') == 'checkbox') {
+                this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'));
+            } else {
+                this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
+            }
         }
     },
     models: {},
@@ -100,26 +108,9 @@ appComets.FormView = Backbone.View.extend({
             this.$el.find("#load").removeAttr('disabled');
         }
     },
-
-    updateModel: function (e) {
-        var e = $(e.target);
-
-        if (e.attr('type') == 'checkbox') {
-            this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'));
-        } else {
-            this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
-        }
-        //        if (!e.valid())
-        //            e.validate().showErrors();
-
-        var methodSelection = this.model.get('methodSelection');
-        var modelSelection = this.model.get('modelSelection');
-    },
+    updateModel: appComets.events.updateModel,
     checkIntegrity: function (e) {
         e.preventDefault();
-
-        //var valid = this.$el.validate().valid();
-
         file = this.model.get("csvFile");
         if (file) {
             var $that = this;
@@ -349,9 +340,13 @@ appComets.HeatmapView = Backbone.View.extend({
             this.render();
         }
     },
+    events: {
+        "change select": "updateModel",
+        "change input:not([type='button'])": "updateModel"
+    },
+    updateModel: appComets.events.updateModel,
     render: function () {
         if (this.model.get('correlationRun')) {
-            this.model.set('plotHeight', Math.min(Math.max(this.model.get('plotHeight'), 200), 9000));
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
                 var sortRow = this.model.get('sortRow');
@@ -376,23 +371,26 @@ appComets.HeatmapView = Backbone.View.extend({
                 var metaboliteNames = heatmapData.map(function (biochem) {
                     return biochem.metabolite_name;
                 });
-                appComets.generateHeatmap("correlateHeatmap", {
-                    colorscale: this.model.get('plotColorscale'),
-                    height: this.model.get('plotHeight'),
-                    width: this.model.get('plotWidth')
-                }, exposures, metaboliteNames, "Correlation", values);
+                var plotHeight = this.model.get('plotHeight');
+                var plotWidth = this.model.get('plotWidth');
+                plotHeight = Math.min(Math.max(plotHeight, 200), 9000);
+                plotWidth = Math.min(Math.max(plotWidth, 200), 9000);
+                if (plotHeight != this.model.get('plotHeight') || plotWidth != this.model.get('plotWidth')) {
+                    this.model.set($.extend(this.model.attributes,{
+                        plotHeight: plotHeight,
+                        plotWidth: plotWidth
+                    }));
+                }
+                appComets.generateHeatmap('correlateHeatmap', {
+                    annotated: this.model.get('displayAnnotations'),
+                    height: plotHeight,
+                    width: plotWidth,
+                    colorscale: this.model.get('plotColorscale')
+                }, exposures, metaboliteNames, "Correlation", values).then;
             }
         } else {
             this.$el.html('');
         }
-    },
-    events: {
-        "change select": "updateModel",
-        "change input:not([type='button'])": "updateModel"
-    },
-    updateModel: function (e) {
-        var e = $(e.target);
-        this.model.set(e.attr("id"), e.val());
     }
 });
 

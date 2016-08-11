@@ -179,3 +179,6 @@ label[for="showMetabolites"] input {
 label[for="showMetabolites"] div {
     display: inline-block;
 }
+label[for="displayAnnotations"] {
+    margin-top: 5px;
+}

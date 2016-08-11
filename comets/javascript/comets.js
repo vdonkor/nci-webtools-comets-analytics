@@ -68,7 +68,7 @@
             }).reduce(minmax);
         }).reduce(minmax);
         avg = (avg.min+avg.max)/2;
-        Plotly.newPlot(el, [{
+        return Plotly.newPlot(el, [{
             z: data,
             x: xLabels,
             y: yLabels,
@@ -78,7 +78,7 @@
             },
             colorscale: options.colorscale
         }], {
-            annotations: data.map(function(e,y) {
+            annotations: options.annotated ? data.map(function(e,y) {
                 return e.map(function(e2,x) {
                     return {
                         xref: 'x1',
@@ -96,7 +96,7 @@
                 });
             }).reduce(function(prev,curr) {
                 return prev.concat(curr);
-            }),
+            }) : null,
             margin: {
                 t: 32,
                 l: 200
@@ -116,7 +116,6 @@
             },
             autosize: true
         });
-        
     };
 
     appComets.requestFail = function (xhr, textStatus, errorThrown) {
