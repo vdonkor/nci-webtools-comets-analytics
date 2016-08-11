@@ -15,7 +15,7 @@ git clone https://github.com/CBIIT/R-cometsAnalytics /tmp/comets_package
 
 # Copy the application code and package to the deployment directories
 cp -r /tmp/comets_app/comets/* /docker_apps/comets/app/
-cp -r /tmp/comets_package/* /docker_apps/comets/package/
+cp -r /tmp/comets_package/* /docker_apps/comets/rcode/
 
 ```
 
@@ -23,22 +23,21 @@ To start application, use the docker run command:
 
 ```bash
 
-# Start docker container
+# Pull latest image
+docker pull cbiitss/comets:base0
+
+# Start container
 docker run --detached \
   --name comets
   --publish 8100:8000 \
   --volume /docker_apps/comets/app:/deploy/app \
   --volume /docker_apps/comets/logs:/deploy/logs \
-  --volume /docker_apps/comets/package:/deploy/package \
   cbiitss/comets:base0
 
-# Rebuild package documentation
-docker exec --user root comets "cd /deploy/package && R -e 'devtools::document()'"
+# Install package
+docker exec --user root comets bash -c "R CMD INSTALL /deploy/app/rcode >> /deploy/logs/update_comets_package.log  2>&1"
 
-# Install COMETS package
-docker exec --user root comets "cd /deploy && R CMD INSTALL package"
-
-# Restart container to initialize package
+# Restart container to use updated R package
 docker restart comets
   
 ```
