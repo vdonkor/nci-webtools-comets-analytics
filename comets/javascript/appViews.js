@@ -14,11 +14,15 @@ var appComets = {
             });
         },
         reauthenticate: function (e) {
+            e.preventDefault();
+            window.location = window.location;
+            /*
             var newWindow = window.open("reauth.html");
             window.reauthCallback = function () {
                 delete window.reauthCallback;
                 $(e.target).trigger(e.type);
             };
+            */
         },
         updateModel: function (e) {
             var e = $(e.target);
