@@ -160,18 +160,11 @@ select.error {
     background: rgba(255, 0, 0, 0.25);
 }
 
-div.required input:before,
-select:required:before,
-input:required:before {
-    content: "*";
-    font-size: 1.4em;
+label span.glyphicon {
+    font-size: 11px;
     vertical-align: middle;
 }
 
-select:valid:before,
-input:valid:before {
-    content: "";
-}
 #resultsDownload,
 #summaryDownload {
     margin-bottom: 20px;
