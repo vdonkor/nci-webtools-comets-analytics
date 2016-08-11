@@ -41,7 +41,7 @@ def integrityCheck():
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "error":"An unknown error occurred"})
+        response = buildFailure({"status": False, "integritymessage":"An unknown error occurred"})
     finally:
         return response
 
@@ -79,7 +79,7 @@ def correlate():
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "error":"An unknown error occurred"})
+        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
     finally:
         return response
         

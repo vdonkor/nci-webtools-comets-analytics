@@ -220,7 +220,7 @@ appComets.FormView = Backbone.View.extend({
                 correlationResults = appComets.models.correlationResults;
             if (response && 'status' in response) {
                 correlationResults.set($.extend(correlationResults.attributes, {
-                    modelRun: true,
+                    correlationRun: true,
                     status: response.status,
                     statusMessage: response.statusMessage
                 }));
