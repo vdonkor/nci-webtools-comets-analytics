@@ -35,9 +35,9 @@ docker run --detached \
   cbiitss/comets:base0
 
 # Install package
-docker exec --user root comets bash -c "cd /deploy/app && R CMD INSTALL rcode >> /deploy/logs/update_cometsR.log  2>&1"
+docker exec --user root comets bash -c "R CMD INSTALL /deploy/app/rcode >> /deploy/logs/update_comets_package.log  2>&1"
 
-# Restart container to initialize package
+# Restart container to use updated R package
 docker restart comets
   
 ```
