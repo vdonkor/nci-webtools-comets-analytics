@@ -116,6 +116,13 @@ table.summaryTables thead tr:first-child th {
     line-height: 26px;
     margin-right: 2em;
 }
+#correlationSummary_wrapper.dataTables_wrapper .dataTables_filter {
+    float: left;
+}
+
+#correlationSummary_wrapper.dataTables_wrapper .dt-buttons {
+    float: right;
+}
 
 th,
 td {

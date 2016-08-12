@@ -409,20 +409,13 @@ appComets.SummaryView = Backbone.View.extend({
             this.render();
         }
     },
-    events: {
-        'click #summaryDownload': 'startDownload'
-    },
-    startDownload: function (e) {
-        var $that = this;
-        if (this.model.get('csv')) appComets.events.preauthenticate(e, function () {
-            window.location = $that.model.get('csv');
-        });
-    },
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
                 var table = this.$el.find('#correlationSummary').DataTable({
+                    buttons: [],
+                    dom: 'lfBtip',
                     pageLength: 25
                 });
                 table.columns().every(function () {
@@ -432,6 +425,12 @@ appComets.SummaryView = Backbone.View.extend({
                     });
                 });
                 var $that = this;
+                table.button().add(0,{
+                    action: function(e) {
+                        if ($that.model.get('csv')) appComets.events.preauthenticate(e,function() { window.location = $that.model.get('csv'); });
+                    },
+                    text: 'Download Results in CSV'
+                });
             }
         } else {
             this.$el.html('');
