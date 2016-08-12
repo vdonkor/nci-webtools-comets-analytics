@@ -306,7 +306,7 @@ appComets.FormView = Backbone.View.extend({
 
 // view for the integrity check's results
 appComets.IntegrityView = Backbone.View.extend({
-    el: "#integrityDiv",
+    el: "#tab-integrity",
     initialize: function () {
         this.model.on('change', this.render, this);
         if (appComets.templatesList) {
@@ -330,6 +330,46 @@ appComets.IntegrityView = Backbone.View.extend({
                 appComets.generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Log2 Variance Distribution', this.model.get('log2var'));
                 appComets.generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of number of subject at min', this.model.get('num.min'));
             }
+        }
+    }
+});
+
+
+// view the correlation summary
+appComets.SummaryView = Backbone.View.extend({
+    el: "#tab-summary",
+    initialize: function () {
+        this.model.on('change', this.render, this);
+        if (appComets.templatesList) {
+            this.template = _.template(appComets.templatesList.correlationResult);
+            this.render();
+        }
+    },
+    render: function () {
+        if (this.model.get('correlationRun')) {
+            this.$el.html(this.template(this.model.attributes));
+            if (this.model.get('status')) {
+                var table = this.$el.find('#correlationSummary').DataTable({
+                    buttons: [],
+                    dom: 'lfBtip',
+                    pageLength: 25
+                });
+                table.columns().every(function () {
+                    var column = this;
+                    $(table.table().header()).children().eq(0).children().eq(this.selector.cols).find('input').on('keyup change', function () {
+                        if (column.search() !== this.value) column.search(this.value).draw();
+                    });
+                });
+                var $that = this;
+                table.button().add(0,{
+                    action: function(e) {
+                        if ($that.model.get('csv')) appComets.events.preauthenticate(e,function() { window.location = $that.model.get('csv'); });
+                    },
+                    text: 'Download Results in CSV'
+                });
+            }
+        } else {
+            this.$el.html('');
         }
     }
 });
@@ -398,39 +438,25 @@ appComets.HeatmapView = Backbone.View.extend({
     }
 });
 
-
-// view the correlation summary
-appComets.SummaryView = Backbone.View.extend({
-    el: "#tab-summary",
+// view the cluster and heatmap
+appComets.ClusterView = Backbone.View.extend({
+    el: "#tab-cluster",
     initialize: function () {
         this.model.on('change', this.render, this);
         if (appComets.templatesList) {
-            this.template = _.template(appComets.templatesList.correlationResult);
+            this.template = _.template(appComets.templatesList.clusterResult);
             this.render();
         }
     },
+    events: {
+        "change select": "updateModel",
+        "change input:not([type='button'])": "updateModel"
+    },
+    updateModel: appComets.events.updateModel,
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
-                var table = this.$el.find('#correlationSummary').DataTable({
-                    buttons: [],
-                    dom: 'lfBtip',
-                    pageLength: 25
-                });
-                table.columns().every(function () {
-                    var column = this;
-                    $(table.table().header()).children().eq(0).children().eq(this.selector.cols).find('input').on('keyup change', function () {
-                        if (column.search() !== this.value) column.search(this.value).draw();
-                    });
-                });
-                var $that = this;
-                table.button().add(0,{
-                    action: function(e) {
-                        if ($that.model.get('csv')) appComets.events.preauthenticate(e,function() { window.location = $that.model.get('csv'); });
-                    },
-                    text: 'Download Results in CSV'
-                });
             }
         } else {
             this.$el.html('');
@@ -472,6 +498,9 @@ $(function () {
             model: appComets.models.correlationResults
         });
         appComets.views.heatmap = new appComets.HeatmapView({
+            model: appComets.models.correlationResults
+        });
+        appComets.views.heatmap = new appComets.ClusterView({
             model: appComets.models.correlationResults
         });
 

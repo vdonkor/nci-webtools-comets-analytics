@@ -119,7 +119,6 @@ table.summaryTables thead tr:first-child th {
 #correlationSummary_wrapper.dataTables_wrapper .dataTables_filter {
     float: left;
 }
-
 #correlationSummary_wrapper.dataTables_wrapper .dt-buttons {
     float: right;
 }

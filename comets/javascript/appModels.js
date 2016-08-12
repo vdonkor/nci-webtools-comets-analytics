@@ -103,13 +103,14 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
 
 appComets.CorrelationResultsModel = Backbone.Model.extend({
     defaults: {
-        plotColorscale: "Viridis",
+        clusterResults: false,
         colorscales: ["Blackbody", "Bluered", "Blues", "Earth", "Electric", "Greens", "Greys", "Hot", "Jet", "Picnic", "Portland", "Rainbow", "RdBu", "Reds", "Viridis", "YlGnBu", "YlOrRd"],
         correlationRun: false,
         csvFile: null,
         displayAnnotations: false,
         excorrdata: [],
         exposures: [],
+        plotColorscale: "Viridis",
         plotHeight: 500,
         plotWidth: 800,
         sortRow: null,

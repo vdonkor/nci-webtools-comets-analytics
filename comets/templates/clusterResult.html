@@ -1,0 +1,19 @@
+<% if(correlationRun) { %>
+    <div class="row">
+        <div class="col-xs-12 col-sm-6 col-md-3">
+            <label>Palette:</label>
+            <select name="xyz" class="form-control">
+                <% _.each(colorscales,function(colorscale,key,list) { %>
+                    <option value="<%= colorscale %>"<%= plotColorscale == colorscale ? "selected" : "" %>><%= colorscale %></option>
+                <% }); %>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-cs-12 col-sm-6 col-md-3">
+            <label for="clusterResults">
+                <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : ""%>/><span> Apply clustering</span>
+            </label>
+        </div>
+    </div>
+<% } %>
