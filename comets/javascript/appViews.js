@@ -35,10 +35,10 @@ var appComets = {
     },
     models: {},
     sorts: {
-        "Alphabetic (asc)": function (obj1, obj2) {
+        "Metabolite Name (A-Z)": function (obj1, obj2) {
             return ((obj1.metabolite_name > obj2.metabolite_name) ? 1 : (obj1.metabolite_name < obj2.metabolite_name) ? -1 : 0);
         },
-        "Alphabetic (desc)": function (obj1, obj2) {
+        "Metabolite Name (Z-A)": function (obj1, obj2) {
             return ((obj1.metabolite_name < obj2.metabolite_name) ? 1 : (obj1.metabolite_name > obj2.metabolite_name) ? -1 : 0);
         },
         "default": function (property) {
