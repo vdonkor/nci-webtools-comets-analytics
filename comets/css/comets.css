@@ -90,10 +90,6 @@ input.input:valid {
     width: 100%;
 }
 
-table td,
-table th {
-    text-align: center;
-}
 
 table.summaryTables thead tr th {
     background: #ffffff;
