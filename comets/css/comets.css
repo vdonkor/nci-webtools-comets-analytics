@@ -92,7 +92,12 @@ input.input:valid {
 
 table td,
 table th {
-    text-align: center;
+    text-align: right;
+}
+
+table.dataTable tbody td {
+    padding-left: 18px;
+    padding-right: 18px;
 }
 
 table.summaryTables thead tr th {
