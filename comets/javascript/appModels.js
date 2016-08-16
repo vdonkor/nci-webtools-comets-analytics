@@ -112,7 +112,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         exposures: [],
         plotHeight: 500,
         plotWidth: 800,
-        sortRow: "Metabolite Name (A-Z)",
+        sortRow: null,
         status: false,
         statusMessage: "An unknown error occurred",
         tableOrder: []
@@ -128,7 +128,8 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         $.extend(response, {
             correlationRun: true,
             excorrdata: excorrdata,
-            exposures: exposures
+            exposures: exposures,
+            sortRow: exposures[0]
         });
         delete response.model;
         console.log(response);

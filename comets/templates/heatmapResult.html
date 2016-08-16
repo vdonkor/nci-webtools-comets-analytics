@@ -3,11 +3,11 @@
         <div class="col-xs-12 col-sm-6 col-md-3">
             <label for="sortRow">Outcomes Sort By:</label>
             <select id="sortRow" class="form-control">
-                <option value="Metabolite Name (A-Z)"<%= sortRow == "Metabolite Name (A-Z)" ? " selected" : "" %>>Metabolite Name (A-Z)</option>
-                <option value="Metabolite Name (Z-A)"<%= sortRow == "Metabolite Name (Z-A)" ? " selected" : "" %>>Metabolite Name (Z-A)</option>
                 <% _.each(exposures,function(exposure,key,list) { %>
                     <option value="<%= exposure %>"<%= sortRow == exposure ? "selected" : "" %>><%= exposure %></option>
                 <% }); %>
+                <option value="Metabolite Name (A-Z)"<%= sortRow == "Metabolite Name (A-Z)" ? " selected" : "" %>>Metabolite Name (A-Z)</option>
+                <option value="Metabolite Name (Z-A)"<%= sortRow == "Metabolite Name (Z-A)" ? " selected" : "" %>>Metabolite Name (Z-A)</option>
             </select>
         </div>
         <div class="col-xs-12 col-sm-6 col-md-3">
