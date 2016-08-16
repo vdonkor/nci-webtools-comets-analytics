@@ -105,11 +105,11 @@
             width: options.width,
             title: " ",
             xaxis: {
-                title: "Exposure(s)",
+                title: " ",
                 showgrid: false
             },
             yaxis: {
-                title: "Outcome(s)"
+                title: " "
             },
             legend: {
                 title: legendLabel
