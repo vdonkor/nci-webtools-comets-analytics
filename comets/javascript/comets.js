@@ -99,8 +99,8 @@
             }) : null,
             margin: {
                 t: 32,
-                l: 200,
-                b: 200
+                l: 200
+                // b: 200  //set bottom margin for x-axis labels
             },
             height: options.height,
             width: options.width,
