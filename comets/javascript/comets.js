@@ -99,7 +99,8 @@
             }) : null,
             margin: {
                 t: 32,
-                l: 200
+                l: 200,
+                b: 200
             },
             height: options.height,
             width: options.width,
