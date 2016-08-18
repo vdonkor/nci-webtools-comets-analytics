@@ -48,6 +48,10 @@ nav.navbar.navbar-default {
     border-radius: 0 0 4px 4px;
 }
 
+#result-tab-content {
+    border-width: 0  1px 1px;
+}
+
 .ui-widget {
     font-size: 90%;
 }
