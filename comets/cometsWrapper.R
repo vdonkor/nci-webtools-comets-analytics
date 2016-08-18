@@ -1,6 +1,7 @@
 library(stringr)
 library(jsonlite)
 library(COMETS)
+library(stats)
 
 checkIntegrity <- function(filename) {
     suppressWarnings(suppressMessages({
@@ -42,7 +43,24 @@ runModel <- function(jsonData) {
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
                     csv <- OutputCSVResults(paste0('corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
+                    clustersort = NULL
+                    if (length(exmodeldata$ccovs) > 1) {
+                      heatmapdata <- excorrdata %>% dplyr::select(metabolite_name,exposure,corr) %>% tidyr::spread(exposure,corr)
+                      rownames(heatmapdata) <- heatmapdata[,1]
+                      heatmapdata <- heatmapdata[,2:ncol(heatmapdata)]
+                      heatmapdata <- as.matrix(heatmapdata)
+                      rowDendrogram = rev(reorder(as.dendrogram(hclust(dist(heatmapdata))), rowMeans(heatmapdata,na.rm=TRUE)))
+                      colDendrogram <- rev(reorder(as.dendrogram(hclust(dist(t(heatmapdata)))), colMeans(heatmapdata,na.rm=TRUE)))
+                      heatmapdata <- heatmapdata[order.dendrogram(rowDendrogram),order.dendrogram(colDendrogram)]
+                      clustersort = list(
+                        col=names(as.data.frame(heatmapdata)),
+                        colTree=makeBranches(colDendrogram),
+                        row=rownames(heatmapdata),
+                        rowTree=makeBranches(rowDendrogram)
+                      )
+                    }
                     list(
+                      clustersort = clustersort,
                       csv = csv,
                       excorrdata = excorrdata,
                       exposures = exmodeldata$ccovs,
@@ -69,4 +87,18 @@ runModel <- function(jsonData) {
         )
     }))
     toJSON(returnValue, auto_unbox = T)
+}
+
+fields <- c("members", "height", "label")
+nodeParFields <- c("pch", "cex", "col", "xpd", "bg")
+edgeParFields <- c("col", "lty", "lwd")
+
+makeBranches <- function(dendrogram) {
+  root <- list(
+    label = attributes(dendrogram)["label"]$label
+  )
+  if (!is.leaf(dendrogram)) {
+    root$branch <- lapply(dendrogram, makeBranches)
+  }
+  root
 }
