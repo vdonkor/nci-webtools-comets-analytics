@@ -48,6 +48,10 @@ nav.navbar.navbar-default {
     border-radius: 0 0 4px 4px;
 }
 
+#result-tab-content {
+    border-width: 0  1px 1px;
+}
+
 .ui-widget {
     font-size: 90%;
 }
@@ -92,7 +96,7 @@ input.input:valid {
 
 table td,
 table th {
-    text-align: right;
+    text-align: left;
 }
 
 table.dataTable tbody td {
@@ -193,4 +197,17 @@ label[for="showMetabolites"] div {
 }
 label[for="displayAnnotations"] {
     margin-top: 5px;
+}
+.axisLegend {
+    text-align: center;
+    margin-top: 20px;
+    border:1px solid lightgray;
+    padding-top:5px;
+    padding-bottom:5px;
+    font-style: italic;
+    width: 400px;
+}
+.tab {
+    display: inline-block;
+    width: 4em;
 }
