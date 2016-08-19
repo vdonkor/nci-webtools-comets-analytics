@@ -402,19 +402,34 @@ appComets.HeatmapView = Backbone.View.extend({
                     };
                     correlationData[metabolite.metabolite_name][metabolite.exposure] = metabolite.corr;
                 });
-                var heatmapData = [];
-                for (var prop in correlationData) {
-                    heatmapData[heatmapData.length] = correlationData[prop];
-                }
-                heatmapData = heatmapData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
-                var values = heatmapData.map(function (biochem) {
-                    return exposures.map(function (exposure) {
-                        return biochem[exposure];
+                var values = [];
+                var metaboliteNames = [];
+                if (this.model.get('clusterResults')) {
+                    var clustersort = this.model.get('clustersort');
+                    exposures = clustersort.col;
+                    metaboliteNames = clustersort.row;
+                    for (var metaboliteIndex in metaboliteNames) {
+                        row = [];
+                        values[values.length] = row;
+                        for (var exposureIndex in exposures) {
+                            row[row.length] = correlationData[metaboliteNames[metaboliteIndex]][exposures[exposureIndex]];
+                        }
+                    }
+                } else {
+                    var heatmapData = [];
+                    for (var prop in correlationData) {
+                        heatmapData[heatmapData.length] = correlationData[prop];
+                    }
+                    heatmapData = heatmapData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
+                    values = heatmapData.map(function (biochem) {
+                        return exposures.map(function (exposure) {
+                            return biochem[exposure];
+                        });
                     });
-                });
-                var metaboliteNames = heatmapData.map(function (biochem) {
-                    return biochem.metabolite_name;
-                });
+                    metaboliteNames = heatmapData.map(function (biochem) {
+                        return biochem.metabolite_name;
+                    });
+                }
                 var plotHeight = this.model.get('plotHeight');
                 var plotWidth = this.model.get('plotWidth');
                 plotHeight = Math.min(Math.max(plotHeight, 200), 9000);
@@ -431,32 +446,6 @@ appComets.HeatmapView = Backbone.View.extend({
                     width: plotWidth,
                     colorscale: this.model.get('plotColorscale')
                 }, exposures, metaboliteNames, "Correlation", values).then;
-            }
-        } else {
-            this.$el.html('');
-        }
-    }
-});
-
-// view the cluster and heatmap
-appComets.ClusterView = Backbone.View.extend({
-    el: "#tab-cluster",
-    initialize: function () {
-        this.model.on('change', this.render, this);
-        if (appComets.templatesList) {
-            this.template = _.template(appComets.templatesList.clusterResult);
-            this.render();
-        }
-    },
-    events: {
-        "change select": "updateModel",
-        "change input:not([type='button'])": "updateModel"
-    },
-    updateModel: appComets.events.updateModel,
-    render: function () {
-        if (this.model.get('correlationRun')) {
-            this.$el.html(this.template(this.model.attributes));
-            if (this.model.get('status')) {
             }
         } else {
             this.$el.html('');
@@ -498,9 +487,6 @@ $(function () {
             model: appComets.models.correlationResults
         });
         appComets.views.heatmap = new appComets.HeatmapView({
-            model: appComets.models.correlationResults
-        });
-        appComets.views.heatmap = new appComets.ClusterView({
             model: appComets.models.correlationResults
         });
 

@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-xs-12 col-sm-6 col-md-3">
             <label for="sortRow">Sort rows:</label>
-            <select id="sortRow" class="form-control">
+            <select id="sortRow" class="form-control"<%= clusterResults ? " disabled" : "" %>>
                 <% _.each(exposures,function(exposure,key,list) { %>
                     <option value="<%= exposure %>"<%= sortRow == exposure ? "selected" : "" %>><%= exposure %></option>
                 <% }); %>
@@ -28,9 +28,16 @@
     <div class="row">
         <div class="col-cs-12 col-sm-6 col-md-3">
             <label for="displayAnnotations">
-                <input type="checkbox" id="displayAnnotations"<%= displayAnnotations ? " checked" : ""%>/><span> Display annotations</span>
+                <input type="checkbox" id="displayAnnotations"<%= displayAnnotations ? " checked" : "" %>/><span> Display annotations</span>
             </label>
         </div>
+        <% if (Object.keys(clustersort||{}).length > 0) { %>
+            <div class="col-cs-12 col-sm-6 col-md-3">
+                <label for="clusterResults">
+                    <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %>/><span> Cluster results</span>
+                </label>
+            </div>
+        <% } %>
     </div>
     <hr />
     <div id="correlateHeatmap"></div>
