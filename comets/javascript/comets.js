@@ -51,8 +51,64 @@
             }
         });
     };
-
+    function createTree(root, label) {
+        if (!('branch' in root)) {
+            return {
+                depth: 0,
+                height: label.indexOf(root.label)
+            };
+        }
+        var children = [];
+        var bottom = Number.POSITIVE_INFINITY;
+        var depth = 1;
+        var top = Number.NEGATIVE_INFINITY;
+        for (var index = 0; index < root.branch.length; index++) {
+            var branch = createTree(root.branch[index],label);
+            if ('height' in branch) children.push(branch);
+            bottom = Math.min(bottom,branch.height);
+            depth = Math.max(depth,branch.depth+1);
+            top = Math.max(top,branch.height);
+        }
+        var node = {
+            bottom: bottom,
+            depth: depth,
+            height: (bottom+top)/2,
+            top: top
+        };
+        if (children.length > 0) node.children = children;
+        return node;
+    }
+    function createShapes(node,depth) {
+        depth = depth||node.depth;
+        var shapes = [];
+        if ('bottom' in node && 'top' in node) {
+            shapes.push({
+                type: 'line',
+                x0: -.5-(depth/10),
+                x1: -.5-(depth/10),
+                y0: node.bottom,
+                y1: node.top
+            });
+        }
+        for (var a = 0; a < (node.children||[]).length; a++) {
+            shapes = shapes.concat(createShapes(node.children[a],depth-1));
+            shapes.push({
+                type: 'line',
+                x0: -.5-(depth/10),
+                x1: node.children[a].children ? -.4-(depth/10) : -.5,
+                y0: node.children[a].height,
+                y1: node.children[a].height
+            });
+        }
+        return shapes;
+    }
     appComets.generateHeatmap = function (el, options, xLabels, yLabels, legendLabel, data) {
+        var shapes = [];
+        if (options.clustered) {
+            var row = createTree(options.clustered.rowTree,yLabels);
+            shapes = shapes.concat(createShapes(row));
+            var col = createTree(options.clustered.colTree,xLabels);
+        }
         var minmax = function(prev,curr) {
             return {
                 min: Math.min(prev.min,curr.min),
@@ -74,6 +130,7 @@
             y: yLabels,
             type: 'heatmap',
             colorbar: {
+                x: options.clustered ? 1.5 : 1.02,
                 title: legendLabel
             },
             colorscale: options.colorscale
@@ -99,21 +156,23 @@
             }) : null,
             margin: {
                 t: 32,
-                l: 200
+                l: options.clustered ? 0 : 200
             },
             height: options.height,
             width: options.width,
             title: " ",
             xaxis: {
-                title: " ",
-                showgrid: false
+                showgrid: false,
+                title: " "
             },
             yaxis: {
+                side: options.clustered ? 'right' : 'left',
                 title: " "
             },
             legend: {
                 title: legendLabel
             },
+            shapes: shapes,
             autosize: true
         });
     };

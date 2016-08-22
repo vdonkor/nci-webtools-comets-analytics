@@ -402,9 +402,10 @@ appComets.HeatmapView = Backbone.View.extend({
                     };
                     correlationData[metabolite.metabolite_name][metabolite.exposure] = metabolite.corr;
                 });
-                var values = [];
+                var clusterResults = this.model.get('clusterResults');
                 var metaboliteNames = [];
-                if (this.model.get('clusterResults')) {
+                var values = [];
+                if (clusterResults) {
                     var clustersort = this.model.get('clustersort');
                     exposures = clustersort.col;
                     metaboliteNames = clustersort.row;
@@ -442,9 +443,10 @@ appComets.HeatmapView = Backbone.View.extend({
                 }
                 appComets.generateHeatmap('correlateHeatmap', {
                     annotated: this.model.get('displayAnnotations'),
+                    clustered: clusterResults ? clustersort : null,
+                    colorscale: this.model.get('plotColorscale'),
                     height: plotHeight,
-                    width: plotWidth,
-                    colorscale: this.model.get('plotColorscale')
+                    width: plotWidth
                 }, exposures, metaboliteNames, "Correlation", values).then;
             }
         } else {

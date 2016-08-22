@@ -31,13 +31,11 @@
                 <input type="checkbox" id="displayAnnotations"<%= displayAnnotations ? " checked" : "" %>/><span> Display annotations</span>
             </label>
         </div>
-        <% if (Object.keys(clustersort||{}).length > 0) { %>
-            <div class="col-cs-12 col-sm-6 col-md-3">
-                <label for="clusterResults">
-                    <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %>/><span> Cluster results</span>
-                </label>
-            </div>
-        <% } %>
+        <div class="col-cs-12 col-sm-6 col-md-3">
+            <label for="clusterResults">
+                <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %><%= Object.keys(clustersort||{}).length > 0 ? "" : " disabled" %>/><span> Cluster results</span>
+            </label>
+        </div>
     </div>
     <hr />
     <div id="correlateHeatmap"></div>
