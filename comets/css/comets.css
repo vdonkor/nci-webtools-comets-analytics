@@ -48,8 +48,9 @@ nav.navbar.navbar-default {
     border-radius: 0 0 4px 4px;
 }
 
-#result-tab-content {
+.tab-border {
     border-width: 0  1px 1px;
+    overflow: auto;
 }
 
 .ui-widget {
