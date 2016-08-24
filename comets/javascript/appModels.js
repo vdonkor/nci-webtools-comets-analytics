@@ -127,7 +127,9 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         });
         var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
         $.extend(response, {
+            clusterResults: false,
             correlationRun: true,
+            displayAnnotations: false,
             excorrdata: excorrdata,
             exposures: exposures,
             sortRow: exposures[0]

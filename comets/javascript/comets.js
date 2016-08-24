@@ -51,63 +51,72 @@
             }
         });
     };
-    function createTree(root, label) {
-        if (!('branch' in root)) {
-            return {
-                depth: 0,
-                height: label.indexOf(root.label)
-            };
-        }
-        var children = [];
-        var bottom = Number.POSITIVE_INFINITY;
-        var depth = 1;
-        var top = Number.NEGATIVE_INFINITY;
-        for (var index = 0; index < root.branch.length; index++) {
-            var branch = createTree(root.branch[index],label);
-            if ('height' in branch) children.push(branch);
-            bottom = Math.min(bottom,branch.height);
-            depth = Math.max(depth,branch.depth+1);
-            top = Math.max(top,branch.height);
-        }
-        var node = {
-            bottom: bottom,
-            depth: depth,
-            height: (bottom+top)/2,
-            top: top
-        };
-        if (children.length > 0) node.children = children;
-        return node;
-    }
-    function createShapes(node,depth) {
-        depth = depth||node.depth;
-        var shapes = [];
-        if ('bottom' in node && 'top' in node) {
-            shapes.push({
-                type: 'line',
-                x0: -.5-(depth/10),
-                x1: -.5-(depth/10),
-                y0: node.bottom,
-                y1: node.top
-            });
-        }
-        for (var a = 0; a < (node.children||[]).length; a++) {
-            shapes = shapes.concat(createShapes(node.children[a],depth-1));
-            shapes.push({
-                type: 'line',
-                x0: -.5-(depth/10),
-                x1: node.children[a].children ? -.4-(depth/10) : -.5,
-                y0: node.children[a].height,
-                y1: node.children[a].height
-            });
-        }
-        return shapes;
-    }
+
     appComets.generateHeatmap = function (el, options, xLabels, yLabels, legendLabel, data) {
+        var createTree = function(root, label) {
+            if (!('branch' in root)) {
+                return {
+                    depth: 0,
+                    height: label.indexOf(root.label)
+                };
+            }
+            var children = [];
+            var bottom = Number.POSITIVE_INFINITY;
+            var depth = 1;
+            var top = Number.NEGATIVE_INFINITY;
+            for (var index = 0; index < root.branch.length; index++) {
+                var branch = createTree(root.branch[index],label);
+                if ('height' in branch) children.push(branch);
+                bottom = Math.min(bottom,branch.height);
+                depth = Math.max(depth,branch.depth+1);
+                top = Math.max(top,branch.height);
+            }
+            var node = {
+                bottom: bottom,
+                depth: depth,
+                height: (bottom+top)/2,
+                top: top
+            };
+            if (children.length > 0) node.children = children;
+            return node;
+        }
+        var createShapes = function(node,base,count,depth,orientation) {
+            var direction = orientation=='x' ? 1 : -1;
+            var adjustedDepth = base+(direction*depth*count/40)-.5;
+            var shapes = [];
+            if ('bottom' in node && 'top' in node) {
+                var shape = {
+                    type: 'line',
+                    x0: adjustedDepth,
+                    x1: adjustedDepth,
+                    y0: adjustedDepth,
+                    y1: adjustedDepth
+                };
+                shape[orientation+'0'] = node.bottom;
+                shape[orientation+'1'] = node.top;
+                shapes.push(shape);
+            }
+            for (var a = 0; a < (node.children||[]).length; a++) {
+                shapes = shapes.concat(createShapes(node.children[a],base,count,depth-1,orientation));
+                var shape = {
+                    type: 'line',
+                    x0: adjustedDepth,
+                    x1: node.children[a].children ? adjustedDepth-(direction*count/40) : adjustedDepth-(direction*depth*count/40),
+                    y0: adjustedDepth,
+                    y1: node.children[a].children ? adjustedDepth-(direction*count/40) : adjustedDepth-(direction*depth*count/40)
+                };
+                shape[orientation+'0'] = node.children[a].height;
+                shape[orientation+'1'] = node.children[a].height;
+                shapes.push(shape);
+            }
+            return shapes;
+        }
         var shapes = [];
         if (options.clustered) {
             var row = createTree(options.clustered.rowTree,yLabels);
-            shapes = shapes.concat(createShapes(row));
+            shapes = shapes.concat(createShapes(row,0,yLabels.length,row.depth,'y'));
             var col = createTree(options.clustered.colTree,xLabels);
+            shapes = shapes.concat(createShapes(col,yLabels.length,yLabels.length,col.depth,'x'));
         }
         var minmax = function(prev,curr) {
             return {
@@ -136,44 +145,45 @@
             colorscale: options.colorscale
         }], {
             annotations: options.annotated ? data.map(function(e,y) {
-                return e.map(function(e2,x) {
-                    return {
-                        xref: 'x1',
-                        yref: 'y1',
-                        x: xLabels[x],
-                        y: yLabels[y],
-                        text: e2,
-                        showarrow: false,
-                        font: {
-                            family: 'Arial',
-                            size: 12,
-                            color: e2 > avg ? 'rgb(0,0,0)' : 'rgb(255,255,255)'
-                        }
-                    };
-                });
-            }).reduce(function(prev,curr) {
-                return prev.concat(curr);
-            }) : null,
+                    return e.map(function(e2,x) {
+                        return {
+                            xref: 'x1',
+                            yref: 'y1',
+                            x: xLabels[x],
+                            y: yLabels[y],
+                            text: e2,
+                            showarrow: false,
+                            font: {
+                                family: 'Arial',
+                                size: 12,
+                                color: e2 > avg ? 'rgb(0,0,0)' : 'rgb(255,255,255)'
+                            }
+                        };
+                    });
+                }).reduce(function(prev,curr) {
+                    return prev.concat(curr);
+                }) : null,
+            autosize: true,
+            height: options.height,
+            legend: {
+                title: legendLabel
+            },
             margin: {
                 t: 32,
                 l: options.clustered ? 0 : 200
             },
-            height: options.height,
             width: options.width,
+            shapes: shapes,
             title: " ",
             xaxis: {
                 showgrid: false,
                 title: " "
             },
             yaxis: {
+                showgrid: false,
                 side: options.clustered ? 'right' : 'left',
                 title: " "
-            },
-            legend: {
-                title: legendLabel
-            },
-            shapes: shapes,
-            autosize: true
+            }
         });
     };
 
