@@ -207,9 +207,4 @@ label[for="clusterResults"] {
     padding-top:5px;
     padding-bottom:5px;
     font-style: italic;
-    width: 400px;
-}
-.tab {
-    display: inline-block;
-    width: 4em;
 }
