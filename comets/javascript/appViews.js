@@ -306,7 +306,7 @@ appComets.FormView = Backbone.View.extend({
 
 // view for the integrity check's results
 appComets.IntegrityView = Backbone.View.extend({
-    el: "#integrityDiv",
+    el: "#tab-integrity",
     initialize: function () {
         this.model.on('change', this.render, this);
         if (appComets.templatesList) {
@@ -330,70 +330,6 @@ appComets.IntegrityView = Backbone.View.extend({
                 appComets.generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Log2 Variance Distribution', this.model.get('log2var'));
                 appComets.generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of number of subject at min', this.model.get('num.min'));
             }
-        }
-    }
-});
-
-// view the correlation heatmap
-appComets.HeatmapView = Backbone.View.extend({
-    el: "#tab-heatmap",
-    initialize: function () {
-        this.model.on('change', this.render, this);
-        if (appComets.templatesList) {
-            this.template = _.template(appComets.templatesList.heatmapResult);
-            this.render();
-        }
-    },
-    events: {
-        "change select": "updateModel",
-        "change input:not([type='button'])": "updateModel"
-    },
-    updateModel: appComets.events.updateModel,
-    render: function () {
-        if (this.model.get('correlationRun')) {
-            this.$el.html(this.template(this.model.attributes));
-            if (this.model.get('status')) {
-                var sortRow = this.model.get('sortRow');
-                var exposures = this.model.get('exposures');
-                var correlationData = {};
-                _.each(this.model.get('excorrdata'), function (metabolite, key, list) {
-                    correlationData[metabolite.metabolite_name] = correlationData[metabolite.metabolite_name] || {
-                        'metabolite_name': metabolite.metabolite_name
-                    };
-                    correlationData[metabolite.metabolite_name][metabolite.exposure] = metabolite.corr;
-                });
-                var heatmapData = [];
-                for (var prop in correlationData) {
-                    heatmapData[heatmapData.length] = correlationData[prop];
-                }
-                heatmapData = heatmapData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
-                var values = heatmapData.map(function (biochem) {
-                    return exposures.map(function (exposure) {
-                        return biochem[exposure];
-                    });
-                });
-                var metaboliteNames = heatmapData.map(function (biochem) {
-                    return biochem.metabolite_name;
-                });
-                var plotHeight = this.model.get('plotHeight');
-                var plotWidth = this.model.get('plotWidth');
-                plotHeight = Math.min(Math.max(plotHeight, 200), 9000);
-                plotWidth = Math.min(Math.max(plotWidth, 200), 9000);
-                if (plotHeight != this.model.get('plotHeight') || plotWidth != this.model.get('plotWidth')) {
-                    this.model.set($.extend(this.model.attributes,{
-                        plotHeight: plotHeight,
-                        plotWidth: plotWidth
-                    }));
-                }
-                appComets.generateHeatmap('correlateHeatmap', {
-                    annotated: this.model.get('displayAnnotations'),
-                    height: plotHeight,
-                    width: plotWidth,
-                    colorscale: this.model.get('plotColorscale')
-                }, exposures, metaboliteNames, "Correlation", values).then;
-            }
-        } else {
-            this.$el.html('');
         }
     }
 });
@@ -431,6 +367,87 @@ appComets.SummaryView = Backbone.View.extend({
                     },
                     text: 'Download Results in CSV'
                 });
+            }
+        } else {
+            this.$el.html('');
+        }
+    }
+});
+
+// view the correlation heatmap
+appComets.HeatmapView = Backbone.View.extend({
+    el: "#tab-heatmap",
+    initialize: function () {
+        this.model.on('change', this.render, this);
+        if (appComets.templatesList) {
+            this.template = _.template(appComets.templatesList.heatmapResult);
+            this.render();
+        }
+    },
+    events: {
+        "change select": "updateModel",
+        "change input:not([type='button'])": "updateModel"
+    },
+    updateModel: appComets.events.updateModel,
+    render: function () {
+        if (this.model.get('correlationRun')) {
+            this.$el.html(this.template(this.model.attributes));
+            if (this.model.get('status')) {
+                var sortRow = this.model.get('sortRow');
+                var exposures = this.model.get('exposures');
+                var correlationData = {};
+                _.each(this.model.get('excorrdata'), function (metabolite, key, list) {
+                    correlationData[metabolite.metabolite_name] = correlationData[metabolite.metabolite_name] || {
+                        'metabolite_name': metabolite.metabolite_name
+                    };
+                    correlationData[metabolite.metabolite_name][metabolite.exposure] = metabolite.corr;
+                });
+                var clusterResults = this.model.get('clusterResults');
+                var metaboliteNames = [];
+                var values = [];
+                if (clusterResults) {
+                    var clustersort = this.model.get('clustersort');
+                    exposures = clustersort.col;
+                    metaboliteNames = clustersort.row;
+                    for (var metaboliteIndex in metaboliteNames) {
+                        row = [];
+                        values[values.length] = row;
+                        for (var exposureIndex in exposures) {
+                            row[row.length] = correlationData[metaboliteNames[metaboliteIndex]][exposures[exposureIndex]];
+                        }
+                    }
+                } else {
+                    var heatmapData = [];
+                    for (var prop in correlationData) {
+                        heatmapData[heatmapData.length] = correlationData[prop];
+                    }
+                    heatmapData = heatmapData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
+                    values = heatmapData.map(function (biochem) {
+                        return exposures.map(function (exposure) {
+                            return biochem[exposure];
+                        });
+                    });
+                    metaboliteNames = heatmapData.map(function (biochem) {
+                        return biochem.metabolite_name;
+                    });
+                }
+                var plotHeight = this.model.get('plotHeight');
+                var plotWidth = this.model.get('plotWidth');
+                plotHeight = Math.min(Math.max(plotHeight, 200), 9000);
+                plotWidth = Math.min(Math.max(plotWidth, 200), 9000);
+                if (plotHeight != this.model.get('plotHeight') || plotWidth != this.model.get('plotWidth')) {
+                    this.model.set($.extend(this.model.attributes,{
+                        plotHeight: plotHeight,
+                        plotWidth: plotWidth
+                    }));
+                }
+                appComets.generateHeatmap('correlateHeatmap', {
+                    annotated: this.model.get('displayAnnotations'),
+                    clustered: clusterResults ? clustersort : null,
+                    colorscale: this.model.get('plotColorscale'),
+                    height: plotHeight,
+                    width: plotWidth
+                }, exposures, metaboliteNames, "Correlation", values).then;
             }
         } else {
             this.$el.html('');

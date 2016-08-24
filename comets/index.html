@@ -24,6 +24,7 @@
     <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.2.2/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js" type="text/javascript"></script>
 <!--
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.1/jquery.validate.min.js" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.1/additional-methods.min.js" type="text/javascript"></script>
@@ -167,31 +168,15 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <!-- Collect the nav links, forms, and other content for toggling -->
-                                        
                                     <ul class="nav nav-tabs responsive">
                                         <li class="active"><a href="#tab-integrity" data-toggle="tab">Integrity Check</a></li>
                                         <li><a href="#tab-summary" data-toggle="tab">Correlation Results</a></li>
                                         <li><a href="#tab-heatmap" data-toggle="tab" id="controlTabId">Heatmap</a></li>
-                                        <!--<li><a href="#tab-cluster" data-toggle="tab" id="harmonizationTabId">Cluster and Heatmap</a></li>-->
                                     </ul>
-                                                                            
                                     <div id="result-tab-content" class="tab-content tab-border">
-                                        <div class="tab-pane active" id="tab-integrity">
-                                            <div id="integrityDiv" class="col-xs-12"></div>
-                                        </div>
-                                        <div class="tab-pane" id="tab-summary">
-                                            <div id="summaryTable"></div>
-                                            <div id="summaryDiv" class="col-xs-12"></div>
-                                        </div>
-                                        <div class="tab-pane" id="tab-heatmap">
-                                            <div id="heatmapDiv" class="col-xs-12"></div>
-                                        </div>
-                                        <!--
-                                            <div class="tab-pane" id="tab-cluster">
-                                                <div id="clusterDiv" class="col-xs-12">
-                                                </div>
-                                            </div>
-                                        -->
+                                        <div class="tab-pane active" id="tab-integrity"></div>
+                                        <div class="tab-pane" id="tab-summary"></div>
+                                        <div class="tab-pane" id="tab-heatmap"></div>
                                     </div>
                                 </div>
                             </div>

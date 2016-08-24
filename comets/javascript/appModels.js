@@ -103,13 +103,14 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
 
 appComets.CorrelationResultsModel = Backbone.Model.extend({
     defaults: {
-        plotColorscale: "Viridis",
+        clusterResults: false,
         colorscales: ["Blackbody", "Bluered", "Blues", "Earth", "Electric", "Greens", "Greys", "Hot", "Jet", "Picnic", "Portland", "Rainbow", "RdBu", "Reds", "Viridis", "YlGnBu", "YlOrRd"],
         correlationRun: false,
         csvFile: null,
         displayAnnotations: false,
         excorrdata: [],
         exposures: [],
+        plotColorscale: "Viridis",
         plotHeight: 500,
         plotWidth: 800,
         sortRow: null,
@@ -126,7 +127,9 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         });
         var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
         $.extend(response, {
+            clusterResults: false,
             correlationRun: true,
+            displayAnnotations: false,
             excorrdata: excorrdata,
             exposures: exposures,
             sortRow: exposures[0]

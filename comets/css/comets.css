@@ -130,7 +130,6 @@ table.summaryTables thead tr:first-child th {
 #correlationSummary_wrapper.dataTables_wrapper .dataTables_filter {
     float: left;
 }
-
 #correlationSummary_wrapper.dataTables_wrapper .dt-buttons {
     float: right;
 }
@@ -197,7 +196,8 @@ label[for="showMetabolites"] input {
 label[for="showMetabolites"] div {
     display: inline-block;
 }
-label[for="displayAnnotations"] {
+label[for="displayAnnotations"],
+label[for="clusterResults"] {
     margin-top: 5px;
 }
 .axisLegend {
