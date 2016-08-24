@@ -38,6 +38,7 @@ nav.navbar.navbar-default {
 }
 
 .tab-content {
+    display: inline-block;
     padding: 10px 15px;
     width: 100%;
     -webkit-overflow-scrolling: touch;
@@ -46,6 +47,11 @@ nav.navbar.navbar-default {
     border-style: solid;
     border-color: #d9d9d9;
     border-radius: 0 0 4px 4px;
+}
+
+.tab-border {
+    border-width: 0  1px 1px;
+    overflow: auto;
 }
 
 .ui-widget {
@@ -92,7 +98,12 @@ input.input:valid {
 
 table td,
 table th {
-    text-align: center;
+    text-align: left;
+}
+
+table.dataTable tbody td {
+    padding-left: 18px;
+    padding-right: 18px;
 }
 
 table.summaryTables thead tr th {
@@ -188,4 +199,17 @@ label[for="showMetabolites"] div {
 label[for="displayAnnotations"],
 label[for="clusterResults"] {
     margin-top: 5px;
+}
+.axisLegend {
+    text-align: center;
+    margin-top: 20px;
+    border:1px solid lightgray;
+    padding-top:5px;
+    padding-bottom:5px;
+    font-style: italic;
+    width: 400px;
+}
+.tab {
+    display: inline-block;
+    width: 4em;
 }

@@ -4,31 +4,33 @@
         <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
     </div>
-    <table id="correlationSummary" class="table-striped table-hover">
-        <thead>
-            <tr>
-                <% _.each(tableOrder,function(element,key,list) { %>
-                    <th>
-                        <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
-                    </th>
-                <% }); %>
-            </tr>
-            <tr>
-                <% _.each(tableOrder,function(element,key,list) { %>
-                    <th><%= element %></th>
-                <% }); %>
-            </tr>
-        </thead>
-        <tbody>
-            <% _.each(excorrdata,function(row,key,list) { %>
+    <div style="overflow-x:auto;" class="col-md-12">
+        <table id="correlationSummary" class="table-striped table-hover">
+            <thead>
                 <tr>
                     <% _.each(tableOrder,function(element,key,list) { %>
-                        <td><%= row[element]||"" %></td>
+                        <th>
+                            <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
+                        </th>
                     <% }); %>
                 </tr>
-            <% }); %>
-        </tbody>
-    </table>
+                <tr>
+                    <% _.each(tableOrder,function(element,key,list) { %>
+                        <th><%= element %></th>
+                    <% }); %>
+                </tr>
+            </thead>
+            <tbody>
+                <% _.each(excorrdata,function(row,key,list) { %>
+                    <tr>
+                        <% _.each(tableOrder,function(element,key,list) { %>
+                            <td><%= row[element]||"" %></td>
+                        <% }); %>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </id>
 <% } %>
 <% if (!status) { %>
     <div id="resultStatus" class="alert alert-warning">
