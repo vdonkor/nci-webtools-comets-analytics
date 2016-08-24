@@ -10,7 +10,7 @@ checkIntegrity <- function(filename) {
             withCallingHandlers(
                 {
                   exmetabdata = readCOMETSinput(filename)
-                  exmetabdata$csvDownload = OutputCSVResults(paste0('Harm',as.integer(Sys.time())),exmetabdata$metab,'')
+                  exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',as.integer(Sys.time())),exmetabdata$metab,'')
                   exmetabdata
                 },
                 message=function(m) {
@@ -42,7 +42,7 @@ runModel <- function(jsonData) {
                     exmetabdata <- readCOMETSinput(input$filename)
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
-                    csv <- OutputCSVResults(paste0('corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
+                    csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
                     clustersort = NULL
                     if (length(exmodeldata$ccovs) > 1) {
                       heatmapdata <- excorrdata %>% dplyr::select(metabolite_name,exposure,corr) %>% tidyr::spread(exposure,corr)
@@ -88,10 +88,6 @@ runModel <- function(jsonData) {
     }))
     toJSON(returnValue, auto_unbox = T)
 }
-
-fields <- c("members", "height", "label")
-nodeParFields <- c("pch", "cex", "col", "xpd", "bg")
-edgeParFields <- c("col", "lty", "lwd")
 
 makeBranches <- function(dendrogram) {
   root <- list(
