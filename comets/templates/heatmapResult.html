@@ -1,5 +1,5 @@
 <% if(correlationRun) { %>
-    <div class="axisLegend">The heatmap below displays EXPOSUREs on the y axis and OUTCOMEs on the x axis.</div>
+    <p>The heatmap below displays EXPOSUREs on the y axis and OUTCOMEs on the x axis.</p>
     <div class="row">
         <div class="col-xs-12 col-sm-6 col-md-3">
             <label for="sortRow">Outcomes Sort By:</label>
@@ -28,18 +28,18 @@
             <input id="plotWidth" class="form-control" value="<%= plotWidth %>" type="number" min="200" max="9000" step="10" />
         </div>
     </div>
-    <div class="row">
-        <div class="col-cs-12 col-sm-6 col-md-3">
-            <label for="displayAnnotations">
-                <input type="checkbox" id="displayAnnotations"<%= displayAnnotations ? " checked" : "" %>/><span> Display annotations</span>
-            </label>
-        </div>
-        <div class="col-cs-12 col-sm-6 col-md-3">
-            <label for="clusterResults">
-                <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %><%= Object.keys(clustersort||{}).length > 0 ? "" : " disabled" %>/><span> Cluster results</span>
-            </label>
-        </div>
-    </div>
     <hr />
+    <div class="row">
+        <div class="checkbox col-xs-12 col-sm-6 col-md-3">
+            <label for="displayAnnotations">
+                <input type="checkbox" id="displayAnnotations">Display annotations
+            </label>            
+        </div>
+        <div class="checkbox col-xs-12 col-sm-6 col-md-3">
+            <label for="clusterResults">
+                <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %><%= Object.keys(clustersort||{}).length > 0 ? "" : " disabled" %>/>Show hierarchical clustering
+            </label>
+        </div>
+    </div>    
     <div id="correlateHeatmap"></div>
 <% } %>
