@@ -29,13 +29,13 @@
         </div>
     </div>
     <hr />
-    <panel>       
-        <label class="checkbox-inline col-xs-12 col-sm-6 col-md-3" for="displayAnnotations">
+    <div style="margin: 0px 210px;">       
+        <label class="checkbox-inline" for="displayAnnotations">
             <input type="checkbox" id="displayAnnotations">Display annotations
         </label>    
-        <label class="checkbox-inline col-xs-12 col-sm-6 col-md-3" for="clusterResults">
+        <label class="checkbox-inline" for="clusterResults">
             <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %><%= Object.keys(clustersort||{}).length > 0 ? "" : " disabled" %>/>Show hierarchical clustering
         </label>        
-    </panel>    
+    </div>    
     <div id="correlateHeatmap"></div>
 <% } %>
