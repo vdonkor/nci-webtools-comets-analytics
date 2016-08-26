@@ -45,7 +45,7 @@ runModel <- function(jsonData) {
                     csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
                     clustersort = NULL
                     if (length(exmodeldata$ccovs) > 1) {
-                      heatmapdata <- excorrdata %>% dplyr::select(metabolite_name,exposure,corr) %>% tidyr::spread(exposure,corr)
+                      heatmapdata <- tidyr::spread(dplyr::select(excorrdata,metabolite_name,exposure,corr),exposure,corr)
                       rownames(heatmapdata) <- heatmapdata[,1]
                       heatmapdata <- heatmapdata[,2:ncol(heatmapdata)]
                       heatmapdata <- as.matrix(heatmapdata)
