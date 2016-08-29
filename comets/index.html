@@ -73,7 +73,7 @@
                                     <div id="messageDiv"></div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="inputDataFile">Choose Input Data File:<b>*</b></label>
+                                    <label for="inputDataFile">Choose Input Data File <span style="color:red">*</span></label>
                                     <div class="row">
                                         <input type="file" id="inputDataFile" name="inputDataFile" accept=".xls,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="col-xs-12 col-sm-7" required>
                                         <button id="load" class="btn btn-default pull-right" disabled="true">Check Integrity</button>
@@ -86,12 +86,12 @@
                                 </div>
                                 <div id="analysisOptions">
                                     <div class="form-group">
-                                        <label for="cohortSelection">Specify Cohort:<b>*</b></label>
+                                        <label for="cohortSelection">Specify Cohort <span style="color:red">*</span></label>
                                         <select name="cohortSelection" id="cohortSelection" class="form-control" required>
                                             <option value=""> -- Select Cohort -- </option>
                                         </select>
                                     </div>
-                                    <b>Specify Method Of Analyses:<b>*</b></b>
+                                    <b>Specify Method Of Analyses <span style="color:red">*</span></b>
                                     <div class="radio">
                                         <label for="methodSelection1">
                                             <input type="radio" name="methodSelection" id="methodSelection1" value="Batch" checked="checked">Batch as specfied in the input file
@@ -104,13 +104,13 @@
                                     </div>
                                     <div id="Batch">
                                         <div class="form-group">
-                                            <label for="modelSelection">Choose Model:<b>*</b></label>
+                                            <label for="modelSelection">Choose Model <span style="color:red">*</span></label>
                                             <select name="modelSelection" id="modelSelection" class="form-control" required></select>
                                         </div>
                                     </div>
                                     <div id="Interactive">
                                         <div class="form-group">
-                                            <label for="modelDescription">Describe Model:*</label>
+                                            <label for="modelDescription">Describe Model <span style="color:red">*</span></label>
                                             <input type="text" name="modelDescription" id="modelDescription" class="form-control" required />
                                         </div>
                                         <div class="form-group checkbox">
@@ -121,11 +121,11 @@
                                             </label>
                                         </div>
                                         <div class="form-group">
-                                            <label for="exposure">Select Exposure(s):<b>*</b></label>
+                                            <label for="exposure">Select Exposure(s) <span style="color:red">*</span></label>
                                             <input type="text" name="exposure" id="exposure" required />
                                         </div>
                                         <div class="form-group">
-                                            <label for="outcome">Select Outcome(s):<b>*</b></label>
+                                            <label for="outcome">Select Outcome(s) <span style="color:red">*</span></label>
                                             <input type="text" name="outcome" id="outcome" required />
                                         </div>
                                         <div class="form-group">
