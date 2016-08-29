@@ -177,11 +177,13 @@
             title: " ",
             xaxis: {
                 showgrid: false,
+                ticks: '',
                 title: " "
             },
             yaxis: {
                 showgrid: false,
                 side: options.clustered ? 'right' : 'left',
+                ticks: '',
                 title: " "
             }
         });
