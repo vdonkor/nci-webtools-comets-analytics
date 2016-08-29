@@ -204,3 +204,20 @@ label[for="showMetabolites"] div {
     padding-bottom:5px;
     font-style: italic;
 }
+#tab-home .container div {
+    font-size: 18px;
+    margin: 0px auto;
+    max-width: 780px;
+}
+#tab-home img {
+    background: #2A71A5;
+    margin: 0px;
+    padding-bottom: 10px;
+}
+#tab-home h3 {
+    font-size: 30px;
+    margin-top: .5em;
+}
+#tab-home strong {
+    color: #EC7A26;
+}
