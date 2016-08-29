@@ -25,13 +25,12 @@
 }
 
 header {
-    margin: 1em 0 1em 1em;
+    margin: 1em 0px 0px;
 }
 
 header img {
     width: 500px;
     max-width: 550px;
-    margin-bottom: -30px;
 }
 
 nav.navbar.navbar-default {
