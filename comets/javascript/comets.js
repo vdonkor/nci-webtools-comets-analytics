@@ -275,3 +275,11 @@
             $('.error').removeClass('error');
         }
     };
+
+    $.ready(function() {
+        $(document).on('click','.goto',function(e) {
+            var e = e.target;
+            var offset = $(e.href).offset();
+            $('html, body').animate({scrollTop: offset.top},1500,'easeInSine');
+        });
+    });

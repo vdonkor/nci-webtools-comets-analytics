@@ -25,7 +25,7 @@
 }
 
 header {
-    margin: 0px 0px;
+    margin: 0px;
 }
 
 header img {
@@ -220,4 +220,11 @@ label[for="showMetabolites"] div {
 }
 #tab-home strong {
     color: #EC7A26;
+}
+#toc {
+    float: left;
+}
+#about,
+#flowchart {
+    overflow: hidden;
 }
