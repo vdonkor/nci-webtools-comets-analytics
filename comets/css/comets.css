@@ -196,6 +196,10 @@ label[for="showMetabolites"] input {
 label[for="showMetabolites"] div {
     display: inline-block;
 }
+.required {
+    color:red;
+    font-weight: bolder;
+}
 .axisLegend {
     text-align: center;
     margin-top: 20px;
