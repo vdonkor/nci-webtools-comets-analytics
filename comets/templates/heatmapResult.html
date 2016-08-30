@@ -1,4 +1,4 @@
-<% if(correlationRun) { %>
+<% if(status) { %>
     <p>The heatmap below displays EXPOSUREs on the y axis and OUTCOMEs on the x axis.</p>
     <div class="row">
         <div class="col-xs-12 col-sm-6 col-md-3">
@@ -31,7 +31,7 @@
     <hr />
     <div style="margin: 5px 200px;">       
         <label class="checkbox-inline" for="displayAnnotations">
-            <input type="checkbox" id="displayAnnotations">Display annotations
+            <input type="checkbox" id="displayAnnotations"<%= displayAnnotations ? " checked" : "" %>>Display annotations
         </label>    
         <label class="checkbox-inline" for="clusterResults" title="The checkbox will only be enabled when there are at least 2 exposures and outcomes.">
             <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %><%= Object.keys(clustersort||{}).length > 0 ? "" : " disabled" %>/>Show hierarchical clustering

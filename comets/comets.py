@@ -66,6 +66,10 @@ def correlate():
             parameters['covariates'] = json.loads(parameters['covariates'])
             if (len(parameters['covariates']) == 0):
                 parameters['covariates'] = None
+        print(parameters)
+        print(json.dumps(parameters))
+        print(wrapper.runModel(json.dumps(parameters)))
+        print(wrapper.runModel(json.dumps(parameters))[0])
         result = json.loads(wrapper.runModel(json.dumps(parameters))[0])
         if ("error" in result):
             response = buildFailure(result['error'])
