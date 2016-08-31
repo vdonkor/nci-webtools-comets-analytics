@@ -45,7 +45,7 @@
                         <div class="collapse navbar-collapse" id="comets-tab-nav">
                             <ul class="nav nav-pills">
                                 <li role="presentation" class="active"><a href="#tab-home" data-toggle="tab">Home</a></li>
-                                <li role="presentation"><a href="#tab-correlate" data-toggle="tab" id="correlateTabId" >Correlate</a></li>
+                                <li role="presentation"><a href="#tab-correlate" data-toggle="tab" id="correlateTabId">Correlate</a></li>
                                 <li role="presentation"><a href="#tab-help" data-toggle="tab" id="helpTabId">Help</a></li>
                                 <li class="pull-right">
                                     <input type="button" class="btn btn-primary" id="logoutBtn" value="Logout" />
@@ -60,7 +60,7 @@
                     <div class="container">
                         <div class="row">
                             <h2 class='schemeOrange'>Welcome to COMETS Analytics!</h2>
-                            <p>This web-based self-service application supports all individual cohort analysises of the COMETS consortium to produce aggregated data for meta-analyses. This collaborative work is done via the COMETS harmonization group to enable consistent and reproducible analyses across studies. Specifically, the platform: 1) harmonizes metabolite names, 2) performs statistical analyses of metabolomics datal and 3) outputs analyis results in a standardized format ready for meta-analysis. Data are not saved in the system, but output must be downloaded and submitted centrally for meta-analyses. Each type of analyses will be available in the navigation bar. At present, only correlation analyses are available (see <a class='toTab' title='#tab-correlate'>Correlate</a> tab), see <a class='toTab' title='#tab-help'>help</a> tab.</p> 
+                            <p>This web-based self-service application supports all individual cohort analysises of the COMETS consortium to produce aggregated data for meta-analyses. This collaborative work is done via the COMETS harmonization group to enable consistent and reproducible analyses across studies. Specifically, the platform: 1) harmonizes metabolite names, 2) performs statistical analyses of metabolomics datal and 3) outputs analyis results in a standardized format ready for meta-analysis. Data are not saved in the system, but output must be downloaded and submitted centrally for meta-analyses. Each type of analyses will be available in the navigation bar. At present, only correlation analyses are available (see <a class='toTab' title='#tab-correlate'>Correlate</a> tab), see <a class='toTab' title='#tab-help'>Help</a> tab.</p>
                             <p>For more informationon the consortium, see <a href=" http://epi.grants.cancer.gov/comets/" target="_blank">COMETS website</a></p>
 
                         </div>
@@ -118,9 +118,10 @@
                                         </div>
                                         <div class="form-group checkbox">
                                             <label for="showMetabolites">
-                                                <input type="checkbox" name="showMetabolites" id="showMetabolites">Show individual metabolites<br>
-                                                    <em><small>* Note: This option applies to Exposures, Outcomes and Adjusted Covariates</small></em>
-                                                
+                                                <input type="checkbox" name="showMetabolites" id="showMetabolites">Show individual metabolites
+                                                <br>
+                                                <em><small>* Note: This option applies to Exposures, Outcomes and Adjusted Covariates</small></em>
+
                                             </label>
                                         </div>
                                         <div class="form-group">
@@ -189,31 +190,28 @@
                         <div><a href="#flowchart" class="goto">Analytic Flow</a></div>
                     </div>
                     <div id="about" class="container">
-					<h2>About</h2>
-					
-					COMETS Analytics was developed by the COMETS Data Harmonization Group with web interface support from NCI's CBIIT. Metabolite names were harmonized by linking metabolite lists of frequently-used metabolomics platforms to unique identifiers from public metabolite databases (e.g. HMDB, REFMET).  Prototypes of the web platform was developed using R Shiny. 		
-					The statistical analysis package was developed as an R package called COMETS and can be run locally. The HTML5-based web interface to the COMETS package is currently hosted on Amazon Cloud to provides scalability for computationally-intensive analyses.  The COMETS analytics was designed so that users can submit data in standard Excel format using the template described below where one can also specify models through the Excel file or through a web-interface.  The app currently performs Spearman correlations, with interactive graphics provided by Plotly.
-					<p>
-					We thank Krista Zanetti for her support and the CBIIT team who translated the R Shiny prototype to HTML5 with funding support from the DCEG Informatics Challenge: Sue Pan, JJ Pan, Kailing Chen and Wesley Obeshein.
-					<p>
-					COMETS Package Development Team: <a href="mailto:ella@bsc.gwu.edu">Ella Temprosa</a>, <a href="mailto:Ewy.Mathe@osumc.edu">Ewy Mathe</a>, <a href="mailto:moorest@mail.nih.gov">Steve Moore</a>, and <a href="mailto:RischA@imsweb.com">Adam Risch</a>
-					<p>
-					</div>
+                        <h2>About</h2>
+                        <p>COMETS Analytics was developed by the COMETS Data Harmonization Group with web interface support from NCI's CBIIT. Metabolite names were harmonized by linking metabolite lists of frequently-used metabolomics platforms to unique identifiers from public metabolite databases (e.g. HMDB, REFMET). Prototypes of the web platform was developed using R Shiny. The statistical analysis package was developed as an R package called COMETS and can be run locally. The HTML5-based web interface to the COMETS package is currently hosted on Amazon Cloud to provides scalability for computationally-intensive analyses. The COMETS analytics was designed so that users can submit data in standard Excel format using the template described below where one can also specify models through the Excel file or through a web-interface. The app currently performs Spearman correlations, with interactive graphics provided by Plotly.</p>
+                        <p>
+                            We thank Krista Zanetti for her support and the CBIIT team who translated the R Shiny prototype to HTML5 with funding support from the DCEG Informatics Challenge: Sue Pan, JJ Pan, Kailing Chen, Tony Hall and Wesley Obenshain.</p>
+                        <p>
+                            COMETS Package Development Team: <a href="mailto:ella@bsc.gwu.edu">Ella Temprosa</a>, <a href="mailto:Ewy.Mathe@osumc.edu">Ewy Mathe</a>, <a href="mailto:moorest@mail.nih.gov">Steve Moore</a>, and <a href="mailto:RischA@imsweb.com">Adam Risch</a>
+                        </p>
+                    </div>
                     <div id="support" class="container">
-					<h2>Support</h2>
-					For questions or help on COMETS Analytics, please send email to <a href="mailto:comets.analytics@gmail.com">comets.analytics@gmail.com</a>
-					<p>
-					For help on metabolite harmonization, contact <a href="mailto:RischA@imsweb.com">Adam Risch</a>.
-					</div>
+                        <h2>Support</h2> For questions or help on COMETS Analytics, please send email to <a href="mailto:comets.analytics@gmail.com">comets.analytics@gmail.com</a>
+                        <p>
+                            For help on metabolite harmonization, contact <a href="mailto:RischA@imsweb.com">Adam Risch</a>.
+                    </div>
                     <div id="flowchart" class="container">
-					<h2>Analytic Flow</h2>
+                        <h2>Analytic Flow</h2>
                         <span>Steps in the COMETS analysis process are outlined below.</span>
                         <img class="img-repsonsive" src="images/cometsWorkflow.png" alt="diagram of the workflow for the comets application" width="800" />
                         <div class="row">
                             <h3 class="col-xs-12 col-md-1 steps">Step 1</h3>
                             <div class="col-xs-12 col-md-10">
                                 <h3>Upload input file</h3>
-                                <p>The input file is currently in excel formate with 5 sheets. Download and use the <a href="cometsInput.xlsx" title="example input excel file">example input file here</a> as a template.</p>
+                                <p>The input file is currently in excel formate with 5 sheets. Download and use the <a href="examples/cometsInput.xlsx" title="example input excel file">example input file here</a> as a template.</p>
                                 <ol>
                                     <li> <b><i>Metabolites</i></b>
                                         <br>This sheet serves as the metadata or information on the metabolites used for the harmonization step. Minimum required columns include analysis platform, metabolite name and metabolite id (ie. variable name of your metabolite). It is preferred to also include RT, m/z, chemical ID (HMDB, InChi key, or other identifier).
