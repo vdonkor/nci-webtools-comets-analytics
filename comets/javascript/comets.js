@@ -82,7 +82,7 @@
         };
         var createShapes = function(node,base,count,depth,orientation) {
             var direction = orientation=='x' ? 1 : -1;
-            var adjustedDepth = base+(direction*depth*count/40)-.5;
+            var adjustedDepth = base-.5+(direction*depth*count/40);
             var shapes = [];
             var template = {
                 line: {
@@ -116,7 +116,7 @@
         var shapes = [];
         if (options.clustered) {
             var row = createTree(options.clustered.rowTree,yLabels);
-            shapes = shapes.concat(createShapes(row,0,yLabels.length,row.depth,'y'));
+            shapes = shapes.concat(createShapes(row,0,xLabels.length,row.depth,'y'));
             var col = createTree(options.clustered.colTree,xLabels);
             shapes = shapes.concat(createShapes(col,yLabels.length,yLabels.length,col.depth,'x'));
         }
