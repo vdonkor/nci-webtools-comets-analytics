@@ -1,11 +1,12 @@
+html, body {
+    min-width: 320px;
+}
 #pageContent {
     background: inherit;
 }
-
 .tab-pane {
     min-height: 500px;
 }
-
 #loader {
     background-color: rgba(0, 0, 0, 0.5);
     background-position: center;
@@ -26,11 +27,12 @@
 
 header {
     margin: 0px;
+    padding: 0px 15px;
 }
 
 header img {
     width: 500px;
-    max-width: 550px;
+    max-width: 100%;
 }
 
 nav.navbar.navbar-default {
@@ -208,10 +210,26 @@ label[for="showMetabolites"] div {
     padding-bottom:5px;
     font-style: italic;
 }
-#toc {
-    float: left;
+@media (min-width: 780px) {
+    #toc {
+        float: left;
+        margin-top: 20px;
+        padding-right: 3em;
+    }
+    #help-content {
+        margin: 0px auto;
+        max-width: 1080px;
+        overflow: hidden;
+    }
 }
-#about,
-#flowchart {
-    overflow: hidden;
+strong {
+    color: #EC7A26;
+}
+.col-xs-12.steps {
+    margin: 0px 15px;
+}
+@media (min-width: 992px) {
+    .col-md-1.steps {
+        margin-right: 0px;
+    }
 }
