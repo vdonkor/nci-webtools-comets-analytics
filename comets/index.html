@@ -38,7 +38,7 @@
         <div id="pageContent">
             <div class="container-fluid">
                 <div class="row">
-                    <div id='page-head' class="col-xs-12"><b>CO</b>nsortium of <b>MET</b>abolomics <b>S</b>tudies</div>
+                    <div id='page-head' class="col-xs-12"><b class='schemeOrange'>CO</b>nsortium of <b class='schemeOrange'>MET</b>abolomics <b class='schemeOrange'>S</b>tudies</div>
                 </div>
                 <div class="row">
                     <nav class="navbar navbar-default">
@@ -59,7 +59,7 @@
                 <div class="tab-pane active" id="tab-home">
                     <div class="container">
                         <div class="row">
-						<h3><strong>Welcome to COMETS Analytics!</strong></h3>
+                            <h3><strong>Welcome to COMETS Analytics!</strong></h3>
                             <p>This web-based self-service application supports all individual cohort analyses of the COMETS consortium to produce aggregated data for meta-analyses. This collaborative work is done via the COMETS harmonization group to enable consistent and reproducible analyses across studies.  Specifically, the platform: 1)  harmonizes metabolite names; 2) performs statistical analyses of metabolomics data; and 3) outputs analysis results in a standardized format ready for meta-analysis. Data are not saved in the system, but output must be downloaded and submitted centrally for meta-analyses. Each type of analyses will be available in the navigation bar.  At present, only correlation analyses are available (see <a href="#tab-correlate" class="clicktab">Correlate tab</a>).  For details, see the <a href="#tab-help" class="clicktab">help tab</a>.
 							<p>For more information on the consortium, see <a href=" http://epi.grants.cancer.gov/comets/" target="_blank">COMETS website</a>.</p>
                         </div>
@@ -117,9 +117,10 @@
                                         </div>
                                         <div class="form-group checkbox">
                                             <label for="showMetabolites">
-                                                <input type="checkbox" name="showMetabolites" id="showMetabolites">Show individual metabolites<br>
-                                                    <em><small>* Note: This option applies to Exposures, Outcomes and Adjusted Covariates</small></em>
-                                                
+                                                <input type="checkbox" name="showMetabolites" id="showMetabolites">Show individual metabolites
+                                                <br>
+                                                <em><small>* Note: This option applies to Exposures, Outcomes and Adjusted Covariates</small></em>
+
                                             </label>
                                         </div>
                                         <div class="form-group">
@@ -191,7 +192,7 @@
                         <div id="about">
                             <h2>About</h2>
                             <p>COMETS Analytics was developed by the COMETS Data Harmonization Group with web interface support from NCI's CBIIT. Metabolite names were harmonized by linking metabolite lists of frequently-used metabolomics platforms to unique identifiers from public metabolite databases (e.g. HMDB, REFMET).  Prototypes of the web platform was developed using R Shiny. The statistical analysis package was developed as an R package called COMETS and can be run locally. The HTML5-based web interface to the COMETS package is currently hosted on Amazon Cloud to provides scalability for computationally-intensive analyses.  The COMETS analytics was designed so that users can submit data in standard Excel format using the template described below where one can also specify models through the Excel file or through a web-interface.  The app currently performs Spearman correlations, with interactive graphics provided by Plotly.</p>
-                            <p>We thank Krista Zanetti for her support and the CBIIT team who translated the R Shiny prototype to HTML5 with funding support from the DCEG Informatics Challenge: Sue Pan, JJ Pan, Kai-Ling Chen, Wesley Obenshain, and Tony Hall.</p>
+                            <p>We thank Krista Zanetti for her support and the CBIIT team who translated the R Shiny prototype to HTML5 with funding support from the DCEG Informatics Challenge: Sue Pan, Kai-Ling Chen, Tony Hall, Wesley Obenshain, and JJ Pan.</p>
                             <p>COMETS Package Development Team: <a href="mailto:ella@bsc.gwu.edu">Ella Temprosa</a>, <a href="mailto:Ewy.Mathe@osumc.edu">Ewy Mathe</a>, <a href="mailto:moorest@mail.nih.gov">Steve Moore</a>, and <a href="mailto:RischA@imsweb.com">Adam Risch</a></p>
                         </div>
                         <div id="support">

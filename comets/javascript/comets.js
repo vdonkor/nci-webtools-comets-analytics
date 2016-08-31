@@ -290,4 +290,5 @@
             $('nav a[href="'+$(e).attr('href')+'"]').trigger('click');
             return false;
         });
+        
     });
