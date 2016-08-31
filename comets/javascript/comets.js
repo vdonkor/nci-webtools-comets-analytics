@@ -79,38 +79,40 @@
             };
             if (children.length > 0) node.children = children;
             return node;
-        }
+        };
         var createShapes = function(node,base,count,depth,orientation) {
             var direction = orientation=='x' ? 1 : -1;
             var adjustedDepth = base+(direction*depth*count/40)-.5;
             var shapes = [];
+            var template = {
+                line: {
+                  color: 'rgb(191,191,191)',
+                  width: 1
+                },
+                type: 'line',
+                x0: adjustedDepth,
+                x1: adjustedDepth,
+                y0: adjustedDepth,
+                y1: adjustedDepth
+            }
             if ('bottom' in node && 'top' in node) {
-                var shape = {
-                    type: 'line',
-                    x0: adjustedDepth,
-                    x1: adjustedDepth,
-                    y0: adjustedDepth,
-                    y1: adjustedDepth
-                };
+                var shape = $.extend({},template);
                 shape[orientation+'0'] = node.bottom;
                 shape[orientation+'1'] = node.top;
                 shapes.push(shape);
             }
             for (var a = 0; a < (node.children||[]).length; a++) {
                 shapes = shapes.concat(createShapes(node.children[a],base,count,depth-1,orientation));
-                var shape = {
-                    type: 'line',
-                    x0: adjustedDepth,
+                var shape = $.extend({},template,{
                     x1: node.children[a].children ? adjustedDepth-(direction*count/40) : adjustedDepth-(direction*depth*count/40),
-                    y0: adjustedDepth,
                     y1: node.children[a].children ? adjustedDepth-(direction*count/40) : adjustedDepth-(direction*depth*count/40)
-                };
+                });
                 shape[orientation+'0'] = node.children[a].height;
                 shape[orientation+'1'] = node.children[a].height;
                 shapes.push(shape);
             }
             return shapes;
-        }
+        };
         var shapes = [];
         if (options.clustered) {
             var row = createTree(options.clustered.rowTree,yLabels);
