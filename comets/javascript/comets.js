@@ -277,18 +277,4 @@
             $('.error').removeClass('error');
         }
     };
-
-    $(function() {
-        $('body').on('click','.goto',function(e) {
-            var e = e.target;
-            var offset = $($(e).attr('href')).offset();
-            $('html, body').animate({scrollTop: offset.top},500);
-            return false;
-        });
-        $('body').on('click','.clicktab',function(e) {
-            var e = e.target;
-            $('nav a[href="'+$(e).attr('href')+'"]').trigger('click');
-            return false;
-        });
-        
-    });
+    

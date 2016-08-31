@@ -458,9 +458,16 @@ appComets.HeatmapView = Backbone.View.extend({
 });
 
 $(function () {
-
-    $('a.toTab').on('click', function (e) {
-        $('#comets-tab-nav a[href="' + e.target.title + '"]').trigger('click');
+    $('body').on('click','.goto',function(e) {
+        var e = e.target;
+        var offset = $($(e).attr('href')).offset();
+        $('html, body').animate({scrollTop: offset.top},500);
+        return false;
+    });
+    $('body').on('click','.clicktab',function(e) {
+        var e = e.target;
+        $('nav a[href="'+$(e).attr('href')+'"]').trigger('click');
+        return false;
     });
     $('#logoutBtn').on('click', function (e) {
         e.preventDefault();
