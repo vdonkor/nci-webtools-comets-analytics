@@ -1,7 +1,9 @@
 #pageContent {
     background: inherit;
 }
-
+.schemeOrange {
+   color:#EC7A26; 
+}
 .tab-pane {
     min-height: 500px;
 }

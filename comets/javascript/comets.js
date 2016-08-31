@@ -284,4 +284,5 @@
             var offset = $(e.href).offset();
             $('html, body').animate({scrollTop: offset.top},1500,'easeInSine');
         });
+        
     });

@@ -361,9 +361,11 @@ appComets.SummaryView = Backbone.View.extend({
                     });
                 });
                 var $that = this;
-                table.button().add(0,{
-                    action: function(e) {
-                        if ($that.model.get('csv')) appComets.events.preauthenticate(e,function() { window.location = $that.model.get('csv'); });
+                table.button().add(0, {
+                    action: function (e) {
+                        if ($that.model.get('csv')) appComets.events.preauthenticate(e, function () {
+                            window.location = $that.model.get('csv');
+                        });
                     },
                     text: 'Download Results in CSV'
                 });
@@ -436,7 +438,7 @@ appComets.HeatmapView = Backbone.View.extend({
                 plotHeight = Math.min(Math.max(plotHeight, 200), 9000);
                 plotWidth = Math.min(Math.max(plotWidth, 200), 9000);
                 if (plotHeight != this.model.get('plotHeight') || plotWidth != this.model.get('plotWidth')) {
-                    this.model.set($.extend(this.model.attributes,{
+                    this.model.set($.extend(this.model.attributes, {
                         plotHeight: plotHeight,
                         plotWidth: plotWidth
                     }));
@@ -456,9 +458,13 @@ appComets.HeatmapView = Backbone.View.extend({
 });
 
 $(function () {
-    $('#logoutBtn').on('click',function(e) {
+
+    $('a.toTab').on('click', function (e) {
+        $('#comets-tab-nav a[href="' + e.target.title + '"]').trigger('click');
+    });
+    $('#logoutBtn').on('click', function (e) {
         e.preventDefault();
-        window.location="/auth0_redirect?logout="+encodeURIComponent(window.location.href);
+        window.location = "/auth0_redirect?logout=" + encodeURIComponent(window.location.href);
     });
     templates = $.ajax({
         type: "GET",

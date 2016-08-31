@@ -38,15 +38,15 @@
         <div id="pageContent">
             <div class="container-fluid">
                 <div class="row">
-                    <div id='page-head' class="col-xs-12"><b>CO</b>nsortium of <b>MET</b>abolomics <b>S</b>tudies</div>
+                    <div id='page-head' class="col-xs-12"><b class='schemeOrange'>CO</b>nsortium of <b class='schemeOrange'>MET</b>abolomics <b class='schemeOrange'>S</b>tudies</div>
                 </div>
                 <div class="row">
                     <nav class="navbar navbar-default">
                         <div class="collapse navbar-collapse" id="comets-tab-nav">
                             <ul class="nav nav-pills">
                                 <li role="presentation" class="active"><a href="#tab-home" data-toggle="tab">Home</a></li>
-                                <li role="presentation"><a href="#tab-correlate" data-toggle="tab" id="correlateTabId" data-toggle="tab">Correlate</a></li>
-                                <li role="presentation"><a href="#tab-help" data-toggle="tab" id="helpTabId" data-toggle="tab">Help</a></li>
+                                <li role="presentation"><a href="#tab-correlate" data-toggle="tab" id="correlateTabId" >Correlate</a></li>
+                                <li role="presentation"><a href="#tab-help" data-toggle="tab" id="helpTabId">Help</a></li>
                                 <li class="pull-right">
                                     <input type="button" class="btn btn-primary" id="logoutBtn" value="Logout" />
                                 </li>
@@ -59,7 +59,9 @@
                 <div class="tab-pane active" id="tab-home">
                     <div class="container">
                         <div class="row">
-                            <p>This web-based application will support all cohort-specific analyses of the COMETS consortium. Data are not saved in the system, but output must be downloaded and submitted for meta-analyses. This collaborative work is done via the COMETS harmonization group activities. For more informationon the consortium, see <a href=" http://epi.grants.cancer.gov/comets/" target="_blank">COMETS website</a></p>
+                            <h2 class='schemeOrange'>Welcome to COMETS Analytics!</h2>
+                            <p>This web-based self-service application supports all individual cohort analysises of the COMETS consortium to produce aggregated data for meta-analyses. This collaborative work is done via the COMETS harmonization group to enable consistent and reproducible analyses across studies. Specifically, the platform: 1) harmonizes metabolite names, 2) performs statistical analyses of metabolomics datal and 3) outputs analyis results in a standardized format ready for meta-analysis. Data are not saved in the system, but output must be downloaded and submitted centrally for meta-analyses. Each type of analyses will be available in the navigation bar. At present, only correlation analyses are available (see <a class='toTab' title='#tab-correlate'>Correlate</a> tab), see <a class='toTab' title='#tab-help'>help</a> tab.</p> 
+                            <p>For more informationon the consortium, see <a href=" http://epi.grants.cancer.gov/comets/" target="_blank">COMETS website</a></p>
                         </div>
                     </div>
                 </div>
