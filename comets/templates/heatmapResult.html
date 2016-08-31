@@ -34,7 +34,7 @@
             <input type="checkbox" id="displayAnnotations"<%= displayAnnotations ? " checked" : "" %>>Display annotations
         </label>    
         <label class="checkbox-inline" for="clusterResults" title="The checkbox will only be enabled when there are at least 2 exposures and outcomes.">
-            <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %><%= Object.keys(clustersort||{}).length > 0 ? "" : " disabled" %>/>Show hierarchical clustering
+            <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %><%= Object.keys(clustersort||{}).length > 0 ? "" : " disabled" %>/>Show hierarchical clustering (Requires at least 2 exposures and outcomes)
         </label>        
     </div>    
     <div id="correlateHeatmap"></div>

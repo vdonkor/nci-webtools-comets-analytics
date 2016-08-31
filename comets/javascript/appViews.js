@@ -327,8 +327,8 @@ appComets.IntegrityView = Backbone.View.extend({
         this.$el.html(this.template(this.model.attributes));
         if (this.model.get('integrityChecked')) {
             if (this.model.get('status')) {
-                appComets.generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Log2 Variance Distribution', this.model.get('log2var'));
-                appComets.generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of number of subject at min', this.model.get('num.min'));
+                appComets.generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Distribution of Log2 Variance for each Metabolite', this.model.get('log2var'));
+                appComets.generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of the number of Minimum/Missing values for each Metabolite', this.model.get('num.min'));
             }
         }
     }
