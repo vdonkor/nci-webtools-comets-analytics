@@ -43,6 +43,10 @@ runModel <- function(jsonData) {
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
                     csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
+                    lookup = exmetabdata$metab[c('metabid','biochemical')]
+                    names(lookup) <- c('joint','new')
+                    lapply(exmetabdata$allSubjectMetaData,function(toAdd) { lookup[nrow(lookup)+1,] <<- c(toAdd,toAdd) })
+                    excorrdata$metabolite_name <- replaceList(lookup,excorrdata$metabolite_name)
                     clustersort = NULL
                     if (length(exmodeldata$ccovs) > 1 && length(exmodeldata$rcovs) > 1) {
                       heatmapdata <- tidyr::spread(dplyr::select(excorrdata,metabolite_name,exposure,corr),exposure,corr)
@@ -63,7 +67,7 @@ runModel <- function(jsonData) {
                       clustersort = clustersort,
                       csv = csv,
                       excorrdata = excorrdata,
-                      exposures = exmodeldata$ccovs,
+                      exposures = replaceList(lookup,exmodeldata$ccovs),
                       model = input$modelName,
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
@@ -97,4 +101,15 @@ makeBranches <- function(dendrogram) {
     root$branch <- lapply(dendrogram, makeBranches)
   }
   root
+}
+
+replaceList = function(frame,old) {
+  if (length(old) < 1) return(old)
+  names(frame) <- c('joint','new')
+  new = as.data.frame(old)
+  names(new) <- 'joint'
+  new$order = 1:nrow(new)
+  new = merge(frame,new,by='joint')
+  new = new[order(new$order),]['new'][[1]]
+  return(new)
 }
