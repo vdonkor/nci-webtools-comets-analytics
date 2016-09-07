@@ -228,6 +228,10 @@ strong {
 .col-xs-12.steps {
     margin: 0px 15px;
 }
+fieldset.well {
+    background-color: #F5F5F5;
+    background-image: none;
+}
 @media (min-width: 992px) {
     .col-md-1.steps {
         margin-right: 0px;

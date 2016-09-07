@@ -105,21 +105,16 @@ appComets.FormView = Backbone.View.extend({
         //add file to model
         var file = appComets.fileUpload(e);
         this.model.set("csvFile", file);
-        // We should probably do this in render too?
-        if (file === null || file === undefined) {
-            this.$el.find("#load").attr('disabled', true);
-        } else {
-            this.$el.find("#load").removeAttr('disabled');
-        }
     },
     updateModel: appComets.events.updateModel,
     checkIntegrity: function (e) {
         e.preventDefault();
-        file = this.model.get("csvFile");
+        var file = this.model.get("csvFile");
         if (file) {
             var $that = this;
             var formData = new FormData();
             formData.append("inputFile", file);
+            formData.append("cohortSelection", this.model.get("cohortSelection"));
             appComets.models.integrityResults.fetch({
                 type: "POST",
                 data: formData,
@@ -166,6 +161,7 @@ appComets.FormView = Backbone.View.extend({
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
                 $that.model.set($.extend({}, $that.model.attributes, $that.model.defaults, {
+                    cohortSelection: $that.model.get('cohortSelection'),
                     csvFile: $that.model.get('csvFile'),
                     filename: data.filename,
                     metaboliteIds: data.metaboliteIds,
@@ -238,6 +234,11 @@ appComets.FormView = Backbone.View.extend({
             optionList: this.model.get("cohortList"),
             selectedOption: this.model.get("cohortSelection")
         }));
+        if ((this.model.get("csvFile")||null !== null) && (this.model.get("cohortSelection")||"").length > 0) {
+            this.$el.find("#load").removeAttr('disabled');
+        } else {
+            this.$el.find("#load").attr('disabled', true);
+        }
         // only if we've successfully uploaded a file, because we need that data
         if (this.model.get('status')) {
             var $that = this,
@@ -288,16 +289,13 @@ appComets.FormView = Backbone.View.extend({
                 sEl.setValue($that.model.get(el.id), true);
             });
 
-            if (this.model.get('cohortSelection') &&
-                ((methodSelection == 'Interactive' &&
-                        this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
-                    (methodSelection == 'Batch' && modelSelection))
+            if ((methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
+                    (methodSelection == 'Batch' && modelSelection)
             ) {
                 this.$el.find('#runModel').removeAttr('disabled');
             } else {
                 this.$el.find('#runModel').attr('disabled', true);
             }
-
         } else {
             this.$el.find('#analysisOptions').removeClass('show');
         }

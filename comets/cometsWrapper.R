@@ -3,14 +3,14 @@ library(jsonlite)
 library(COMETS)
 library(stats)
 
-checkIntegrity <- function(filename) {
+checkIntegrity <- function(filename,cohort) {
     suppressWarnings(suppressMessages({
         returnValue <- list()
         returnValue$saveValue <- tryCatch(
             withCallingHandlers(
                 {
                   exmetabdata = readCOMETSinput(filename)
-                  exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',as.integer(Sys.time())),exmetabdata$metab,'')
+                  exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',as.integer(Sys.time())),exmetabdata$metab,cohort)
                   exmetabdata
                 },
                 message=function(m) {
