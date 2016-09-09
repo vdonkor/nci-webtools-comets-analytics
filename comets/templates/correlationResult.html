@@ -10,7 +10,19 @@
                 <tr>
                     <% _.each(tableOrder,function(element,key,list) { %>
                         <th>
-                            <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
+                            <% if (element == "pvalue") { %>
+                                <span class="pvalue">
+                                    <span>
+                                        <input type="text" id="pvaluemin" placeholder="Min" aria-label="Minimum p-value" /> - <input id="pvaluemax" type="text" placeholder="Max" aria-label="Maximum p-value" />
+                                    </span>
+                                    <span class="show">
+                                        <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
+                                    </span>
+                                </div>
+                                <img src="images/toggle.png" alt="toggle range search"/>
+                            <% } else { %>
+                                <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
+                            <% } %>
                         </th>
                     <% }); %>
                 </tr>

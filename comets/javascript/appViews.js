@@ -354,9 +354,24 @@ appComets.SummaryView = Backbone.View.extend({
                 });
                 table.columns().every(function () {
                     var column = this;
-                    $(table.table().header()).children().eq(0).children().eq(this.selector.cols).find('input').on('keyup change', function () {
-                        if (column.search() !== this.value) column.search(this.value).draw();
-                    });
+                    var header = $(table.table().header()).children().eq(0).children().eq(this.selector.cols);
+                    if (header.find('.pvalue').length > 0) {
+                        header.find('.pvalue').children('img').on('click', function() {
+                            $(this).siblings('span').toggleClass('show').children('input').val('');
+                            column.search('').draw();
+                        });
+                        var spans = header.find('.pvalue').find('span');
+                        spans.eq(0).children('input').on('keyup change', function() {
+                            column.draw();
+                        });
+                        spans.eq(1).children('input').on('keyup change', function () {
+                            if (column.search() !== this.value) column.search(this.value).draw();
+                        });
+                    } else {
+                        header.find('input').on('keyup change', function () {
+                            if (column.search() !== this.value) column.search(this.value).draw();
+                        });
+                    }
                 });
                 var $that = this;
                 table.button().add(0, {
@@ -519,5 +534,21 @@ $(function () {
         //            submitHandler: appComets.validation.validSuccess
         //        });
 
+    });
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        var min = $('#pvaluemin').val();
+        var max = $('#pvaluemax').val();
+        min = min == '' ? null : parseFloat(min);
+        max = max == '' ? null : parseFloat(max);
+        if (min || max) {
+            for (var index in settings.aoColumns) {
+                if (settings.aoColumns[index].sTitle == 'pvalue') {
+                    var pvalue = parseFloat(data[index]);
+                    return pvalue > (min || Number.NEGATIVE_INFINITY) && pvalue < (max || Number.POSITIVE_INFINITY);
+                }
+            }
+            return false;
+        }
+        return true;
     });
 });
