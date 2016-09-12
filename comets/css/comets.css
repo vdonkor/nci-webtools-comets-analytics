@@ -237,12 +237,14 @@ fieldset.well {
         margin-right: 0px;
     }
 }
-.pvalue {
+.pvalue, .corr {
     display: block;
 }
-.pvalue > span.show {
+.pvalue > span.show,
+.corr > span.show {
     display: inline !important;
 }
-.pvalue > span:not(.show) {
+.pvalue > span:not(.show),
+.corr > span:not(.show) {
     display: none;
 }

@@ -10,10 +10,10 @@
                 <tr>
                     <% _.each(tableOrder,function(element,key,list) { %>
                         <th>
-                            <% if (element == "pvalue") { %>
-                                <span class="pvalue">
+                            <% if (element == "pvalue" || element == "corr") { %>
+                                <span class="<%= element %>">
                                     <span>
-                                        <input type="text" id="pvaluemin" placeholder="Min" aria-label="Minimum p-value" /> - <input id="pvaluemax" type="text" placeholder="Max" aria-label="Maximum p-value" />
+                                        <input type="text" id="<%= element %>min" placeholder="Min" aria-label="Minimum <%= element %>" /> - <input id="<%= element %>max" type="text" placeholder="Max" aria-label="Maximum <%= element %>" />
                                     </span>
                                     <span class="show">
                                         <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />

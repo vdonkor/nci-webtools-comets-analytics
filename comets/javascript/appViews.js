@@ -355,18 +355,23 @@ appComets.SummaryView = Backbone.View.extend({
                 table.columns().every(function () {
                     var column = this;
                     var header = $(table.table().header()).children().eq(0).children().eq(this.selector.cols);
-                    if (header.find('.pvalue').length > 0) {
-                        header.find('.pvalue').children('img').on('click', function() {
+                    var toggleInputs = function(headMarker) {
+                        header.find(headMarker).children('img').on('click', function() {
                             $(this).siblings('span').toggleClass('show').children('input').val('');
                             column.search('').draw();
                         });
-                        var spans = header.find('.pvalue').find('span');
+                        var spans = header.find(headMarker).find('span');
                         spans.eq(0).children('input').on('keyup change', function() {
                             column.draw();
                         });
                         spans.eq(1).children('input').on('keyup change', function () {
                             if (column.search() !== this.value) column.search(this.value).draw();
                         });
+                    }
+                    if (header.find('.pvalue').length > 0) {
+                        toggleInputs('.pvalue');
+                    } else if (header.find('.corr').length > 0) {
+                        toggleInputs('.corr');
                     } else {
                         header.find('input').on('keyup change', function () {
                             if (column.search() !== this.value) column.search(this.value).draw();
@@ -536,18 +541,26 @@ $(function () {
 
     });
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-        var min = $('#pvaluemin').val();
-        var max = $('#pvaluemax').val();
-        min = min == '' ? null : parseFloat(min);
-        max = max == '' ? null : parseFloat(max);
-        if (min || max) {
+        var pvaluemin = $('#pvaluemin').val();
+        var pvaluemax = $('#pvaluemax').val();
+        var corrmin = $('#corrmin').val();
+        var corrmax = $('#corrmax').val();
+        pvaluemin = pvaluemin == '' ? null : parseFloat(pvaluemin);
+        pvaluemax = pvaluemax == '' ? null : parseFloat(pvaluemax);
+        corrmin = corrmin == '' ? null : parseFloat(corrmin);
+        corrmax = corrmax == '' ? null : parseFloat(corrmax);
+        if (pvaluemin || pvaluemax || corrmin || corrmax) {
+            var returnValue = true;
             for (var index in settings.aoColumns) {
                 if (settings.aoColumns[index].sTitle == 'pvalue') {
                     var pvalue = parseFloat(data[index]);
-                    return pvalue > (min || Number.NEGATIVE_INFINITY) && pvalue < (max || Number.POSITIVE_INFINITY);
+                    returnValue = returnValue ? (pvalue >= (pvaluemin || Number.NEGATIVE_INFINITY) && pvalue <= (pvaluemax || Number.POSITIVE_INFINITY)) : false;
+                } else if (settings.aoColumns[index].sTitle == 'corr') {
+                    var corr = parseFloat(data[index]);
+                    returnValue = returnValue ? (corr >= (corrmin || Number.NEGATIVE_INFINITY) && corr <= (corrmax || Number.POSITIVE_INFINITY)) : false;
                 }
             }
-            return false;
+            return returnValue;
         }
         return true;
     });
