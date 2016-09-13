@@ -325,8 +325,14 @@ appComets.IntegrityView = Backbone.View.extend({
         this.$el.html(this.template(this.model.attributes));
         if (this.model.get('integrityChecked')) {
             if (this.model.get('status')) {
-                appComets.generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Distribution of Log2 Variance for each Metabolite', this.model.get('log2var'));
-                appComets.generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of the number of Minimum/Missing values for each Metabolite', this.model.get('num.min'));
+                var log2var = this.model.get('log2var');
+                if (log2var.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; })) {
+                    appComets.generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Distribution of Log2 Variance for each Metabolite', log2var);
+                }
+                var nummin = this.model.get('num.min');
+                if (nummin.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; })) {
+                    appComets.generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of the number of Minimum/Missing values for each Metabolite', nummin);
+                }
             }
         }
     }
