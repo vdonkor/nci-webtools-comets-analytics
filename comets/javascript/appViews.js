@@ -495,7 +495,8 @@ $(function () {
     });
     $('#logoutBtn').on('click', function (e) {
         e.preventDefault();
-        window.location = "/auth0_redirect?logout=" + encodeURIComponent(window.location.href);
+        var path = window.location.href;
+        window.location = "/auth0_redirect?logout=" + encodeURIComponent(path.substring(0,path.lastIndexOf('/')));
     });
     templates = $.ajax({
         type: "GET",
