@@ -353,6 +353,22 @@ appComets.SummaryView = Backbone.View.extend({
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
+                var excorrdata = this.model.get('excorrdata'),
+                    tableOrder = this.model.get('tableOrder');
+                var tbody = this.$el.find('#correlationSummary tbody'),
+                    tr = "";
+                _.each(excorrdata,function(row,key,list) {
+                    tr += "<tr>";
+                    _.each(tableOrder,function(element,key,list) {
+                        tr += "<td>"+(row[element] == 0 ? row[element] : row[element]||"")+"</td>";
+                    });
+                    tr += "</tr>";
+                    if (key % 1000 == 999) {
+                        tbody.append(tr);
+                        tr = "";
+                    }
+                });
+                tbody.append(tr);
                 var table = this.$el.find('#correlationSummary').DataTable({
                     buttons: [],
                     dom: 'lfBtip',

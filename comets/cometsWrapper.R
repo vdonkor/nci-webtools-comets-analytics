@@ -92,7 +92,7 @@ runModel <- function(jsonData) {
             }
         )
     }))
-    toJSON(returnValue, auto_unbox = T)
+    toJSON(returnValue, auto_unbox = T, digits = I(4))
 }
 
 makeBranches <- function(dendrogram) {

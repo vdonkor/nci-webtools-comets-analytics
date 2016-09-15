@@ -33,13 +33,7 @@
                 </tr>
             </thead>
             <tbody>
-                <% _.each(excorrdata,function(row,key,list) { %>
-                    <tr>
-                        <% _.each(tableOrder,function(element,key,list) { %>
-                            <td><%= row[element]||"" %></td>
-                        <% }); %>
-                    </tr>
-                <% }); %>
+                <!-- Row generation done in javascript, not underscore templates, due to memory concerns. -->
             </tbody>
         </table>
     </id>
