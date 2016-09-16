@@ -48,7 +48,7 @@ runModel <- function(jsonData) {
                     lapply(exmetabdata$allSubjectMetaData,function(toAdd) { lookup[nrow(lookup)+1,] <<- c(toAdd,toAdd) })
                     excorrdata$metabolite_name <- replaceList(lookup,excorrdata$metabolite_name)
                     excorrdata$exposure <- replaceList(lookup,excorrdata$exposure)
-                    excorrdata$adjvars = unname(sapply(excorrdata$adjvars,function(a) { paste(replaceList(lookup,strsplit(a,' ')),collapse=' ') }))
+                    #excorrdata$adjvars = unname(sapply(excorrdata$adjvars,function(a) { paste(replaceList(lookup,strsplit(a,' ')),collapse=' ') }))
                     clustersort = NULL
                     if (length(exmodeldata$ccovs) > 1 && length(exmodeldata$rcovs) > 1) {
                       heatmapdata <- tidyr::spread(dplyr::select(excorrdata,metabolite_name,exposure,corr),exposure,corr)
