@@ -11,6 +11,12 @@ checkIntegrity <- function(filename,cohort) {
                 {
                   exmetabdata = readCOMETSinput(filename)
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',as.integer(Sys.time())),exmetabdata$metab,cohort)
+                  lookup = exmetabdata$metab[c('metabid','biochemical')]
+                  names(lookup) <- c('joint','new')
+                  replaceWith <- as.data.frame(replaceList(lookup,exmetabdata$allMetabolites))
+                  replaceWith[,2] <- exmetabdata$allMetabolites
+                  names(replaceWith) <- c("text","value")
+                  exmetabdata$allMetabolites <- replaceWith
                   exmetabdata
                 },
                 message=function(m) {
