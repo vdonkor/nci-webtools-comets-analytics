@@ -67,15 +67,25 @@ appComets.FormView = Backbone.View.extend({
     el: "#cometsForm",
     initialize: function () {
         // watch model for changes and trigger render
-        this.model.on("change", this.render, this);
-
+        this.model.on({
+            "change:cohortList": this.renderCohortList,
+            "change:csvFile change:cohortSelection": this.renderCheckIntegrityButton,
+            "change:status": this.renderIntegrityChecked,
+            "change:methodSelection": this.renderMethodSelection,
+            "change:modelList": this.renderModelList,
+            "change:modelDescription": this.renderModelDescription,
+            "change:showMetabolites": this.renderShowMetabolites,
+            "change:subjectIds change:metaboliteIds": this.renderModelOptions,
+            "change:modelSelection change:outcome change:exposure": this.renderRunModelButton
+        }, this);
+        this.template = _.template(appComets.templatesList['harmonizationForm.options']);
         this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
             $(el).selectize({
                 plugins: ['remove_button'],
                 sortField: 'order'
             });
         });
-        this.render();
+        this.renderCohortList.apply(this);
     },
     events: {
         "change #inputDataFile": "uploadInputDataFile",
@@ -123,9 +133,6 @@ appComets.FormView = Backbone.View.extend({
                 processData: false,
                 contentType: false,
                 beforeSend: function () {
-                    appComets.views.errorsDisplay = new appComets.ErrorsView();
-                    appComets.views.errorsDisplay.render();
-
                     appComets.showLoader();
                     $that.$el.find("#calcProgressbar").show()
                         .find("[role='progressbar']")
@@ -226,78 +233,97 @@ appComets.FormView = Backbone.View.extend({
             $('a[href="#tab-summary"]').tab('show');
         });
     },
-    render: function () {
-        // Let's us update an options list using a templatized string instead of building one ourself or one at a time
-        var optionTemplate = _.template(appComets.templatesList['harmonizationForm.options']);
-        this.$el.find('#cohortSelection').html(optionTemplate({
+    renderCohortList: function() {
+        this.$el.find('#cohortSelection').html(this.template({
             optionType: "Cohort",
             optionList: this.model.get("cohortList"),
             selectedOption: this.model.get("cohortSelection")
         }));
+    },
+    renderCheckIntegrityButton: function() {
         if ((this.model.get("csvFile")||null !== null) && (this.model.get("cohortSelection")||"").length > 0) {
             this.$el.find("#load").removeAttr('disabled');
         } else {
             this.$el.find("#load").attr('disabled', true);
         }
-        // only if we've successfully uploaded a file, because we need that data
+    },
+    renderIntegrityChecked: function() {
         if (this.model.get('status')) {
-            var $that = this,
-                methodSelection = this.model.get('methodSelection'),
-                modelSelection = this.model.get('modelSelection'),
-                showMetabolites = this.model.get('showMetabolites');
-            this.$el.find('#analysisOptions').addClass("show");
-            this.$el.find('#Batch,#Interactive').each(function (i, el) {
-                var id = el.id;
-                var state = id == methodSelection;
-                $(el).toggleClass('show', state);
-                $that.$el.find('input[name="methodSelection"][value="' + id + '"]').prop('checked', state);
-            });
-            this.$el.find('#modelSelection').html(optionTemplate({
-                optionType: 'Model',
-                optionList: this.model.get('modelList'),
-                selectedOption: modelSelection
-            }));
-            this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
-            this.$el.find('#showMetabolites').prop('checked', showMetabolites);
-            var modelOptions = [{
-                text: 'All Metabolites',
-                value: 'All metabolites'
-            }].concat(this.model.get('subjectIds'));
-            if (showMetabolites) modelOptions = modelOptions.concat(this.model.get('metaboliteIds'))
-            modelOptions = modelOptions.map(function (option, key) {
-                return {
-                    text: option.text,
-                    value: option.value,
-                    order: key
-                };
-            });
-            this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
-                var sEl = el.selectize;
-                var oldOptions = $.extend({}, sEl.options);
-                _.each(modelOptions, function (option, key, list) {
-                    if (sEl.options[option.value] === undefined) {
-                        sEl.addOption(option);
-                    } else {
-                        sEl.updateOption(option.value, option);
-                    }
-                    delete oldOptions[option.value];
-                });
-
-                for (var option in oldOptions) {
-                    sEl.removeOption(option);
-                }
-                sEl.setValue($that.model.get(el.id), true);
-            });
-
-            if ((methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
-                    (methodSelection == 'Batch' && modelSelection)
-            ) {
-                this.$el.find('#runModel').removeAttr('disabled');
-            } else {
-                this.$el.find('#runModel').attr('disabled', true);
-            }
+            this.$el.find('#analysisOptions').addClass('show');
+            this.renderMethodSelection.apply(this);
+            this.renderModelList.apply(this);
+            this.renderModelDescription.apply(this);
+            this.renderShowMetabolites.apply(this);
         } else {
             this.$el.find('#analysisOptions').removeClass('show');
+        }
+    },
+    renderMethodSelection: function() {
+        var $that = this;
+        this.$el.find('#Batch,#Interactive').each(function (i, el) {
+            var id = el.id;
+            var state = id == $that.model.get('methodSelection');
+            $(el).toggleClass('show', state);
+            $that.$el.find('input[name="methodSelection"][value="' + id + '"]').prop('checked', state);
+        });
+    },
+    renderModelList: function() {
+        this.$el.find('#modelSelection').html(this.template({
+            optionType: 'Model',
+            optionList: this.model.get('modelList'),
+            selectedOption: this.model.get('modelSelection')
+        }));
+    },
+    renderModelDescription: function() {
+        this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
+    },
+    renderShowMetabolites: function() {
+        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
+        this.renderModelOptions.apply(this);
+    },
+    renderModelOptions: function() {
+        var $that = this;
+        var modelOptions = [{
+            text: 'All Metabolites',
+            value: 'All metabolites'
+        }].concat(this.model.get('subjectIds'));
+        if (this.model.get('showMetabolites')) {
+            modelOptions.shift();
+            modelOptions = modelOptions.concat(this.model.get('metaboliteIds'));
+        }
+        modelOptions = modelOptions.map(function (option, key) {
+            return {
+                text: option.text,
+                value: option.value,
+                order: key
+            };
+        });
+        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+            var sEl = el.selectize;
+            var oldOptions = $.extend({}, sEl.options);
+            _.each(modelOptions, function (option, key, list) {
+                if (sEl.options[option.value] === undefined) {
+                    sEl.addOption(option);
+                } else {
+                    sEl.updateOption(option.value, option);
+                }
+                delete oldOptions[option.value];
+            });
+
+            for (var option in oldOptions) {
+                sEl.removeOption(option);
+            }
+            sEl.setValue($that.model.get(el.id), true);
+        });
+    },
+    renderRunModelButton: function() {
+        var methodSelection = this.model.get('methodSelection');
+        if ((methodSelection == 'Batch' && this.model.get('modelSelection')) ||
+            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0)
+        ) {
+            this.$el.find('#runModel').removeAttr('disabled');
+        } else {
+            this.$el.find('#runModel').attr('disabled', true);
         }
     }
 });
@@ -353,27 +379,25 @@ appComets.SummaryView = Backbone.View.extend({
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
-                var excorrdata = this.model.get('excorrdata'),
-                    tableOrder = this.model.get('tableOrder');
-                var tbody = this.$el.find('#correlationSummary tbody'),
-                    tr = "";
-                _.each(excorrdata,function(row,key,list) {
-                    tr += "<tr>";
-                    _.each(tableOrder,function(element,key,list) {
-                        tr += "<td>"+(row[element] == 0 ? row[element] : row[element]||"")+"</td>";
-                    });
-                    tr += "</tr>";
-                    if (key % 1000 == 999) {
-                        tbody.append(tr);
-                        tr = "";
-                    }
-                });
-                tbody.append(tr);
                 var table = this.$el.find('#correlationSummary').DataTable({
                     buttons: [],
                     dom: 'lfBtip',
                     pageLength: 25
                 });
+                var excorrdata = this.model.get('excorrdata'),
+                    tableOrder = this.model.get('tableOrder'),
+                    tr = [];
+                _.each(excorrdata,function(row,pkey,list) {
+                    tr.push([]);
+                    _.each(tableOrder,function(element,key,list) {
+                        tr[tr.length-1].push(row[element] == 0 ? row[element] : row[element]||"");
+                    });
+                    if (pkey % 1000 == 999) {
+                        table.rows.add(tr);
+                        tr = [];
+                    }
+                });
+                table.rows.add(tr).draw();
                 table.columns().every(function () {
                     var column = this;
                     var header = $(table.table().header()).children().eq(0).children().eq(this.selector.cols);
