@@ -67,15 +67,25 @@ appComets.FormView = Backbone.View.extend({
     el: "#cometsForm",
     initialize: function () {
         // watch model for changes and trigger render
-        this.model.on("change", this.render, this);
-
+        this.model.on({
+            "change:cohortList": this.renderCohortList,
+            "change:csvFile change:cohortSelection": this.renderCheckIntegrityButton,
+            "change:status": this.renderIntegrityChecked,
+            "change:methodSelection": this.renderMethodSelection,
+            "change:modelList": this.renderModelList,
+            "change:modelDescription": this.renderModelDescription,
+            "change:showMetabolites": this.renderShowMetabolites,
+            "change:subjectIds change:metaboliteIds": this.renderModelOptions,
+            "change:modelSelection change:outcome change:exposure": this.renderRunModelButton
+        }, this);
+        this.template = _.template(appComets.templatesList['harmonizationForm.options']);
         this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
             $(el).selectize({
                 plugins: ['remove_button'],
                 sortField: 'order'
             });
         });
-        this.render();
+        this.renderCohortList.apply(this);
     },
     events: {
         "change #inputDataFile": "uploadInputDataFile",
@@ -105,21 +115,16 @@ appComets.FormView = Backbone.View.extend({
         //add file to model
         var file = appComets.fileUpload(e);
         this.model.set("csvFile", file);
-        // We should probably do this in render too?
-        if (file === null || file === undefined) {
-            this.$el.find("#load").attr('disabled', true);
-        } else {
-            this.$el.find("#load").removeAttr('disabled');
-        }
     },
     updateModel: appComets.events.updateModel,
     checkIntegrity: function (e) {
         e.preventDefault();
-        file = this.model.get("csvFile");
+        var file = this.model.get("csvFile");
         if (file) {
             var $that = this;
             var formData = new FormData();
             formData.append("inputFile", file);
+            formData.append("cohortSelection", this.model.get("cohortSelection"));
             appComets.models.integrityResults.fetch({
                 type: "POST",
                 data: formData,
@@ -128,9 +133,6 @@ appComets.FormView = Backbone.View.extend({
                 processData: false,
                 contentType: false,
                 beforeSend: function () {
-                    appComets.views.errorsDisplay = new appComets.ErrorsView();
-                    appComets.views.errorsDisplay.render();
-
                     appComets.showLoader();
                     $that.$el.find("#calcProgressbar").show()
                         .find("[role='progressbar']")
@@ -166,6 +168,7 @@ appComets.FormView = Backbone.View.extend({
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
                 $that.model.set($.extend({}, $that.model.attributes, $that.model.defaults, {
+                    cohortSelection: $that.model.get('cohortSelection'),
                     csvFile: $that.model.get('csvFile'),
                     filename: data.filename,
                     metaboliteIds: data.metaboliteIds,
@@ -230,76 +233,97 @@ appComets.FormView = Backbone.View.extend({
             $('a[href="#tab-summary"]').tab('show');
         });
     },
-    render: function () {
-        // Let's us update an options list using a templatized string instead of building one ourself or one at a time
-        var optionTemplate = _.template(appComets.templatesList['harmonizationForm.options']);
-        this.$el.find('#cohortSelection').html(optionTemplate({
+    renderCohortList: function() {
+        this.$el.find('#cohortSelection').html(this.template({
             optionType: "Cohort",
             optionList: this.model.get("cohortList"),
             selectedOption: this.model.get("cohortSelection")
         }));
-        // only if we've successfully uploaded a file, because we need that data
+    },
+    renderCheckIntegrityButton: function() {
+        if ((this.model.get("csvFile")||null !== null) && (this.model.get("cohortSelection")||"").length > 0) {
+            this.$el.find("#load").removeAttr('disabled');
+        } else {
+            this.$el.find("#load").attr('disabled', true);
+        }
+    },
+    renderIntegrityChecked: function() {
         if (this.model.get('status')) {
-            var $that = this,
-                methodSelection = this.model.get('methodSelection'),
-                modelSelection = this.model.get('modelSelection'),
-                showMetabolites = this.model.get('showMetabolites');
-            this.$el.find('#analysisOptions').addClass("show");
-            this.$el.find('#Batch,#Interactive').each(function (i, el) {
-                var id = el.id;
-                var state = id == methodSelection;
-                $(el).toggleClass('show', state);
-                $that.$el.find('input[name="methodSelection"][value="' + id + '"]').prop('checked', state);
-            });
-            this.$el.find('#modelSelection').html(optionTemplate({
-                optionType: 'Model',
-                optionList: this.model.get('modelList'),
-                selectedOption: modelSelection
-            }));
-            this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
-            this.$el.find('#showMetabolites').prop('checked', showMetabolites);
-            var modelOptions = [{
-                text: 'All Metabolites',
-                value: 'All metabolites'
-            }].concat(this.model.get('subjectIds'));
-            if (showMetabolites) modelOptions = modelOptions.concat(this.model.get('metaboliteIds'))
-            modelOptions = modelOptions.map(function (option, key) {
-                return {
-                    text: option.text,
-                    value: option.value,
-                    order: key
-                };
-            });
-            this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
-                var sEl = el.selectize;
-                var oldOptions = $.extend({}, sEl.options);
-                _.each(modelOptions, function (option, key, list) {
-                    if (sEl.options[option.value] === undefined) {
-                        sEl.addOption(option);
-                    } else {
-                        sEl.updateOption(option.value, option);
-                    }
-                    delete oldOptions[option.value];
-                });
-
-                for (var option in oldOptions) {
-                    sEl.removeOption(option);
-                }
-                sEl.setValue($that.model.get(el.id), true);
-            });
-
-            if (this.model.get('cohortSelection') &&
-                ((methodSelection == 'Interactive' &&
-                        this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0) ||
-                    (methodSelection == 'Batch' && modelSelection))
-            ) {
-                this.$el.find('#runModel').removeAttr('disabled');
-            } else {
-                this.$el.find('#runModel').attr('disabled', true);
-            }
-
+            this.$el.find('#analysisOptions').addClass('show');
+            this.renderMethodSelection.apply(this);
+            this.renderModelList.apply(this);
+            this.renderModelDescription.apply(this);
+            this.renderShowMetabolites.apply(this);
         } else {
             this.$el.find('#analysisOptions').removeClass('show');
+        }
+    },
+    renderMethodSelection: function() {
+        var $that = this;
+        this.$el.find('#Batch,#Interactive').each(function (i, el) {
+            var id = el.id;
+            var state = id == $that.model.get('methodSelection');
+            $(el).toggleClass('show', state);
+            $that.$el.find('input[name="methodSelection"][value="' + id + '"]').prop('checked', state);
+        });
+    },
+    renderModelList: function() {
+        this.$el.find('#modelSelection').html(this.template({
+            optionType: 'Model',
+            optionList: this.model.get('modelList'),
+            selectedOption: this.model.get('modelSelection')
+        }));
+    },
+    renderModelDescription: function() {
+        this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
+    },
+    renderShowMetabolites: function() {
+        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
+        this.renderModelOptions.apply(this);
+    },
+    renderModelOptions: function() {
+        var $that = this;
+        var modelOptions = [{
+            text: 'All Metabolites',
+            value: 'All metabolites'
+        }].concat(this.model.get('subjectIds'));
+        if (this.model.get('showMetabolites')) {
+            modelOptions.shift();
+            modelOptions = modelOptions.concat(this.model.get('metaboliteIds'));
+        }
+        modelOptions = modelOptions.map(function (option, key) {
+            return {
+                text: option.text,
+                value: option.value,
+                order: key
+            };
+        });
+        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+            var sEl = el.selectize;
+            var oldOptions = $.extend({}, sEl.options);
+            _.each(modelOptions, function (option, key, list) {
+                if (sEl.options[option.value] === undefined) {
+                    sEl.addOption(option);
+                } else {
+                    sEl.updateOption(option.value, option);
+                }
+                delete oldOptions[option.value];
+            });
+
+            for (var option in oldOptions) {
+                sEl.removeOption(option);
+            }
+            sEl.setValue($that.model.get(el.id), true);
+        });
+    },
+    renderRunModelButton: function() {
+        var methodSelection = this.model.get('methodSelection');
+        if ((methodSelection == 'Batch' && this.model.get('modelSelection')) ||
+            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0)
+        ) {
+            this.$el.find('#runModel').removeAttr('disabled');
+        } else {
+            this.$el.find('#runModel').attr('disabled', true);
         }
     }
 });
@@ -327,8 +351,14 @@ appComets.IntegrityView = Backbone.View.extend({
         this.$el.html(this.template(this.model.attributes));
         if (this.model.get('integrityChecked')) {
             if (this.model.get('status')) {
-                appComets.generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Distribution of Log2 Variance for each Metabolite', this.model.get('log2var'));
-                appComets.generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of the number of Minimum/Missing values for each Metabolite', this.model.get('num.min'));
+                var log2var = this.model.get('log2var');
+                if (log2var.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; })) {
+                    appComets.generateHistogram('varianceDist', 'log2 Variance', "Frequency", 'Distribution of Log2 Variance for each Metabolite', log2var);
+                }
+                var nummin = this.model.get('num.min');
+                if (nummin.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; })) {
+                    appComets.generateHistogram('subjectDist', 'Number at minimum', "Frequency", 'Distribution of the number of Minimum/Missing values for each Metabolite', nummin);
+                }
             }
         }
     }
@@ -354,11 +384,45 @@ appComets.SummaryView = Backbone.View.extend({
                     dom: 'lfBtip',
                     pageLength: 25
                 });
+                var excorrdata = this.model.get('excorrdata'),
+                    tableOrder = this.model.get('tableOrder'),
+                    tr = [];
+                _.each(excorrdata,function(row,pkey,list) {
+                    tr.push([]);
+                    _.each(tableOrder,function(element,key,list) {
+                        tr[tr.length-1].push(row[element] == 0 ? row[element] : row[element]||"");
+                    });
+                    if (pkey % 1000 == 999) {
+                        table.rows.add(tr);
+                        tr = [];
+                    }
+                });
+                table.rows.add(tr).draw();
                 table.columns().every(function () {
                     var column = this;
-                    $(table.table().header()).children().eq(0).children().eq(this.selector.cols).find('input').on('keyup change', function () {
-                        if (column.search() !== this.value) column.search(this.value).draw();
-                    });
+                    var header = $(table.table().header()).children().eq(0).children().eq(this.selector.cols);
+                    var toggleInputs = function(headMarker) {
+                        header.find(headMarker).children('img').on('click', function() {
+                            $(this).siblings('span').toggleClass('show').children('input').val('');
+                            column.search('').draw();
+                        });
+                        var spans = header.find(headMarker).find('span');
+                        spans.eq(0).children('input').on('keyup change', function() {
+                            column.draw();
+                        });
+                        spans.eq(1).children('input').on('keyup change', function () {
+                            if (column.search() !== this.value) column.search(this.value).draw();
+                        });
+                    }
+                    if (header.find('.pvalue').length > 0) {
+                        toggleInputs('.pvalue');
+                    } else if (header.find('.corr').length > 0) {
+                        toggleInputs('.corr');
+                    } else {
+                        header.find('input').on('keyup change', function () {
+                            if (column.search() !== this.value) column.search(this.value).draw();
+                        });
+                    }
                 });
                 var $that = this;
                 table.button().add(0, {
@@ -471,7 +535,8 @@ $(function () {
     });
     $('#logoutBtn').on('click', function (e) {
         e.preventDefault();
-        window.location = "/auth0_redirect?logout=" + encodeURIComponent(window.location.href);
+        var path = window.location.href;
+        window.location = "/auth0_redirect?logout=" + encodeURIComponent(path.substring(0,path.lastIndexOf('/')));
     });
     templates = $.ajax({
         type: "GET",
@@ -521,5 +586,29 @@ $(function () {
         //            submitHandler: appComets.validation.validSuccess
         //        });
 
+    });
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        var pvaluemin = $('#pvaluemin').val();
+        var pvaluemax = $('#pvaluemax').val();
+        var corrmin = $('#corrmin').val();
+        var corrmax = $('#corrmax').val();
+        pvaluemin = pvaluemin == '' ? null : parseFloat(pvaluemin);
+        pvaluemax = pvaluemax == '' ? null : parseFloat(pvaluemax);
+        corrmin = corrmin == '' ? null : parseFloat(corrmin);
+        corrmax = corrmax == '' ? null : parseFloat(corrmax);
+        if (pvaluemin || pvaluemax || corrmin || corrmax) {
+            var returnValue = true;
+            for (var index in settings.aoColumns) {
+                if (settings.aoColumns[index].sTitle == 'pvalue') {
+                    var pvalue = parseFloat(data[index]);
+                    returnValue = returnValue ? (pvalue >= (pvaluemin || Number.NEGATIVE_INFINITY) && pvalue <= (pvaluemax || Number.POSITIVE_INFINITY)) : false;
+                } else if (settings.aoColumns[index].sTitle == 'corr') {
+                    var corr = parseFloat(data[index]);
+                    returnValue = returnValue ? (corr >= (corrmin || Number.NEGATIVE_INFINITY) && corr <= (corrmax || Number.POSITIVE_INFINITY)) : false;
+                }
+            }
+            return returnValue;
+        }
+        return true;
     });
 });

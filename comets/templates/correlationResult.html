@@ -10,7 +10,19 @@
                 <tr>
                     <% _.each(tableOrder,function(element,key,list) { %>
                         <th>
-                            <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
+                            <% if (element == "pvalue" || element == "corr") { %>
+                                <span class="<%= element %>">
+                                    <span>
+                                        <input type="text" id="<%= element %>min" placeholder="Min" aria-label="Minimum <%= element %>" /> - <input id="<%= element %>max" type="text" placeholder="Max" aria-label="Maximum <%= element %>" />
+                                    </span>
+                                    <span class="show">
+                                        <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
+                                    </span>
+                                </div>
+                                <img src="images/toggle.png" alt="toggle range search"/>
+                            <% } else { %>
+                                <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
+                            <% } %>
                         </th>
                     <% }); %>
                 </tr>
@@ -21,13 +33,7 @@
                 </tr>
             </thead>
             <tbody>
-                <% _.each(excorrdata,function(row,key,list) { %>
-                    <tr>
-                        <% _.each(tableOrder,function(element,key,list) { %>
-                            <td><%= row[element]||"" %></td>
-                        <% }); %>
-                    </tr>
-                <% }); %>
+                <!-- Row generation done in javascript, not underscore templates, due to memory concerns. -->
             </tbody>
         </table>
     </id>

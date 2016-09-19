@@ -27,7 +27,7 @@ def integrityCheck():
         saveFile = userFile.save(os.path.join('tmp', filename))
         if os.path.isfile(os.path.join('tmp', filename)):
             print("Successfully Uploaded")
-        result=json.loads(wrapper.checkIntegrity(os.path.join('tmp', filename))[0])
+        result=json.loads(wrapper.checkIntegrity(os.path.join('tmp', filename),request.form['cohortSelection'])[0])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
