@@ -76,7 +76,8 @@ appComets.FormView = Backbone.View.extend({
             "change:modelDescription": this.renderModelDescription,
             "change:showMetabolites": this.renderShowMetabolites,
             "change:subjectIds change:metaboliteIds": this.renderModelOptions,
-            "change:modelSelection change:outcome change:exposure": this.renderRunModelButton
+            "change:modelSelection": this.renderModelList,
+            "change:outcome change:exposure": this.renderRunModelButton
         }, this);
         this.template = _.template(appComets.templatesList['harmonizationForm.options']);
         this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
@@ -273,6 +274,7 @@ appComets.FormView = Backbone.View.extend({
             optionList: this.model.get('modelList'),
             selectedOption: this.model.get('modelSelection')
         }));
+        this.renderRunModelButton.apply(this);
     },
     renderModelDescription: function() {
         this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
@@ -571,21 +573,6 @@ $(function () {
         });
 
         appComets.views.errorsDisplay = new appComets.ErrorsView();
-
-        //        $(appComets.views.formView.el).validate({
-        //            debug: true,
-        //            ignoreTitle: true,
-        //            ignore: ".ignore",
-        //            rules: appComets.validation.rules,
-        //            messages: appComets.validation.messages,
-        //            highlight: appComets.validation.highlightElement,
-        //            unhighlight: appComets.validation.unhighlightElement,
-        //            errorLabelContainer: '#messageDiv',
-        //            wrapper: 'p',
-        //            invalidHandler: appComets.validation.validationFail,
-        //            submitHandler: appComets.validation.validSuccess
-        //        });
-
     });
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var pvaluemin = $('#pvaluemin').val();
