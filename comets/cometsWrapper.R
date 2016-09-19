@@ -11,12 +11,12 @@ checkIntegrity <- function(filename,cohort) {
                 {
                   exmetabdata = readCOMETSinput(filename)
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',as.integer(Sys.time())),exmetabdata$metab,cohort)
-                  lookup = exmetabdata$metab[c('metabid','biochemical')]
-                  names(lookup) <- c('joint','new')
-                  replaceWith <- as.data.frame(replaceList(lookup,exmetabdata$allMetabolites))
-                  replaceWith[,2] <- exmetabdata$allMetabolites
-                  names(replaceWith) <- c("text","value")
-                  exmetabdata$allMetabolites <- replaceWith
+                  #lookup = exmetabdata$metab[c('metabid','biochemical')]
+                  #names(lookup) <- c('joint','new')
+                  #replaceWith <- as.data.frame(replaceList(lookup,exmetabdata$allMetabolites))
+                  #replaceWith[,2] <- exmetabdata$allMetabolites
+                  #names(replaceWith) <- c("text","value")
+                  #exmetabdata$allMetabolites <- replaceWith
                   exmetabdata
                 },
                 message=function(m) {
@@ -49,11 +49,11 @@ runModel <- function(jsonData) {
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
                     csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
-                    lookup = exmetabdata$metab[c('metabid','biochemical')]
-                    names(lookup) <- c('joint','new')
-                    lapply(exmetabdata$allSubjectMetaData,function(toAdd) { lookup[nrow(lookup)+1,] <<- c(toAdd,toAdd) })
-                    excorrdata$metabolite_name <- replaceList(lookup,excorrdata$metabolite_name)
-                    excorrdata$exposure <- replaceList(lookup,excorrdata$exposure)
+                    #lookup = exmetabdata$metab[c('metabid','biochemical')]
+                    #names(lookup) <- c('joint','new')
+                    #lapply(exmetabdata$allSubjectMetaData,function(toAdd) { lookup[nrow(lookup)+1,] <<- c(toAdd,toAdd) })
+                    #excorrdata$metabolite_name <- replaceList(lookup,excorrdata$metabolite_name)
+                    #excorrdata$exposure <- replaceList(lookup,excorrdata$exposure)
                     #excorrdata$adjvars = unname(sapply(excorrdata$adjvars,function(a) { paste(replaceList(lookup,strsplit(a,' ')),collapse=' ') }))
                     clustersort = NULL
                     if (length(exmodeldata$ccovs) > 1 && length(exmodeldata$rcovs) > 1) {
@@ -75,7 +75,7 @@ runModel <- function(jsonData) {
                       clustersort = clustersort,
                       csv = csv,
                       excorrdata = excorrdata,
-                      exposures = replaceList(lookup,exmodeldata$ccovs),
+                      exposures = exmodeldata$ccovs, #replaceList(lookup,exmodeldata$ccovs),
                       model = input$modelName,
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
