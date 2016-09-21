@@ -48,7 +48,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
             },
             integrityChecked: true,
             log2var: response.metab.map(function (obj) { return obj.var; }),
-            metaboliteIds: response.allMetabolites,
+            metaboliteIds: response.allMetabolites.map(function(subject) { return { text: subject, value: subject }; }),
             metaboliteSummary: {
                 'N Metabolites': response.metab.length,
                 'N Harmonized': response.metab.map(function (obj) {
