@@ -37,8 +37,7 @@
             </tbody>
         </table>
     </id>
-<% } %>
-<% if (!status) { %>
+<% } else if (status !== null && statusMessage) { %>
     <div id="resultStatus" class="alert alert-warning">
         <span class="glyphicon glyphicon-warning-sign"></span>
         <%= statusMessage %>

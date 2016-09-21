@@ -71,6 +71,7 @@ runModel <- function(jsonData) {
                         rowTree=makeBranches(rowDendrogram)
                       )
                     }
+                    excorrdata[,'pvalue'] <- sapply(excorrdata[,'pvalue'],function(value) { format(value, scientific=TRUE,digits=I(3))})
                     list(
                       clustersort = clustersort,
                       csv = csv,
@@ -98,7 +99,7 @@ runModel <- function(jsonData) {
             }
         )
     }))
-    toJSON(returnValue, auto_unbox = T, digits = I(4))
+    toJSON(returnValue, auto_unbox = T, digits = I(3))
 }
 
 makeBranches <- function(dendrogram) {
