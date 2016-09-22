@@ -187,21 +187,28 @@ appComets.FormView = Backbone.View.extend({
     },
     runModel: function (e) {
         e.preventDefault();
+        var methodSelection = this.model.get('methodSelection'),
+            outcome = this.model.get('outcome'),
+            exposure = this.model.get('exposure'),
+            metaboliteIds = this.model.get('metaboliteIds'),
+            outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
+            exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
+        if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in working with the table.")) {
+            return;
+        }
         var $that = this;
         var formData = new FormData();
-
         var toAppend = {
             'filename': this.model.get('filename'),
             'cohortSelection': this.model.get('cohortSelection'),
             'methodSelection': this.model.get('methodSelection'),
-            'modelSelection': this.model.get('modelSelection'),
+            'modelSelection': methodSelection,
             'modelDescription': this.model.get('modelDescription'),
-            'outcome': JSON.stringify(this.model.get('outcome')),
-            'exposure': JSON.stringify(this.model.get('exposure')),
+            'outcome': JSON.stringify(outcome),
+            'exposure': JSON.stringify(exposure),
             'covariates': JSON.stringify(this.model.get('covariates')),
             'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription')
         };
-
         for (var key in toAppend) {
             formData.append(key, toAppend[key]);
         }
@@ -310,7 +317,6 @@ appComets.FormView = Backbone.View.extend({
                 }
                 delete oldOptions[option.value];
             });
-
             for (var option in oldOptions) {
                 sEl.removeOption(option);
             }
@@ -597,4 +603,4 @@ $(function () {
         }
         return true;
     });
-});
+});;
