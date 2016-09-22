@@ -257,3 +257,18 @@ fieldset.well {
 .navbar {
     margin-bottom: 0px;
 }
+
+#integrityOptions > fieldset.well {
+    position: relative;
+}
+#integrityOptions.disabled > fieldset.well:after {
+    background: #000;
+    content: '';
+    display: block;
+    height: 100%;
+    left: 0px;
+    opacity: .5;
+    position: absolute;
+    top: 0px;
+    width: 100%;
+}

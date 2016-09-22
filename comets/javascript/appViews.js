@@ -69,7 +69,8 @@ appComets.FormView = Backbone.View.extend({
         // watch model for changes and trigger render
         this.model.on({
             "change:cohortList": this.renderCohortList,
-            "change:csvFile change:cohortSelection": this.renderCheckIntegrityButton,
+            "change:cohortSelection": this.renderCohortSelection,
+            "change:csvFile": this.renderCheckIntegrityButton,
             "change:status": this.renderIntegrityChecked,
             "change:methodSelection": this.renderMethodSelection,
             "change:modelList": this.renderModelList,
@@ -94,6 +95,7 @@ appComets.FormView = Backbone.View.extend({
         "change input:not([type='button'])": "updateModel",
         "keypress input:not([type='button'])": "noSubmit",
         "click #load": "checkIntegrity",
+        "click #reset": "reset",
         "click #runModel": "runModel",
         "click #toggleHelp": function () {
             this.$el.find("#inputHelp").toggle();
@@ -185,6 +187,17 @@ appComets.FormView = Backbone.View.extend({
             });
         }
     },
+    reset: function(e) {
+        e.preventDefault();
+        var harmonizationForm = appComets.models.harmonizationForm,
+            integrityResults = appComets.models.integrityResults,
+            correlationResults = appComets.models.correlationResults;
+        harmonizationForm.set($.extend({},harmonizationForm.defaults));
+        integrityResults.set($.extend({},integrityResults.defaults));
+        correlationResults.set($.extend({},correlationResults.defaults));
+        this.$el.find("#calcProgressbar").hide();
+        this.$el.find('#inputDataFile').val('');
+    },
     runModel: function (e) {
         e.preventDefault();
         var methodSelection = this.model.get('methodSelection'),
@@ -247,6 +260,10 @@ appComets.FormView = Backbone.View.extend({
             selectedOption: this.model.get("cohortSelection")
         }));
     },
+    renderCohortSelection: function() {
+        this.$el.find('#cohortSelection').find('option[value="'+(this.model.get('cohortSelection')||"")+'"]').prop('selected',true);
+        this.renderCheckIntegrityButton.apply(this);
+    },
     renderCheckIntegrityButton: function() {
         if ((this.model.get("csvFile")||null !== null) && (this.model.get("cohortSelection")||"").length > 0) {
             this.$el.find("#load").removeAttr('disabled');
@@ -256,12 +273,14 @@ appComets.FormView = Backbone.View.extend({
     },
     renderIntegrityChecked: function() {
         if (this.model.get('status')) {
+            this.$el.find('#integrityOptions').addClass('disabled');
             this.$el.find('#analysisOptions').addClass('show');
             this.renderMethodSelection.apply(this);
             this.renderModelList.apply(this);
             this.renderModelDescription.apply(this);
             this.renderShowMetabolites.apply(this);
         } else {
+            this.$el.find('#integrityOptions').removeClass('disabled');
             this.$el.find('#analysisOptions').removeClass('show');
         }
     },
