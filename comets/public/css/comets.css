@@ -40,7 +40,8 @@ nav.navbar.navbar-default {
     padding: 5px 0;
 }
 
-.tab-content {
+.tab-content,
+#pageContent > .container-fluid + div {
     display: inline-block;
     padding: 10px 15px;
     width: 100%;
@@ -248,4 +249,26 @@ fieldset.well {
 .pvalue > span:not(.show),
 .corr > span:not(.show) {
     display: none;
+}
+
+#pageContent > .container-fluid {
+    margin-bottom: 2em;
+}
+.navbar {
+    margin-bottom: 0px;
+}
+
+#integrityOptions > fieldset.well {
+    position: relative;
+}
+#integrityOptions.disabled > fieldset.well:after {
+    background: #000;
+    content: '';
+    display: block;
+    height: 100%;
+    left: 0px;
+    opacity: .5;
+    position: absolute;
+    top: 0px;
+    width: 100%;
 }
