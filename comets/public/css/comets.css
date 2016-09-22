@@ -40,7 +40,8 @@ nav.navbar.navbar-default {
     padding: 5px 0;
 }
 
-.tab-content {
+.tab-content,
+#pageContent > .container-fluid + div {
     display: inline-block;
     padding: 10px 15px;
     width: 100%;
@@ -248,4 +249,11 @@ fieldset.well {
 .pvalue > span:not(.show),
 .corr > span:not(.show) {
     display: none;
+}
+
+#pageContent > .container-fluid {
+    margin-bottom: 2em;
+}
+.navbar {
+    margin-bottom: 0px;
 }
