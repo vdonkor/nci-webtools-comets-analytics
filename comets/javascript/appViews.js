@@ -426,7 +426,7 @@ appComets.SummaryView = Backbone.View.extend({
         var tableOrder = this.model.get('tableOrder');
         var map = this.model.get('excorrdata');
         for (var index in tableOrder) {
-            var val = Number.parseFloat(this.model.get(tableOrder[index])),
+            var val = this.model.get(tableOrder[index]),
                 min = Number.parseFloat(this.model.get(tableOrder[index]+'min')),
                 max = Number.parseFloat(this.model.get(tableOrder[index]+'max'));
             if (!Number.isNaN(min)) {
@@ -446,7 +446,7 @@ appComets.SummaryView = Backbone.View.extend({
                     source = Number.parseFloat(entry[tableOrder[index]]);
                     return source <= max;
                 });
-            } else if (!Number.isNaN(val)) {
+            } else if (val !== undefined && val !== null) {
                 map = map.filter(function(entry) {
                     source = String(entry[tableOrder[index]]);
                     return source.includes(String(val));
@@ -457,7 +457,6 @@ appComets.SummaryView = Backbone.View.extend({
         for (var index = 0; index < Math.min(25,map.length); index++) {
             var tr = '<tr>';
             for (var orderIndex in tableOrder) {
-                console.log(map[index]);
                 tr += '<td>'+map[index][tableOrder[orderIndex]]+'</td>';
             }
             tr += '</tr>';
