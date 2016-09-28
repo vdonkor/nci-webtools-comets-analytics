@@ -454,6 +454,7 @@ appComets.SummaryView = Backbone.View.extend({
             }
         }
         this.$el.find('#correlationSummary tbody').empty();
+        this.model.set('pageCount',Math.ceil(map.length/25),{ 'silent': true });
         for (var index = 0; index < Math.min(25,map.length); index++) {
             var tr = '<tr>';
             for (var orderIndex in tableOrder) {
