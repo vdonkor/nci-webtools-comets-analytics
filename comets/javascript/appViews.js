@@ -214,8 +214,8 @@ appComets.FormView = Backbone.View.extend({
         var toAppend = {
             'filename': this.model.get('filename'),
             'cohortSelection': this.model.get('cohortSelection'),
-            'methodSelection': this.model.get('methodSelection'),
-            'modelSelection': methodSelection,
+            'methodSelection': methodSelection,
+            'modelSelection': this.model.get('modelSelection'),
             'modelDescription': this.model.get('modelDescription'),
             'outcome': JSON.stringify(outcome),
             'exposure': JSON.stringify(exposure),
