@@ -257,18 +257,11 @@ fieldset.well {
 .navbar {
     margin-bottom: 0px;
 }
-
-#integrityOptions > fieldset.well {
-    position: relative;
+#inputDataFile[disabled] {
+    color: #CCC;
 }
-#integrityOptions.disabled > fieldset.well:after {
-    background: #000;
-    content: '';
-    display: block;
-    height: 100%;
-    left: 0px;
-    opacity: .5;
-    position: absolute;
-    top: 0px;
-    width: 100%;
+#cohortSelection[disabled] {
+    border-color: #CCC;
+    color: #CCC;
+    cursor: not-allowed;
 }

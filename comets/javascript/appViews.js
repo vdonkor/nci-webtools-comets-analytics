@@ -265,7 +265,7 @@ appComets.FormView = Backbone.View.extend({
         this.renderCheckIntegrityButton.apply(this);
     },
     renderCheckIntegrityButton: function() {
-        if ((this.model.get("csvFile")||null !== null) && (this.model.get("cohortSelection")||"").length > 0) {
+        if (!this.model.get('status') && (this.model.get("csvFile")||null !== null) && (this.model.get("cohortSelection")||"").length > 0) {
             this.$el.find("#load").removeAttr('disabled');
         } else {
             this.$el.find("#load").attr('disabled', true);
@@ -273,14 +273,17 @@ appComets.FormView = Backbone.View.extend({
     },
     renderIntegrityChecked: function() {
         if (this.model.get('status')) {
-            this.$el.find('#integrityOptions').addClass('disabled');
+            this.$el.find('#cohortSelection').attr('disabled', true);
+            this.$el.find('#inputDataFile').attr('disabled', true);
+            this.$el.find('#load').attr('disabled', true);
             this.$el.find('#analysisOptions').addClass('show');
             this.renderMethodSelection.apply(this);
             this.renderModelList.apply(this);
             this.renderModelDescription.apply(this);
             this.renderShowMetabolites.apply(this);
         } else {
-            this.$el.find('#integrityOptions').removeClass('disabled');
+            this.$el.find('#cohortSelection').removeAttr('disabled');
+            this.$el.find('#inputDataFile').removeAttr('disabled');
             this.$el.find('#analysisOptions').removeClass('show');
         }
     },
