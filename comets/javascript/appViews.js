@@ -24,13 +24,12 @@ var appComets = {
             };
             */
         },
-        updateModel: function (e, silent) {
-            var silent = silent || false;
+        updateModel: function (e) {
             var e = $(e.target);
             if (e.attr('type') == 'checkbox') {
-                this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'), { 'silent': silent });
+                this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'));
             } else {
-                this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : [], { 'silent': silent });
+                this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
             }
         }
     },
@@ -266,7 +265,7 @@ appComets.FormView = Backbone.View.extend({
         this.renderCheckIntegrityButton.apply(this);
     },
     renderCheckIntegrityButton: function() {
-        if (!this.model.get('status') && (this.model.get("csvFile")||null !== null) && (this.model.get("cohortSelection")||"").length > 0) {
+        if ((this.model.get("csvFile")||null !== null) && (this.model.get("cohortSelection")||"").length > 0) {
             this.$el.find("#load").removeAttr('disabled');
         } else {
             this.$el.find("#load").attr('disabled', true);
@@ -274,17 +273,14 @@ appComets.FormView = Backbone.View.extend({
     },
     renderIntegrityChecked: function() {
         if (this.model.get('status')) {
-            this.$el.find('#cohortSelection').attr('disabled', true);
-            this.$el.find('#inputDataFile').attr('disabled', true);
-            this.$el.find('#load').attr('disabled', true);
+            this.$el.find('#integrityOptions').addClass('disabled');
             this.$el.find('#analysisOptions').addClass('show');
             this.renderMethodSelection.apply(this);
             this.renderModelList.apply(this);
             this.renderModelDescription.apply(this);
             this.renderShowMetabolites.apply(this);
         } else {
-            this.$el.find('#cohortSelection').removeAttr('disabled');
-            this.$el.find('#inputDataFile').removeAttr('disabled');
+            this.$el.find('#integrityOptions').removeClass('disabled');
             this.$el.find('#analysisOptions').removeClass('show');
         }
     },
@@ -399,68 +395,73 @@ appComets.IntegrityView = Backbone.View.extend({
 appComets.SummaryView = Backbone.View.extend({
     el: "#tab-summary",
     initialize: function () {
-        this.model.on({
-            'change:status': this.render
-        }, this);
+        this.model.on('change', this.render, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.correlationResult);
             this.render();
         }
     },
-    events: {
-        "keyup input:not([type='button'])": "updateModel"
-    },
-    updateModel: function(e) {
-        appComets.events.updateModel.call(this,e,true);
-        this.renderTable.apply(this);
-    },
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
-            this.renderTable.apply(this);
+            if (this.model.get('status')) {
+                var table = this.$el.find('#correlationSummary').DataTable({
+                    buttons: [],
+                    dom: 'lfBtip',
+                    pageLength: 25
+                });
+                var excorrdata = this.model.get('excorrdata'),
+                    tableOrder = this.model.get('tableOrder'),
+                    tr = [];
+                _.each(excorrdata,function(row,pkey,list) {
+                    tr.push([]);
+                    _.each(tableOrder,function(element,key,list) {
+                        tr[tr.length-1].push(row[element] == 0 ? row[element] : row[element]||"");
+                    });
+                    if (pkey % 1000 == 999) {
+                        table.rows.add(tr);
+                        tr = [];
+                    }
+                });
+                table.rows.add(tr).draw();
+                table.columns().every(function () {
+                    var column = this;
+                    var header = $(table.table().header()).children().eq(0).children().eq(this.selector.cols);
+                    var toggleInputs = function(headMarker) {
+                        header.find(headMarker).children('img').on('click', function() {
+                            $(this).siblings('span').toggleClass('show').children('input').val('');
+                            column.search('').draw();
+                        });
+                        var spans = header.find(headMarker).find('span');
+                        spans.eq(0).children('input').on('keyup change', function() {
+                            column.draw();
+                        });
+                        spans.eq(1).children('input').on('keyup change', function () {
+                            if (column.search() !== this.value) column.search(this.value).draw();
+                        });
+                    }
+                    if (header.find('.pvalue').length > 0) {
+                        toggleInputs('.pvalue');
+                    } else if (header.find('.corr').length > 0) {
+                        toggleInputs('.corr');
+                    } else {
+                        header.find('input').on('keyup change', function () {
+                            if (column.search() !== this.value) column.search(this.value).draw();
+                        });
+                    }
+                });
+                var $that = this;
+                table.button().add(0, {
+                    action: function (e) {
+                        if ($that.model.get('csv')) appComets.events.preauthenticate(e, function () {
+                            window.location = $that.model.get('csv');
+                        });
+                    },
+                    text: 'Download Results in CSV'
+                });
+            }
         } else {
             this.$el.html('');
-        }
-    },
-    renderTable: function() {
-        var tableOrder = this.model.get('tableOrder');
-        var map = this.model.get('excorrdata');
-        for (var index in tableOrder) {
-            var val = this.model.get(tableOrder[index]),
-                min = Number.parseFloat(this.model.get(tableOrder[index]+'min')),
-                max = Number.parseFloat(this.model.get(tableOrder[index]+'max'));
-            if (!Number.isNaN(min)) {
-                if (!Number.isNaN(max)) {
-                    map = map.filter(function(entry) {
-                        source = Number.parseFloat(entry[tableOrder[index]]);
-                        return source >= min && source <= max;
-                    });
-                } else {
-                    map = map.filter(function(entry) {
-                        source = Number.parseFloat(entry[tableOrder[index]]);
-                        return source >= min;
-                    });
-                }
-            } else if (!Number.isNaN(max)) {
-                map = map.filter(function(entry) {
-                    source = Number.parseFloat(entry[tableOrder[index]]);
-                    return source <= max;
-                });
-            } else if (val !== undefined && val !== null) {
-                map = map.filter(function(entry) {
-                    source = String(entry[tableOrder[index]]);
-                    return source.includes(String(val));
-                });
-            }
-        }
-        this.$el.find('#correlationSummary tbody').empty();
-        for (var index = 0; index < Math.min(25,map.length); index++) {
-            var tr = '<tr>';
-            for (var orderIndex in tableOrder) {
-                tr += '<td>'+map[index][tableOrder[orderIndex]]+'</td>';
-            }
-            tr += '</tr>';
-            this.$el.find('#correlationSummary tbody').append(tr);
         }
     }
 });
