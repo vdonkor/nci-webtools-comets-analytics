@@ -13,15 +13,17 @@
                             <% if (element == "pvalue" || element == "corr") { %>
                                 <span class="<%= element %>">
                                     <span>
-                                        <input type="text" id="<%= element %>min" placeholder="Min" aria-label="Minimum <%= element %>" /> - <input id="<%= element %>max" type="text" placeholder="Max" aria-label="Maximum <%= element %>" />
+                                        <input type="text" name="<%= element %>min" placeholder="Min" aria-label="Minimum <%= element %>" />
+                                        -
+                                        <input type="text" name="<%= element %>max" placeholder="Max" aria-label="Maximum <%= element %>" />
                                     </span>
                                     <span class="show">
-                                        <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
+                                        <input type="text" name="<%= element%>" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
                                     </span>
                                 </div>
                                 <img src="public/images/toggle.png" alt="toggle range search"/>
                             <% } else { %>
-                                <input type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
+                                <input type="text" name="<%= element%>" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
                             <% } %>
                         </th>
                     <% }); %>
