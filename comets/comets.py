@@ -104,6 +104,11 @@ def templates():
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
 
+@app.after_request
+def apply_caching(response):
+    response.headers["OIDC_id_token_payload"] = '{"name":"wesley.obenshain@nih.gov","email":"wesley.obenshain@nih.gov","email_verified":false,"user_metadata":{"affiliation":"NIH","cohort":"DPP"},"authorizations:["show me"]}'
+    return response
+
 import argparse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
