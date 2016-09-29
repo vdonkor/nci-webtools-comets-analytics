@@ -206,7 +206,7 @@ appComets.FormView = Backbone.View.extend({
             metaboliteIds = this.model.get('metaboliteIds'),
             outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
             exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
-        if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in working with the table.")) {
+        if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in displaying the results.")) {
             return;
         }
         var $that = this;
