@@ -1,4 +1,4 @@
-import json, sys, os, time, linecache
+import json, requests, sys, os, time, linecache
 from flask import Flask, request, json, jsonify, send_from_directory
 from rpy2.robjects import r as wrapper
 
@@ -104,10 +104,45 @@ def templates():
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
 
-@app.after_request
-def apply_caching(response):
-    response.headers["OIDC_id_token_payload"] = '{"name":"wesley.obenshain@nih.gov","email":"wesley.obenshain@nih.gov","email_verified":false,"user_metadata":{"affiliation":"NIH","cohort":"DPP"},"authorizations:["show me"]}'
+@app.route('/cometsRest/cohorts', methods=['GET'])
+def cohorts():
+    cohorts = {
+        'cohorts': ["DPP", "EPIC", "PLCO-CRC", "PLCO-breast", "Shanghai", "WHI", "Other"]
+    }
+    response = buildSuccess(cohorts)
     return response
+
+@app.route('/cometsRest/user_metadata',methods=['POST'])
+def user_metadata():
+    try:
+        parameters = dict(request.form)
+        data = {
+            "app_metadata": {
+                "comets": "pending"
+            },
+            "user_metadata" : { }
+        }
+        for field in parameters:
+            data['user_metadata'][field] = parameters[field][0]
+        url = "https://ncicbiit.auth0.com/api/v2/users/"+data['user_metadata']['user_id']
+        del data['user_metadata']['user_id']
+        headers = {
+            "Authorization": "Bearer "+app.config['token'],
+            "Content-Type": "application/json"
+        }
+        response = requests.patch(url,data=json.dumps(data),headers=headers)
+        response = buildSuccess(json.loads(response.text))
+    except Exception as e:
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+    finally:
+        return response
 
 import argparse
 if __name__ == '__main__':
@@ -115,6 +150,7 @@ if __name__ == '__main__':
 
     # Default port is 9200
     parser.add_argument('-p', '--port', type = int, dest = 'port', default = 9200, help = 'Sets the Port')
+    parser.add_argument('token', type=str, nargs=1)
     parser.add_argument('-d', '--debug', action = 'store_true', help = 'Enables debugging')
     args = parser.parse_args()
     if (args.debug):
@@ -130,4 +166,5 @@ if __name__ == '__main__':
         def static_files(path):
             return send_from_directory(os.getcwd(),path)
     #end remove
+    app.config['token'] = args.token[0]
     app.run(host = '0.0.0.0', port = args.port, debug = args.debug, use_evalex = False)
