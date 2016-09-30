@@ -15,6 +15,7 @@ html, body {
     left: 0;
     height: 100%;
     width: 100%;
+    z-index: 1;
 }
 
 #loader img {
@@ -39,7 +40,8 @@ nav.navbar.navbar-default {
     padding: 5px 0;
 }
 
-.tab-content {
+.tab-content,
+#pageContent > .container-fluid + div {
     display: inline-block;
     padding: 10px 15px;
     width: 100%;
@@ -247,4 +249,19 @@ fieldset.well {
 .pvalue > span:not(.show),
 .corr > span:not(.show) {
     display: none;
+}
+
+#pageContent > .container-fluid {
+    margin-bottom: 2em;
+}
+.navbar {
+    margin-bottom: 0px;
+}
+#inputDataFile[disabled] {
+    color: #CCC;
+}
+#cohortSelection[disabled] {
+    border-color: #CCC;
+    color: #CCC;
+    cursor: not-allowed;
 }
