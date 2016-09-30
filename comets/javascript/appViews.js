@@ -602,23 +602,40 @@ $(function () {
         appComets.views.errorsDisplay = new appComets.ErrorsView();
     });
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-        var pvaluemin = $('#pvaluemin').val();
-        var pvaluemax = $('#pvaluemax').val();
-        var corrmin = $('#corrmin').val();
-        var corrmax = $('#corrmax').val();
-        pvaluemin = pvaluemin == '' ? null : parseFloat(pvaluemin);
-        pvaluemax = pvaluemax == '' ? null : parseFloat(pvaluemax);
-        corrmin = corrmin == '' ? null : parseFloat(corrmin);
-        corrmax = corrmax == '' ? null : parseFloat(corrmax);
-        if (pvaluemin || pvaluemax || corrmin || corrmax) {
+        var pvaluemin = Number.parseFloat($('#pvaluemin').val()),
+            pvaluemax = Number.parseFloat($('#pvaluemax').val()),
+            corrmin = Number.parseFloat($('#corrmin').val()),
+            corrmax = Number.parseFloat($('#corrmax').val());
+            search = false;
+        if (Number.isNaN(pvaluemin)) {
+            pvaluemin = Number.NEGATIVE_INFINITY;
+        } else {
+            search = true;
+        }
+        if (Number.isNaN(pvaluemax)) {
+            pvaluemax = Number.POSITIVE_INFINITY;
+        } else {
+            search = true;
+        }
+        if (Number.isNaN(corrmin)) {
+            corrmin = Number.NEGATIVE_INFINITY;
+        } else {
+            search = true;
+        }
+        if (Number.isNaN(corrmax)) {
+            corrmax = Number.POSITIVE_INFINITY;
+        } else {
+            search = true;
+        }
+        if (search) {
             var returnValue = true;
             for (var index in settings.aoColumns) {
                 if (settings.aoColumns[index].sTitle == 'pvalue') {
                     var pvalue = parseFloat(data[index]);
-                    returnValue = returnValue ? (pvalue >= (pvaluemin || Number.NEGATIVE_INFINITY) && pvalue <= (pvaluemax || Number.POSITIVE_INFINITY)) : false;
+                    returnValue = returnValue ? ((pvalue >= pvaluemin) && (pvalue <= pvaluemax)) : false;
                 } else if (settings.aoColumns[index].sTitle == 'corr') {
                     var corr = parseFloat(data[index]);
-                    returnValue = returnValue ? (corr >= (corrmin || Number.NEGATIVE_INFINITY) && corr <= (corrmax || Number.POSITIVE_INFINITY)) : false;
+                    returnValue = returnValue ? ((corr >= corrmin) && (corr <= corrmax)) : false;
                 }
             }
             return returnValue;
