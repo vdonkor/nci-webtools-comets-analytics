@@ -115,23 +115,26 @@ def cohorts():
 @app.route('/cometsRest/user_metadata',methods=['POST'])
 def user_metadata():
     try:
-        parameters = dict(request.form)
+        parameters = json.loads(request.data)
         data = {
             "app_metadata": {
                 "comets": "pending"
             },
-            "user_metadata" : { }
+            "user_metadata" : {
+                "affiliation": parameters['affiliation'],
+                "cohort": parameters['cohort'],
+                "family_name": parameters['family_name'],
+                "given_name": parameters['given_name']
+            }
         }
-        for field in parameters:
-            data['user_metadata'][field] = parameters[field][0]
-        url = "https://ncicbiit.auth0.com/api/v2/users/"+data['user_metadata']['user_id']
-        del data['user_metadata']['user_id']
+        url = "https://ncicbiit.auth0.com/api/v2/users/"+parameters['user_id']
         headers = {
             "Authorization": "Bearer "+app.config['token'],
             "Content-Type": "application/json"
         }
-        response = requests.patch(url,data=json.dumps(data),headers=headers)
-        response = buildSuccess(json.loads(response.text))
+        response = json.loads(requests.patch(url,data=json.dumps(data),headers=headers).text)
+        response['comets'] = 'pending'
+        response = buildSuccess(response)
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame

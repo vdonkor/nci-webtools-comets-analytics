@@ -1,0 +1,29 @@
+#registration {
+    max-width: 800px;
+}
+ul {
+    list-style: none;
+    padding-left: 0px;
+    margin: 0px auto;
+}
+ul strong {
+    color: #000;
+}
+ul label {
+    width: 10em;
+    text-align: right;
+}
+ul input,
+ul select {
+    margin: 5px;
+    padding: 5px;
+    width: 20em;
+}
+#submit {
+    display: block;
+    width: 10em;
+    margin: 20px auto 0px;
+}
+h4 {
+    border-bottom: 1px solid #CCC;
+}

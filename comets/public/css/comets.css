@@ -25,17 +25,6 @@ html, body {
     border-radius: 10px;
     background: #fff;
 }
-
-header {
-    margin: 0px;
-    padding: 0px 15px;
-}
-
-header img {
-    width: 500px;
-    max-width: 100%;
-}
-
 nav.navbar.navbar-default {
     padding: 5px 0;
 }
@@ -75,13 +64,6 @@ nav.navbar.navbar-default {
 #analysisOptions:not(.show),
 #loader:not(.show) {
     display: none;
-}
-
-#page-head {
-    color: #FFF;
-    font-size: 14pt;
-    background: #2A71A5;
-    padding: 5px 0 5px 10px;
 }
 
 input.input:valid {
@@ -224,9 +206,6 @@ label[for="showMetabolites"] div {
         overflow: hidden;
     }
 }
-strong {
-    color: #EC7A26;
-}
 .col-xs-12.steps {
     margin: 0px 15px;
 }
@@ -249,10 +228,6 @@ fieldset.well {
 .pvalue > span:not(.show),
 .corr > span:not(.show) {
     display: none;
-}
-
-#pageContent > .container-fluid {
-    margin-bottom: 2em;
 }
 .navbar {
     margin-bottom: 0px;
