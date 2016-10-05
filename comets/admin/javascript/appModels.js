@@ -28,6 +28,9 @@ appAdmin.UserModel = Backbone.Model.extend({
     }
 });
 appAdmin.UserCollection = Backbone.Collection.extend({
-    url: "/cometsRest/user_list",
-    model: appAdmin.UserModel
+    url: "/cometsRest/admin/user_list",
+    model: appAdmin.UserModel,
+    parse: function(response) {
+        return response.user_list;
+    }
 });

@@ -104,7 +104,7 @@ def templates():
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
 
-@app.route('/cometsRest/cohorts', methods=['GET'])
+@app.route('/cometsRest/public/cohorts', methods=['GET'])
 def cohorts():
     cohorts = {
         'cohorts': ["DPP", "EPIC", "PLCO-CRC", "PLCO-breast", "Shanghai", "WHI", "Other"]
@@ -112,7 +112,7 @@ def cohorts():
     response = buildSuccess(cohorts)
     return response
 
-@app.route('/cometsRest/user_metadata', methods=['POST'])
+@app.route('/cometsRest/registration/user_metadata', methods=['POST'])
 def user_metadata():
     try:
         parameters = json.loads(request.data)
@@ -147,7 +147,7 @@ def user_metadata():
     finally:
         return response
 
-@app.route('/cometsRest/user_list', methods=['GET'])
+@app.route('/cometsRest/admin/user_list', methods=['GET'])
 def user_list_get():
     try:
         url = "https://ncicbiit.auth0.com/api/v2/users?q=comets%3A%5B*%20TO%20*%5D&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cuser_metadata&include_fields=true&per_page=100&page="
@@ -162,7 +162,7 @@ def user_list_get():
             page += 1
             request = json.loads(requests.get(url+str(page),headers=headers).text)
             response += request
-        response = buildSuccess(response)
+        response = buildSuccess({"user_list":response})
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame

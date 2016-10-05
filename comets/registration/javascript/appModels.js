@@ -2,7 +2,7 @@ appRegistration.CohortsModel = Backbone.Model.extend({
     defaults: {
         cohorts: ['Other']
     },
-    url: "/cometsRest/cohorts"
+    url: "/cometsRest/public/cohorts"
 });
 appRegistration.FormModel = Backbone.Model.extend({
     defaults: {
@@ -16,7 +16,7 @@ appRegistration.FormModel = Backbone.Model.extend({
         registered: false,
         user_id: ""
     },
-    url: "/cometsRest/user_metadata",
+    url: "/cometsRest/registration/user_metadata",
     fetch: function(options) {
         var model = this;
         return $.get(document.location).done(function(response, status, xhr) {
