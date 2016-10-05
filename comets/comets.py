@@ -112,7 +112,7 @@ def cohorts():
     response = buildSuccess(cohorts)
     return response
 
-@app.route('/cometsRest/user_metadata',methods=['POST'])
+@app.route('/cometsRest/user_metadata', methods=['POST'])
 def user_metadata():
     try:
         parameters = json.loads(request.data)
@@ -134,6 +134,34 @@ def user_metadata():
         }
         response = json.loads(requests.patch(url,data=json.dumps(data),headers=headers).text)
         response['comets'] = 'pending'
+        response = buildSuccess(response)
+    except Exception as e:
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+    finally:
+        return response
+
+@app.route('/cometsRest/user_list', methods=['GET'])
+def user_list_get():
+    try:
+        url = "https://ncicbiit.auth0.com/api/v2/users?q=comets%3A%5B*%20TO%20*%5D&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cuser_metadata&include_fields=true&per_page=100&page="
+        headers = {
+            "Authorization": "Bearer "+app.config['token'],
+            "Content-Type": "application/json"
+        }
+        page = 0
+        request = json.loads(requests.get(url+str(page),headers=headers).text)
+        response = request
+        while len(request) == 100:
+            page += 1
+            request = json.loads(requests.get(url+str(page),headers=headers).text)
+            response += request
         response = buildSuccess(response)
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
