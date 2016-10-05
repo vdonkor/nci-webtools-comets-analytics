@@ -28,9 +28,30 @@ appAdmin.UserModel = Backbone.Model.extend({
     }
 });
 appAdmin.UserCollection = Backbone.Collection.extend({
-    url: "/cometsRest/admin/user_list",
+    url: "/cometsRest/admin/users",
     model: appAdmin.UserModel,
     parse: function(response) {
         return response.user_list;
+    },
+    sync: function(method,collection,options) {
+        if (collection === undefined) collection = this;
+        if (method.toLowerCase() == 'patch') {
+            var temp = new (Backbone.Collection.extend({
+                url:  collection.url
+            }))();
+            for (var index in collection.models) {
+                var model = collection.models[index];
+                if(model.hasChanged()) temp.add(model);
+            }
+            return Backbone.sync.apply(temp,['patch',temp,options]);
+        } else {
+            return Backbone.sync.apply(this,[method,collection,options]);
+        }
+    }
+});
+appAdmin.UserTableModel = Backbone.Model.extend({
+    defaults: {
+        showDenied: false,
+        showInactive: false
     }
 });

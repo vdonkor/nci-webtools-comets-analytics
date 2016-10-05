@@ -147,10 +147,10 @@ def user_metadata():
     finally:
         return response
 
-@app.route('/cometsRest/admin/user_list', methods=['GET'])
+@app.route('/cometsRest/admin/users', methods=['GET'])
 def user_list_get():
     try:
-        url = "https://ncicbiit.auth0.com/api/v2/users?q=comets%3A%5B*%20TO%20*%5D&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cuser_metadata&include_fields=true&per_page=100&page="
+        url = "https://ncicbiit.auth0.com/api/v2/users?q=comets%3A%5B*%20TO%20*%5D&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cuser_id%2Cuser_metadata&include_fields=true&per_page=100&page="
         headers = {
             "Authorization": "Bearer "+app.config['token'],
             "Content-Type": "application/json"
@@ -174,6 +174,12 @@ def user_list_get():
         response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
     finally:
         return response
+
+@app.route('/cometsRest/admin/users', methods=['PATCH'])
+def user_list_put():
+    response = json.loads(request.data);
+    print(len(response))
+    return buildFailure({"return":json.loads(request.data)})
 
 import argparse
 if __name__ == '__main__':

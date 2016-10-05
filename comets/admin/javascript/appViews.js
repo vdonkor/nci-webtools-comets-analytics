@@ -3,13 +3,22 @@ var appAdmin = {};
 appAdmin.UserTableView = Backbone.View.extend({
     el: "#userTable",
     initialize: function () {
-        this.model.on('reset', this.render, this);
-        this.model.fetch({reset: true});
+        this.model.on({
+            'change:showDenied': this.renderApprovalTable,
+            'change:showInactive': this.renderActivationTable
+        }, this);
+        this.collection.on({
+            'change': this.enableButtons,
+            'reset': this.render
+        }, this);
+        this.collection.fetch({reset: true});
+        this.approvalTemplate = _.template('<input name="approval_<%=cid%>" type="radio" value="active"<%=(value=="active"?" checked=true":"")%>/> Approve<br/><input name="approval_<%=cid%>" type="radio" value="deny"<%=(value=="deny"?" checked=true":"")%>/> Deny');
+        this.activationTemplate = _.template('<input name="activation_<%=cid%>" type="checkbox"<%=((value=="active"||value=="admin")?" checked=true":"")%>/>');
     },
     events: {
-        'change select': 'updateModel',
-        'change input:not([type="button"])': 'updateModel',
-        'keypress input:not([type="button"])': 'noSubmit'
+        'change input:checkbox': 'checkboxUpdate',
+        'change input:radio': 'radioUpdate',
+        'click input:button': 'saveData'
     },
     noSubmit: function (e) {
         if (e.keyCode == 13) {
@@ -17,33 +26,119 @@ appAdmin.UserTableView = Backbone.View.extend({
             return false;
         }
     },
-    updateModel: function(e) {
+    checkboxUpdate: function(e) {
         var e = $(e.target);
-        if (e.attr('type') == 'checkbox') {
-            this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'));
+        var name = e.prop('id') || e.prop('name');
+        var checked = e.prop('checked');
+        if (name.indexOf('activation') == 0) {
+            var cid = name.substring(11),
+                model = this.collection.get(cid);
+            if (checked) {
+                model.set('app_metadata',_.extend({},model.get('app_metadata'),{'comets':model.get('old_comets')||'active'}));
+            } else {
+                model.set({
+                    'app_metadata': _.extend({},model.get('app_metadata'),{'comets':'inactive'}),
+                    'old_comets': model.get('app_metadata').comets
+                });
+            }
         } else {
-            this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
+            this.model.set(name,checked);
         }
     },
+    radioUpdate: function(e) {
+        var e = $(e.target);
+        var name = e.prop('id') || e.prop('name'),
+            cid = name.substring(9),
+            model = this.collection.get(cid);
+        var old = model.get('app_metadata').comets;
+        model.set({
+            'app_metadata': _.extend({},model.get('app_metadata'),{'comets':e.val()}),
+            'unsaved': true
+        });
+    },
+    enableButtons: function() {
+        this.$el.find('input[type="button"]').removeAttr('disabled');
+    },
+    saveData: function() {
+        this.collection.sync('patch');
+    },
     render: function() {
-        this.$el.DataTable({
-            data: this.model.models.map(function(model) {
-                return model.attributes;
-            }),
+        var view = this;
+        if (this.model.get('showDenied')) this.$el.find('[name="showDenied"]').attr('checked',true);
+        if (this.model.get('showInactive')) this.$el.find('[name="showInactive"]').attr('checked',true);
+        this.$el.find('#approvalTable').DataTable({
             columns: [
-                { title: "Email", data: 'email' },
-                { title: "Given Name", data: 'user_metadata.given_name' },
-                { title: "Family Name", data: 'user_metadata.family_name' },
+                { title: "First Name", data: 'user_metadata.given_name' },
+                { title: "Last Name", data: 'user_metadata.family_name' },
+                {
+                    title: "Email",
+                    data: 'email',
+                    render: function(value) {
+                        return '<b>'+value+'</b>';
+                    }
+                },
                 { title: "Affiliation", data: 'user_metadata.affiliation' },
                 { title: "Cohort", data: 'user_metadata.cohort' },
-                { title: "Status", data: 'app_metadata.comets' }
+                {
+                    title: "Access",
+                    data: 'app_metadata.comets',
+                    render: function(value,trash,obj) {
+                        return view.approvalTemplate({ 'value': value, 'cid': obj.cid });
+                    }
+                }
             ]
         });
+        this.$el.find('#activationTable').DataTable({
+            columns: [
+                { title: "First Name", data: 'user_metadata.given_name' },
+                { title: "Last Name", data: 'user_metadata.family_name' },
+                {
+                    title: "Email",
+                    data: 'email',
+                    render: function(value) {
+                        return '<b>'+value+'</b>';
+                    }
+                },
+                { title: "Affiliation", data: 'user_metadata.affiliation' },
+                { title: "Cohort", data: 'user_metadata.cohort' },
+                {
+                    title: "Active",
+                    className: 'text-center',
+                    data: 'app_metadata.comets',
+                    render: function(value,trash,obj) {
+                        return view.activationTemplate({ 'value': value, 'cid': obj.cid });
+                    }
+                }
+            ]
+        });
+        this.renderApprovalTable.apply(this);
+        this.renderActivationTable.apply(this);
+    },
+    renderApprovalTable: function() {
+        var showDenied = this.model.get('showDenied');
+        var data = this.collection.models.map(function(model) {
+            return _.extend({'cid':model.cid},model.attributes);
+        }).filter(function(model) {
+            var comets = model.app_metadata.comets;
+            return model.unsaved || comets == 'pending' || (showDenied && comets == 'deny');
+        });
+        $('#approvalTable').DataTable().clear().rows.add(data).draw();
+    },
+    renderActivationTable: function() {
+        var showInactive = this.model.get('showInactive');
+        var data = this.collection.models.map(function(model) {
+            return _.extend({'cid':model.cid},model.attributes);
+        }).filter(function(model) {
+            var comets = model.app_metadata.comets;
+            return comets == 'admin' || comets == 'active' || (showInactive && comets == 'inactive');
+        });
+        $('#activationTable').DataTable().clear().rows.add(data).draw();
     }
 });
 $(function() {
     new appAdmin.UserTableView({
-        model: new appAdmin.UserCollection()
+        collection: new appAdmin.UserCollection(),
+        model: new appAdmin.UserTableModel()
     })
     $('#logoutBtn').on('click', function (e) {
         e.preventDefault();
