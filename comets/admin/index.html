@@ -31,18 +31,34 @@
                         <a id="logoutBtn" href="">Logout</a>
                     </div>                    
                 </div>
+                <div class="row">
+                    <nav class="navbar navbar-default">
+                        <div id="comets-tab-nav">
+                            <ul class="nav nav-pills">
+                                <li role="presentation"><a href="../index.html#tab-home">Home</a></li>
+                                <li role="presentation"><a href="../index.html#tab-correlate">Correlate</a></li>
+                                <li role="presentation"><a href="../index.html#tab-help">Help</a></li>
+                                <li role="presentation" class="active pull-right"><a href="index.html">Admin</a></li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
             </div>
-            <div>
-                <div id="userTable" class="container">
-                    <div>
-                        <div class="text-right"><input name="showDenied" type="checkbox"/> Show Denied Users</div>
-                        <table id="approvalTable">
+            <div id="userTable" class="container">
+                <ul class="nav nav-tabs responsive">
+                    <li role="presentation" class="active"><a href="#tab-active" data-toggle="tab">Users</a></li>
+                    <li role="presentation"><a href="#tab-pending" data-toggle="tab">Pending Approval</a></li>
+                </ul>
+                <div class="tab-content tab-border">
+                    <div class="tab-pane active" id="tab-active">
+                        <div class="text-right"><input name="showInactive" type="checkbox"/> Show Inactive Users</div>
+                        <table id="activationTable">
                         </table>
                         <div class="text-center"><input type="button" class="btn btn-primary" value="Save" disabled=true/></div>
                     </div>
-                    <div>
-                        <div class="text-right"><input name="showInactive" type="checkbox"/> Show Inactive Users</div>
-                        <table id="activationTable">
+                    <div class="tab-pane" id="tab-pending">
+                        <div class="text-right"><input name="showDenied" type="checkbox"/> Show Denied Users</div>
+                        <table id="approvalTable">
                         </table>
                         <div class="text-center"><input type="button" class="btn btn-primary" value="Save" disabled=true/></div>
                     </div>

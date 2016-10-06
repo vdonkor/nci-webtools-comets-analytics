@@ -1,4 +1,5 @@
 appAdmin.UserModel = Backbone.Model.extend({
+    idAttribute: 'user_id',
     defaults: {
         app_metadata: {
             comets: null
@@ -43,7 +44,16 @@ appAdmin.UserCollection = Backbone.Collection.extend({
                 var model = collection.models[index];
                 if(model.hasChanged()) temp.add(model);
             }
-            return Backbone.sync.apply(temp,['patch',temp,options]);
+            var response = Backbone.sync.apply(temp,['patch',temp,options]);
+            response.done(function(responseJSON) {
+                responseJSON = collection.parse(responseJSON);
+                for (var index in responseJSON) {
+                    var model = new collection.model(responseJSON[index]);
+                    collection.get(model.id).set(model.attributes);
+                }
+                collection.trigger('reset',collection,response,options);
+            });
+            return response;
         } else {
             return Backbone.sync.apply(this,[method,collection,options]);
         }

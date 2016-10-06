@@ -63,6 +63,20 @@ appComets.ErrorsView = Backbone.View.extend({
     }
 });
 
+appComets.HeaderView = Backbone.View.extend({
+    el: '#pageContent > div:first-child',
+    initialize: function() {
+        this.model.on('change', this.render, this);
+        this.model.fetch();
+    },
+    render: function() {
+        var comets = this.model.get('comets'),
+            name = this.model.get('given_name')+' '+this.model.get('family_name');
+        $('#adminBtn').toggleClass('show',(comets == 'admin'))
+        $('#logoutBtn').siblings('span').html('Welcome, '+name+'!');
+    }
+});
+
 appComets.FormView = Backbone.View.extend({
     el: "#cometsForm",
     initialize: function () {
@@ -551,6 +565,23 @@ appComets.HeatmapView = Backbone.View.extend({
 });
 
 $(function () {
+    var url = document.location.toString();
+    if (url.match('#')) {
+        var tab = $('.navbar a[data-toggle="tab"][href="#' + url.split('#')[1] + '"]');
+        if (tab.length > 0) {
+            tab.tab('show');
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+            }, 1);
+        }
+    }
+    $('.navbar a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var old = $(e.target.hash).removeAttr('id');
+        var anchor = $('<a id="'+e.target.hash+'"/>').prependTo($('body'));
+        window.location.hash = e.target.hash;
+        anchor.remove();
+        old.attr('id',e.target.hash);
+    });
     $('body').on('click','.goto',function(e) {
         var e = e.target;
         var offset = $($(e).attr('href')).offset();
@@ -579,15 +610,24 @@ $(function () {
         };
         $('#pageContent').on('show.bs.tab', '#comets-tab-nav', setTitle);
         $('#pageContent').on('show.bs.tab', '#correlate-tab-nav', setTitle);
-        $("#pageContent").on("click", "#runModel", function () {
+        $('#pageContent').on('click', '#runModel', function () {
             $('a[href="#tab-summary"]').tab('show');
 
         });
-        appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
+        appComets.models.header = new appComets.HeaderModel();
         appComets.models.integrityResults = new appComets.IntegrityResultsModel();
         appComets.models.correlationResults = new appComets.CorrelationResultsModel();
-        appComets.views.formView = new appComets.FormView({
-            model: appComets.models.harmonizationForm
+        
+        appComets.models.cohortsList = new appComets.CohortsModel();
+        appComets.models.cohortsList.fetch().done(function(resp) {
+            appComets.models.harmonizationForm = new appComets.HarmonizationFormModel({'cohortList': appComets.models.cohortsList.get('cohorts')});
+            appComets.views.formView = new appComets.FormView({
+                model: appComets.models.harmonizationForm
+            });
+        });
+        
+        appComets.views.header = new appComets.HeaderView({
+            model: appComets.models.header
         });
         appComets.views.integrity = new appComets.IntegrityView({
             model: appComets.models.integrityResults

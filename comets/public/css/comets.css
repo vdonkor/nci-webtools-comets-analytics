@@ -28,7 +28,9 @@ html, body {
 nav.navbar.navbar-default {
     padding: 5px 0;
 }
-
+#adminBtn:not(.show) {
+    display: none;  
+}
 .tab-content,
 #pageContent > .container-fluid + div {
     display: inline-block;
@@ -40,11 +42,6 @@ nav.navbar.navbar-default {
     border-style: solid;
     border-color: #d9d9d9;
     border-radius: 0 0 4px 4px;
-}
-
-.tab-border {
-    border-width: 0  1px 1px;
-    overflow: auto;
 }
 
 .ui-widget {

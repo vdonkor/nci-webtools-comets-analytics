@@ -176,10 +176,37 @@ def user_list_get():
         return response
 
 @app.route('/cometsRest/admin/users', methods=['PATCH'])
-def user_list_put():
-    response = json.loads(request.data);
-    print(len(response))
-    return buildFailure({"return":json.loads(request.data)})
+def user_list_update():
+    try:
+        user_list = json.loads(request.data)
+        response = []
+        for parameters in user_list:
+            comets = parameters['app_metadata']['comets']
+            data = {
+                "app_metadata": {
+                    "comets": comets
+                }
+            }
+            url = "https://ncicbiit.auth0.com/api/v2/users/"+parameters['user_id']
+            headers = {
+                "Authorization": "Bearer "+app.config['token'],
+                "Content-Type": "application/json"
+            }
+            line = json.loads(requests.patch(url,data=json.dumps(data),headers=headers).text)
+            line['comets'] = comets
+            response.append(line)
+        response = buildSuccess({'user_list': response})
+    except Exception as e:
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+    finally:
+        return response
 
 import argparse
 if __name__ == '__main__':
