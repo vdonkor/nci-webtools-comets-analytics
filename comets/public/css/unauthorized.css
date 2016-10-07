@@ -1,0 +1,22 @@
+#unauthorized {
+    margin: 0px auto;
+    max-width: 800px;
+}
+#unauthorized > div {
+    padding-left: 80px;
+    position: relative;
+}
+#unauthorized > div:before {
+    background: url('../images/shieldlock.png') no-repeat;
+    background-size: 80px;
+    content: '';
+    display: block;
+    height: 80px;
+    left: 0px;
+    position: absolute;
+    top: 0px;
+    width: 80px;
+}
+h3 {
+    margin-bottom: 40px;
+}
