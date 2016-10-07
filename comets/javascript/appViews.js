@@ -183,9 +183,7 @@ appComets.FormView = Backbone.View.extend({
                 }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
-                $that.model.set($.extend({}, $that.model.attributes, $that.model.defaults, {
-                    cohortSelection: $that.model.get('cohortSelection'),
-                    csvFile: $that.model.get('csvFile'),
+                $that.model.set($.extend({}, $that.model.defaults, $that.model.attributes, {
                     filename: data.filename,
                     metaboliteIds: data.metaboliteIds,
                     modelList: data.models.map(function (model) {
@@ -620,7 +618,8 @@ $(function () {
         
         appComets.models.cohortsList = new appComets.CohortsModel();
         appComets.models.cohortsList.fetch().done(function(resp) {
-            appComets.models.harmonizationForm = new appComets.HarmonizationFormModel({'cohortList': appComets.models.cohortsList.get('cohorts')});
+            appComets.HarmonizationFormModel.prototype.defaults.cohortList = appComets.models.cohortsList.get('cohorts');
+            appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
             appComets.views.formView = new appComets.FormView({
                 model: appComets.models.harmonizationForm
             });
