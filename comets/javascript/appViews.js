@@ -244,7 +244,8 @@ appComets.FormView = Backbone.View.extend({
             cache: false,
             processData: false,
             contentType: false,
-            beforeSend: appComets.showLoader
+            beforeSend: appComets.showLoader,
+            reset: true
         }).fail(function (data, statusText, errorThrown) {
             if (data.status === 401) {
                 appComets.events.reauthenticate(e);
@@ -405,61 +406,140 @@ appComets.IntegrityView = Backbone.View.extend({
     }
 });
 
-
 // view the correlation summary
 appComets.SummaryView = Backbone.View.extend({
     el: "#tab-summary",
     initialize: function () {
-        this.model.on('change', this.render, this);
+        this.model.on({
+            'reset': this.render,
+            'change:filterdata': this.renderTable
+        }, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.correlationResult);
             this.render();
         }
     },
-    render: function () {
-        if (this.model.get('correlationRun')) {
-            this.$el.html(this.template(this.model.attributes));
-            if (this.model.get('status')) {
-                var table = this.$el.find('#correlationSummary').DataTable({
-                    buttons: [],
-                    dom: 'lfBtip',
-                    pageLength: 25
+    events: {
+        "keyup input:not([type='button'])": "updateModel"
+    },
+    updateModel: function(e) {
+        var e = $(e.target);
+        var min = e.hasClass('min'),
+            max = e.hasClass('max'),
+            minmax = '',
+            name = e.prop('name'),
+            value = e.val(),
+            subset = false,
+            filterdata = this.model.get('filterdata');
+        if (min) {
+            minmax = 'min';
+            value = parseFloat(value);
+            oldValue = this.model.get(name+minmax);
+            if (Number.isNaN(value)) { value = Number.NEGATIVE_INFINITY; }
+            if (oldValue === undefined) { oldValue = Number.NEGATIVE_INFINITY; }
+            if (value >= oldValue) {
+                subset = true;
+                filterdata = filterdata.filter(function(entry) {
+                    return entry[name] >= value;
                 });
-                var excorrdata = this.model.get('excorrdata'),
-                    tableOrder = this.model.get('tableOrder'),
-                    tr = [];
-                _.each(excorrdata,function(row,pkey,list) {
-                    tr.push([]);
-                    _.each(tableOrder,function(element,key,list) {
-                        tr[tr.length-1].push(row[element] == 0 ? row[element] : row[element]||"");
-                    });
-                    if (pkey % 1000 == 999) {
-                        table.rows.add(tr);
-                        tr = [];
-                    }
-                });
-                table.rows.add(tr).draw();
-                var $that = this;
-                table.button().add(0, {
-                    action: function (e) {
-                        if ($that.model.get('csv')) appComets.events.preauthenticate(e, function () {
-                            window.location = $that.model.get('csv');
-                        });
-                    },
-                    text: 'Download Results in CSV'
+            }
+        } else if (max) {
+            minmax = 'max';
+            value = parseFloat(value);
+            oldValue = this.model.get(name+minmax);
+            if (Number.isNaN(value)) { value = Number.POSITIVE_INFINITY; }
+            if (oldValue === undefined) { oldValue = Number.POSITIVE_INFINITY; }
+            if (value <= oldValue) {
+                subset = true;
+                filterdata = filterdata.filter(function(entry) {
+                    return entry[name] <= value;
                 });
             }
         } else {
+            value = value||'';
+            oldValue = this.model.get(name)||'';
+            if (value.includes(oldValue)) {
+                subset = true;
+                filterdata = filterdata.filter(function(entry) {
+                    return String(entry[name]).includes(value);
+                });
+            }
+        }
+        this.model.set(name+minmax,value);
+        if (!subset) {
+            filterdata = this.model.get('excorrdata');
+            var tableOrder = this.model.get('tableOrder');
+            for (var index in tableOrder) {
+                var val = this.model.get(tableOrder[index]),
+                    min = Number.parseFloat(this.model.get(tableOrder[index]+'min')),
+                    max = Number.parseFloat(this.model.get(tableOrder[index]+'max'));
+                if (!Number.isNaN(min)) {
+                    if (!Number.isNaN(max)) {
+                        filterdata = filterdata.filter(function(entry) {
+                            source = Number.parseFloat(entry[tableOrder[index]]);
+                            return source >= min && source <= max;
+                        });
+                    } else {
+                        filterdata = filterdata.filter(function(entry) {
+                            source = Number.parseFloat(entry[tableOrder[index]]);
+                            return source >= min;
+                        });
+                    }
+                } else if (!Number.isNaN(max)) {
+                    filterdata = filterdata.filter(function(entry) {
+                        source = Number.parseFloat(entry[tableOrder[index]]);
+                        return source <= max;
+                    });
+                } else if (val !== undefined && val !== null) {
+                    filterdata = filterdata.filter(function(entry) {
+                        source = String(entry[tableOrder[index]]);
+                        return source.includes(String(val));
+                    });
+                }
+            }
+        }
+        this.model.set('filterdata',filterdata);
+    },
+    render: function () {
+        if (this.model.get('correlationRun')) {
+            this.$el.html(this.template(this.model.attributes));
+            this.renderTable.apply(this);
+        } else {
             this.$el.html('');
         }
+    },
+    renderTable: function() {
+        var map = this.model.get('filterdata'),
+            tableOrder = this.model.get('tableOrder');
+        this.$el.find('#correlationSummary tbody').empty();
+        this.model.set('pageCount',Math.ceil(map.length/25),{ 'silent': true });
+        var tr = '';
+        for (var index = 0; index < Math.min(25,map.length); index++) {
+            tr += '<tr>';
+            for (var orderIndex in tableOrder) {
+                tr += '<td>'+map[index][tableOrder[orderIndex]]+'</td>';
+            }
+            tr += '</tr>';
+        }
+        this.$el.find('#correlationSummary tbody').append(tr);
     }
 });
+
 
 // view the correlation heatmap
 appComets.HeatmapView = Backbone.View.extend({
     el: "#tab-heatmap",
     initialize: function () {
-        this.model.on('change', this.render, this);
+        this.model.on({
+            'change:clusterResults': this.render,
+            'change:clustersort': this.render,
+            'change:displayAnnotations': this.render,
+            'change:excorrdata': this.render,
+            'change:plotColorscale': this.render,
+            'change:plotHeight': this.render,
+            'change:plotWidth': this.render,
+            'change:sortRow': this.render
+        }, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.heatmapResult);
             this.render();

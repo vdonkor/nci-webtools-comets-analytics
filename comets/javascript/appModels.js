@@ -127,6 +127,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         displayAnnotations: false,
         excorrdata: [],
         exposures: [],
+        filterdata: [],
         plotColorscale: "Viridis",
         plotHeight: 500,
         plotWidth: 800,
@@ -136,6 +137,16 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         tableOrder: []
     },
     url: "/cometsRest/correlate",
+    fetch: function(options) {
+        var response = Backbone.Model.prototype.fetch.call(this,options);
+        if (options.reset) {
+            var model = this;
+            response.done(function() {
+                model.trigger('reset',model,options);
+            });
+        }
+        return response;
+    },
     parse: function (response, xhr) {
         var excorrdata = response.excorrdata.map(function (biochemical) {
             return $.extend(biochemical, {
@@ -148,6 +159,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             correlationRun: true,
             displayAnnotations: false,
             excorrdata: excorrdata,
+            filterdata: excorrdata,
             exposures: exposures,
             sortRow: exposures[0]
         });
