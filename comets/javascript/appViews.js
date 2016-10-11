@@ -412,17 +412,53 @@ appComets.SummaryView = Backbone.View.extend({
     initialize: function () {
         this.model.on({
             'reset': this.render,
-            'change:filterdata': this.renderTable
+            'change:filterdata': this.renderTable,
+            'change:page': this.renderTable,
+            'change:pageCount': this.renderTable
         }, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.correlationResult);
+            this.pagingTemplate = _.template(appComets.templatesList.correlationResultPaging);
             this.render();
         }
     },
     events: {
-        "keyup input:not([type='button'])": "updateModel"
+        'change select': 'entryCount',
+        'keyup input[type="text"]': 'columnSearch',
+        'click #pagingRow a': 'pageTab',
+        'click #summaryDownload': 'startDownload'
     },
-    updateModel: function(e) {
+    startDownload: function (e) {
+        e.preventDefault();
+        var $that = this;
+        if (this.model.get('csv')) appComets.events.preauthenticate(e, function () {
+            window.location = $that.model.get('csv');
+        });
+    },
+    entryCount: function(e) {
+        var entryCount = $(e.target).val();
+        this.model.set({
+            'entryCount': entryCount,
+            'page': 1,
+            'pageCount': Math.ceil(this.model.get('filterdata').length/entryCount)
+        });
+    },
+    pageTab: function(e) {
+        e.preventDefault();
+        var e = $(e.target);
+        if (e.parent().hasClass('disabled')) return;
+        var val = e.html(),
+            page = this.model.get('page');
+        if (val == 'Next') {
+            page = Math.min(page+1,this.model.get('pageCount'))||1;
+        } else if (val == 'Previous') {
+            page = Math.max(1,page-1);
+        } else {
+            page = parseInt(val);
+        }
+        this.model.set('page',page);
+    },
+    columnSearch: function(e) {
         var e = $(e.target);
         var min = e.hasClass('min'),
             max = e.hasClass('max'),
@@ -432,7 +468,7 @@ appComets.SummaryView = Backbone.View.extend({
             subset = false,
             filterdata = this.model.get('filterdata');
         if (min) {
-            minmax = 'min';
+            minmax = "min";
             value = parseFloat(value);
             oldValue = this.model.get(name+minmax);
             if (Number.isNaN(value)) { value = Number.NEGATIVE_INFINITY; }
@@ -444,7 +480,7 @@ appComets.SummaryView = Backbone.View.extend({
                 });
             }
         } else if (max) {
-            minmax = 'max';
+            minmax = "max";
             value = parseFloat(value);
             oldValue = this.model.get(name+minmax);
             if (Number.isNaN(value)) { value = Number.POSITIVE_INFINITY; }
@@ -471,8 +507,8 @@ appComets.SummaryView = Backbone.View.extend({
             var tableOrder = this.model.get('tableOrder');
             for (var index in tableOrder) {
                 var val = this.model.get(tableOrder[index]),
-                    min = Number.parseFloat(this.model.get(tableOrder[index]+'min')),
-                    max = Number.parseFloat(this.model.get(tableOrder[index]+'max'));
+                    min = Number.parseFloat(this.model.get(tableOrder[index]+"min")),
+                    max = Number.parseFloat(this.model.get(tableOrder[index]+"max"));
                 if (!Number.isNaN(min)) {
                     if (!Number.isNaN(max)) {
                         filterdata = filterdata.filter(function(entry) {
@@ -498,7 +534,11 @@ appComets.SummaryView = Backbone.View.extend({
                 }
             }
         }
-        this.model.set('filterdata',filterdata);
+        this.model.set({
+            'filterdata': filterdata,
+            'page': 1,
+            'pageCount': Math.ceil(filterdata.length/this.model.get('entryCount'))
+        });
     },
     render: function () {
         if (this.model.get('correlationRun')) {
@@ -510,11 +550,12 @@ appComets.SummaryView = Backbone.View.extend({
     },
     renderTable: function() {
         var map = this.model.get('filterdata'),
-            tableOrder = this.model.get('tableOrder');
+            page = this.model.get('page'),
+            tableOrder = this.model.get('tableOrder'),
+            entryCount = this.model.get('entryCount');
         this.$el.find('#correlationSummary tbody').empty();
-        this.model.set('pageCount',Math.ceil(map.length/25),{ 'silent': true });
         var tr = '';
-        for (var index = 0; index < Math.min(25,map.length); index++) {
+        for (var index = (page-1)*entryCount; index < Math.min(page*entryCount,map.length); index++) {
             tr += '<tr>';
             for (var orderIndex in tableOrder) {
                 tr += '<td>'+map[index][tableOrder[orderIndex]]+'</td>';
@@ -522,6 +563,7 @@ appComets.SummaryView = Backbone.View.extend({
             tr += '</tr>';
         }
         this.$el.find('#correlationSummary tbody').append(tr);
+        this.$el.find('#pagingRow').html(this.pagingTemplate(this.model.attributes));
     }
 });
 

@@ -1,0 +1,33 @@
+<div>Showing <%=pageCount>0?(page-1)*entryCount+1:0%> to <%=Math.min(page*entryCount,filterdata.length)%> of <%=filterdata.length%> entries<%=excorrdata.length > filterdata.length?" (filtered from "+excorrdata.length+" total entries)":""%></div>
+<div>
+    <ul>
+        <li><a href="#">Previous</a></li>
+<%
+    if (pageCount < 8) {
+       for (var index = 1; index <= pageCount; index++) {
+%>
+        <li<%=page==index?" class=\"active\"":""%>><a href="#"><%=index%></a></li>
+<%
+        }
+    } else {
+%>
+        <li<%=page==1?" class=\"active\"":""%>><a href="#">1</a></li>
+    <% if (page > 4) { %>
+        <li class="disabled"><a href="#">...</a></li>
+    <% } else { %>
+        <li<%=page==2?" class=\"active\"":""%>><a href="#">2</a></li>
+    <% } %>
+    <% var midvalue = Math.max(Math.min(page,pageCount-3),4); %>
+        <li<%=page==midvalue-1?" class=\"active\"":""%>><a href="#"><%=midvalue-1%></a></li>
+        <li<%=page==midvalue?" class=\"active\"":""%>><a href="#"><%=midvalue%></a></li>
+        <li<%=page==midvalue+1?" class=\"active\"":""%>><a href="#"><%=midvalue+1%></a></li>
+    <% if (page < pageCount-3) { %>
+        <li class="disabled"><a href="#">...</a></li>
+    <% } else { %>
+        <li<%=page==pageCount-1?" class=\"active\"":""%>><a href="#"><%=pageCount-1%></a></li>
+    <% } %>
+        <li<%=page==pageCount?" class=\"active\"":""%>><a href="#"><%=pageCount%></a></li>
+<% } %>
+        <li><a href="#">Next</a></li>
+    </ul>
+</div>

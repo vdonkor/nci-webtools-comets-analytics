@@ -4,8 +4,25 @@
         <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
     </div>
-    <div style="overflow-x:auto;" class="col-md-12">
-        <table id="correlationSummary" class="table-striped table-hover">
+    <div id="correlationSummary" class="col-md-12">
+        <div class="form-inline">
+            <div>
+                <label>
+                    <span>Show </span>
+                    <select name="entryCount" class="form-control input-sm">
+                        <option value="10"<%= entryCount==10?" selected":"" %>>10</option>
+                        <option value="25"<%= entryCount==25?" selected":"" %>>25</option>
+                        <option value="50"<%= entryCount==50?" selected":"" %>>50</option>
+                        <option value="100"<%= entryCount==100?" selected":"" %>>100</option>
+                    </select>
+                    <span> entries</span>
+                </label>
+            </div>
+            <div id="summaryDownload">
+                <a href="#">Download Results in CSV</a>
+            </div>
+        </div>
+        <table class="table-striped table-hover">
             <thead>
                 <tr>
                     <% _.each(tableOrder,function(element,key,list) { %>
@@ -28,7 +45,8 @@
                 <!-- Row generation done in javascript, not underscore templates, due to memory concerns. -->
             </tbody>
         </table>
-    </id>
+        <div id="pagingRow" class="form-inline"></div>
+    </div>
 <% } else if (status !== null && statusMessage) { %>
     <div id="resultStatus" class="alert alert-warning">
         <span class="glyphicon glyphicon-warning-sign"></span>

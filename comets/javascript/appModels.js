@@ -123,11 +123,14 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         clustersort: [],
         colorscales: ["Blackbody", "Bluered", "Blues", "Earth", "Electric", "Greens", "Greys", "Hot", "Jet", "Picnic", "Portland", "Rainbow", "RdBu", "Reds", "Viridis", "YlGnBu", "YlOrRd"],
         correlationRun: false,
-        csvFile: null,
+        csv: null,
         displayAnnotations: false,
+        entryCount: 25,
         excorrdata: [],
         exposures: [],
         filterdata: [],
+        page: 1,
+        pageCount: 1,
         plotColorscale: "Viridis",
         plotHeight: 500,
         plotWidth: 800,
@@ -159,8 +162,9 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             correlationRun: true,
             displayAnnotations: false,
             excorrdata: excorrdata,
-            filterdata: excorrdata,
             exposures: exposures,
+            filterdata: excorrdata,
+            pageCount: Math.ceil(excorrdata.length/this.get('entryCount')),
             sortRow: exposures[0]
         });
         delete response.model;
