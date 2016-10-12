@@ -63,6 +63,20 @@ appComets.ErrorsView = Backbone.View.extend({
     }
 });
 
+appComets.HeaderView = Backbone.View.extend({
+    el: '#pageContent > div:first-child',
+    initialize: function() {
+        this.model.on('change', this.render, this);
+        this.model.fetch();
+    },
+    render: function() {
+        var comets = this.model.get('comets'),
+            name = this.model.get('given_name')+' '+this.model.get('family_name');
+        $('#adminBtn').toggleClass('show',(comets == 'admin'))
+        $('#logoutBtn').siblings('span').html('Welcome'+((name||' ')!==' '?', '+name:'')+'!');
+    }
+});
+
 appComets.FormView = Backbone.View.extend({
     el: "#cometsForm",
     initialize: function () {
@@ -169,9 +183,7 @@ appComets.FormView = Backbone.View.extend({
                 }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
-                $that.model.set($.extend({}, $that.model.attributes, $that.model.defaults, {
-                    cohortSelection: $that.model.get('cohortSelection'),
-                    csvFile: $that.model.get('csvFile'),
+                $that.model.set($.extend({}, $that.model.defaults, $that.model.attributes, {
                     filename: data.filename,
                     metaboliteIds: data.metaboliteIds,
                     modelList: data.models.map(function (model) {
@@ -232,7 +244,8 @@ appComets.FormView = Backbone.View.extend({
             cache: false,
             processData: false,
             contentType: false,
-            beforeSend: appComets.showLoader
+            beforeSend: appComets.showLoader,
+            reset: true
         }).fail(function (data, statusText, errorThrown) {
             if (data.status === 401) {
                 appComets.events.reauthenticate(e);
@@ -392,89 +405,182 @@ appComets.IntegrityView = Backbone.View.extend({
     }
 });
 
-
 // view the correlation summary
 appComets.SummaryView = Backbone.View.extend({
     el: "#tab-summary",
     initialize: function () {
         this.model.on({
-            'change:excorrdata': this.render
+            'reset': this.render,
+            'change:filterdata': this.renderTable,
+            'change:page': this.renderTable,
+            'change:pageCount': this.renderTable
         }, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.correlationResult);
+            this.pagingTemplate = _.template(appComets.templatesList.correlationResultPaging);
             this.render();
         }
+    },
+    events: {
+        'change select': 'entryCount',
+        'keyup input[type="text"]': 'columnSearch',
+        'click #pagingRow a': 'pageTab',
+        'click #summaryDownload': 'startDownload'
+    },
+    startDownload: function (e) {
+        e.preventDefault();
+        var $that = this;
+        if (this.model.get('csv')) appComets.events.preauthenticate(e, function () {
+            window.location = $that.model.get('csv');
+        });
+    },
+    entryCount: function(e) {
+        var entryCount = $(e.target).val();
+        this.model.set({
+            'entryCount': entryCount,
+            'page': 1,
+            'pageCount': Math.ceil(this.model.get('filterdata').length/entryCount)
+        });
+    },
+    pageTab: function(e) {
+        e.preventDefault();
+        var e = $(e.target);
+        if (e.parent().hasClass('disabled')) return;
+        var val = e.html(),
+            page = this.model.get('page');
+        if (val == 'Next') {
+            page = Math.min(page+1,this.model.get('pageCount'))||1;
+        } else if (val == 'Previous') {
+            page = Math.max(1,page-1);
+        } else {
+            page = parseInt(val);
+        }
+        this.model.set('page',page);
+    },
+    columnSearch: function(e) {
+        var e = $(e.target);
+        var min = e.hasClass('min'),
+            max = e.hasClass('max'),
+            minmax = '',
+            name = e.prop('name'),
+            value = e.val(),
+            subset = false,
+            filterdata = this.model.get('filterdata');
+        if (min) {
+            minmax = "min";
+            value = parseFloat(value);
+            oldValue = this.model.get(name+minmax);
+            if (Number.isNaN(value)) { value = Number.NEGATIVE_INFINITY; }
+            if (oldValue === undefined) { oldValue = Number.NEGATIVE_INFINITY; }
+            if (value >= oldValue) {
+                subset = true;
+                filterdata = filterdata.filter(function(entry) {
+                    return entry[name] >= value;
+                });
+            }
+        } else if (max) {
+            minmax = "max";
+            value = parseFloat(value);
+            oldValue = this.model.get(name+minmax);
+            if (Number.isNaN(value)) { value = Number.POSITIVE_INFINITY; }
+            if (oldValue === undefined) { oldValue = Number.POSITIVE_INFINITY; }
+            if (value <= oldValue) {
+                subset = true;
+                filterdata = filterdata.filter(function(entry) {
+                    return entry[name] <= value;
+                });
+            }
+        } else {
+            value = (value||'').toLowerCase();
+            oldValue = this.model.get(name)||'';
+            if (value.includes(oldValue)) {
+                subset = true;
+                filterdata = filterdata.filter(function(entry) {
+                    return String(entry[name]).toLowerCase().includes(value);
+                });
+            }
+        }
+        this.model.set(name+minmax,value);
+        if (!subset) {
+            filterdata = this.model.get('excorrdata');
+            var tableOrder = this.model.get('tableOrder');
+            for (var index in tableOrder) {
+                var val = this.model.get(tableOrder[index]),
+                    min = Number.parseFloat(this.model.get(tableOrder[index]+"min")),
+                    max = Number.parseFloat(this.model.get(tableOrder[index]+"max"));
+                if (!Number.isNaN(min)) {
+                    if (!Number.isNaN(max)) {
+                        filterdata = filterdata.filter(function(entry) {
+                            source = Number.parseFloat(entry[tableOrder[index]]);
+                            return source >= min && source <= max;
+                        });
+                    } else {
+                        filterdata = filterdata.filter(function(entry) {
+                            source = Number.parseFloat(entry[tableOrder[index]]);
+                            return source >= min;
+                        });
+                    }
+                } else if (!Number.isNaN(max)) {
+                    filterdata = filterdata.filter(function(entry) {
+                        source = Number.parseFloat(entry[tableOrder[index]]);
+                        return source <= max;
+                    });
+                } else if (val !== undefined && val !== null) {
+                    filterdata = filterdata.filter(function(entry) {
+                        source = String(entry[tableOrder[index]]);
+                        return source.includes(String(val));
+                    });
+                }
+            }
+        }
+        this.model.set({
+            'filterdata': filterdata,
+            'page': 1,
+            'pageCount': Math.ceil(filterdata.length/this.model.get('entryCount'))
+        });
     },
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
-            if (this.model.get('status')) {
-                var table = this.$el.find('#correlationSummary').DataTable({
-                    buttons: [],
-                    dom: 'lfBtip',
-                    pageLength: 25
-                });
-                var excorrdata = this.model.get('excorrdata'),
-                    tableOrder = this.model.get('tableOrder'),
-                    tr = [];
-                _.each(excorrdata,function(row,pkey,list) {
-                    tr.push([]);
-                    _.each(tableOrder,function(element,key,list) {
-                        tr[tr.length-1].push(row[element] == 0 ? row[element] : row[element]||"");
-                    });
-                    if (pkey % 1000 == 999) {
-                        table.rows.add(tr);
-                        tr = [];
-                    }
-                });
-                table.rows.add(tr).draw();
-                table.columns().every(function () {
-                    var column = this;
-                    var header = $(table.table().header()).children().eq(0).children().eq(this.selector.cols);
-                    var toggleInputs = function(headMarker) {
-                        header.find(headMarker).children('img').on('click', function() {
-                            $(this).siblings('span').toggleClass('show').children('input').val('');
-                            column.search('').draw();
-                        });
-                        var spans = header.find(headMarker).find('span');
-                        spans.eq(0).children('input').on('keyup change', function() {
-                            column.draw();
-                        });
-                        spans.eq(1).children('input').on('keyup change', function () {
-                            if (column.search() !== this.value) column.search(this.value).draw();
-                        });
-                    }
-                    if (header.find('.pvalue').length > 0) {
-                        toggleInputs('.pvalue');
-                    } else if (header.find('.corr').length > 0) {
-                        toggleInputs('.corr');
-                    } else {
-                        header.find('input').on('keyup change', function () {
-                            if (column.search() !== this.value) column.search(this.value).draw();
-                        });
-                    }
-                });
-                var $that = this;
-                table.button().add(0, {
-                    action: function (e) {
-                        if ($that.model.get('csv')) appComets.events.preauthenticate(e, function () {
-                            window.location = $that.model.get('csv');
-                        });
-                    },
-                    text: 'Download Results in CSV'
-                });
-            }
+            this.renderTable.apply(this);
         } else {
             this.$el.html('');
         }
+    },
+    renderTable: function() {
+        var map = this.model.get('filterdata'),
+            page = this.model.get('page'),
+            tableOrder = this.model.get('tableOrder'),
+            entryCount = this.model.get('entryCount');
+        this.$el.find('#correlationSummary tbody').empty();
+        var tr = '';
+        for (var index = (page-1)*entryCount; index < Math.min(page*entryCount,map.length); index++) {
+            tr += '<tr>';
+            for (var orderIndex in tableOrder) {
+                tr += '<td>'+map[index][tableOrder[orderIndex]]+'</td>';
+            }
+            tr += '</tr>';
+        }
+        this.$el.find('#correlationSummary tbody').append(tr);
+        this.$el.find('#pagingRow').html(this.pagingTemplate(this.model.attributes));
     }
 });
+
 
 // view the correlation heatmap
 appComets.HeatmapView = Backbone.View.extend({
     el: "#tab-heatmap",
     initialize: function () {
-        this.model.on('change', this.render, this);
+        this.model.on({
+            'change:clusterResults': this.render,
+            'change:clustersort': this.render,
+            'change:displayAnnotations': this.render,
+            'change:excorrdata': this.render,
+            'change:plotColorscale': this.render,
+            'change:plotHeight': this.render,
+            'change:plotWidth': this.render,
+            'change:sortRow': this.render
+        }, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.heatmapResult);
             this.render();
@@ -560,6 +666,23 @@ appComets.HeatmapView = Backbone.View.extend({
 });
 
 $(function () {
+    var url = document.location.toString();
+    if (url.match('#')) {
+        var tab = $('.navbar a[data-toggle="tab"][href="#' + url.split('#')[1] + '"]');
+        if (tab.length > 0) {
+            tab.tab('show');
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+            }, 1);
+        }
+    }
+    $('.navbar a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var old = $(e.target.hash).removeAttr('id');
+        var anchor = $('<a id="'+e.target.hash+'"/>').prependTo($('body'));
+        window.location.hash = e.target.hash;
+        anchor.remove();
+        old.attr('id',e.target.hash);
+    });
     $('body').on('click','.goto',function(e) {
         var e = e.target;
         var offset = $($(e).attr('href')).offset();
@@ -588,15 +711,25 @@ $(function () {
         };
         $('#pageContent').on('show.bs.tab', '#comets-tab-nav', setTitle);
         $('#pageContent').on('show.bs.tab', '#correlate-tab-nav', setTitle);
-        $("#pageContent").on("click", "#runModel", function () {
+        $('#pageContent').on('click', '#runModel', function () {
             $('a[href="#tab-summary"]').tab('show');
 
         });
-        appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
+        appComets.models.header = new appComets.HeaderModel();
         appComets.models.integrityResults = new appComets.IntegrityResultsModel();
         appComets.models.correlationResults = new appComets.CorrelationResultsModel();
-        appComets.views.formView = new appComets.FormView({
-            model: appComets.models.harmonizationForm
+        
+        appComets.models.cohortsList = new appComets.CohortsModel();
+        appComets.models.cohortsList.fetch().done(function(resp) {
+            appComets.HarmonizationFormModel.prototype.defaults.cohortList = appComets.models.cohortsList.get('cohorts');
+            appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
+            appComets.views.formView = new appComets.FormView({
+                model: appComets.models.harmonizationForm
+            });
+        });
+        
+        appComets.views.header = new appComets.HeaderView({
+            model: appComets.models.header
         });
         appComets.views.integrity = new appComets.IntegrityView({
             model: appComets.models.integrityResults
@@ -609,29 +742,5 @@ $(function () {
         });
 
         appComets.views.errorsDisplay = new appComets.ErrorsView();
-    });
-    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-        var pvaluemin = $('#pvaluemin').val();
-        var pvaluemax = $('#pvaluemax').val();
-        var corrmin = $('#corrmin').val();
-        var corrmax = $('#corrmax').val();
-        pvaluemin = pvaluemin == '' ? null : parseFloat(pvaluemin);
-        pvaluemax = pvaluemax == '' ? null : parseFloat(pvaluemax);
-        corrmin = corrmin == '' ? null : parseFloat(corrmin);
-        corrmax = corrmax == '' ? null : parseFloat(corrmax);
-        if (pvaluemin || pvaluemax || corrmin || corrmax) {
-            var returnValue = true;
-            for (var index in settings.aoColumns) {
-                if (settings.aoColumns[index].sTitle == 'pvalue') {
-                    var pvalue = parseFloat(data[index]);
-                    returnValue = returnValue ? (pvalue >= (pvaluemin || Number.NEGATIVE_INFINITY) && pvalue <= (pvaluemax || Number.POSITIVE_INFINITY)) : false;
-                } else if (settings.aoColumns[index].sTitle == 'corr') {
-                    var corr = parseFloat(data[index]);
-                    returnValue = returnValue ? (corr >= (corrmin || Number.NEGATIVE_INFINITY) && corr <= (corrmax || Number.POSITIVE_INFINITY)) : false;
-                }
-            }
-            return returnValue;
-        }
-        return true;
     });
 });;
