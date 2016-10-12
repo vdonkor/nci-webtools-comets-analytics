@@ -318,7 +318,6 @@ appComets.FormView = Backbone.View.extend({
             value: 'All metabolites'
         }].concat(this.model.get('subjectIds'));
         if (this.model.get('showMetabolites')) {
-            modelOptions.shift();
             modelOptions = modelOptions.concat(this.model.get('metaboliteIds'));
         }
         modelOptions = modelOptions.map(function (option, key) {
@@ -398,7 +397,9 @@ appComets.IntegrityView = Backbone.View.extend({
 appComets.SummaryView = Backbone.View.extend({
     el: "#tab-summary",
     initialize: function () {
-        this.model.on('change', this.render, this);
+        this.model.on({
+            'change:excorrdata': this.render
+        }, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.correlationResult);
             this.render();
@@ -488,8 +489,9 @@ appComets.HeatmapView = Backbone.View.extend({
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
-                var sortRow = this.model.get('sortRow');
-                var exposures = this.model.get('exposures');
+                var sortRow = this.model.get('sortRow'),
+                    exposures = this.model.get('exposures'),
+                    lookup = this.model.get('lookup');
                 var correlationData = {};
                 _.each(this.model.get('excorrdata'), function (metabolite, key, list) {
                     correlationData[metabolite.metabolite_name] = correlationData[metabolite.metabolite_name] || {
@@ -511,6 +513,9 @@ appComets.HeatmapView = Backbone.View.extend({
                             row[row.length] = correlationData[metaboliteNames[metaboliteIndex]][exposures[exposureIndex]];
                         }
                     }
+                    metaboliteNames = metaboliteNames.map(function (metabid) {
+                        return lookup[metabid];
+                    });
                 } else {
                     var heatmapData = [];
                     for (var prop in correlationData) {
@@ -523,11 +528,14 @@ appComets.HeatmapView = Backbone.View.extend({
                         });
                     });
                     metaboliteNames = heatmapData.map(function (biochem) {
-                        return biochem.metabolite_name;
+                        return lookup[biochem.metabolite_name];
                     });
                 }
-                var plotHeight = this.model.get('plotHeight');
-                var plotWidth = this.model.get('plotWidth');
+                exposures = exposures.map(function(metabid) {
+                    return lookup[metabid];
+                });
+                var plotHeight = this.model.get('plotHeight'),
+                    plotWidth = this.model.get('plotWidth');
                 plotHeight = Math.min(Math.max(plotHeight, 200), 9000);
                 plotWidth = Math.min(Math.max(plotWidth, 200), 9000);
                 if (plotHeight != this.model.get('plotHeight') || plotWidth != this.model.get('plotWidth')) {
@@ -541,6 +549,7 @@ appComets.HeatmapView = Backbone.View.extend({
                     clustered: clusterResults ? clustersort : null,
                     colorscale: this.model.get('plotColorscale'),
                     height: plotHeight,
+                    lookup: lookup,
                     width: plotWidth
                 }, exposures, metaboliteNames, "Correlation", values);
             }

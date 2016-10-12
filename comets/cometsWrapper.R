@@ -49,9 +49,10 @@ runModel <- function(jsonData) {
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
                     csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
-                    #lookup = exmetabdata$metab[c('metabid','biochemical')]
-                    #names(lookup) <- c('joint','new')
-                    #lapply(exmetabdata$allSubjectMetaData,function(toAdd) { lookup[nrow(lookup)+1,] <<- c(toAdd,toAdd) })
+                    lookup = as.data.frame(exmetabdata$metab[c('metabid','biochemical')])
+                    lapply(exmetabdata$allSubjectMetaData,function(toAdd) { lookup[nrow(lookup)+1,] <<- c(toAdd,toAdd) })
+                    rownames(lookup) <- lookup[,1]
+                    lookup <- as.list(t(lookup)['biochemical',])
                     #excorrdata$metabolite_name <- replaceList(lookup,excorrdata$metabolite_name)
                     #excorrdata$exposure <- replaceList(lookup,excorrdata$exposure)
                     #excorrdata$adjvars = unname(sapply(excorrdata$adjvars,function(a) { paste(replaceList(lookup,strsplit(a,' ')),collapse=' ') }))
@@ -77,6 +78,7 @@ runModel <- function(jsonData) {
                       csv = csv,
                       excorrdata = excorrdata,
                       exposures = exmodeldata$ccovs, #replaceList(lookup,exmodeldata$ccovs),
+                      lookup = lookup,
                       model = input$modelName,
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
