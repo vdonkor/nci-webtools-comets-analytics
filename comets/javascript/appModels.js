@@ -1,3 +1,23 @@
+Backbone.Model.prototype.reset = function(attrs,val,options) {
+    if (attrs instanceof Object) {
+        if (options === undefined && val instanceof object) {
+            options = val;
+            val = null;
+        }
+    } else {
+        var name = attrs;
+        attrs = {};
+        attrs[name] = val;
+    }
+    for (var name in this.attributes) {
+        if (attrs[name] === undefined && this.defaults[name] === undefined) {
+            this.unset(name,options);
+        }
+    }
+    this.set(_.extend({},this.defaults,attrs),options);
+    this.trigger('reset',this,options);
+}
+
 appComets.CohortsModel = Backbone.Model.extend({
     defaults: {
         cohorts: ['Other']
@@ -60,6 +80,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         log2var: null,
         metab: [],
         metabId: null,
+        metaboliteSummary: {},
         models: [],
         "num.min": null,
         status: null,

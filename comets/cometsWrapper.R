@@ -51,6 +51,7 @@ runModel <- function(jsonData) {
                     csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
                     lookup = as.data.frame(exmetabdata$metab[c('metabid','biochemical')])
                     lapply(exmetabdata$allSubjectMetaData,function(toAdd) { lookup[nrow(lookup)+1,] <<- c(toAdd,toAdd) })
+                    lookup <- lookup[!duplicated(lookup),]
                     rownames(lookup) <- lookup[,1]
                     lookup <- as.list(t(lookup)['biochemical',])
                     #excorrdata$metabolite_name <- replaceList(lookup,excorrdata$metabolite_name)
