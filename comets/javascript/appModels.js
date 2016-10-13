@@ -1,6 +1,40 @@
+appComets.CohortsModel = Backbone.Model.extend({
+    defaults: {
+        cohorts: ['Other']
+    },
+    url: "/cometsRest/public/cohorts"
+});
+
+appComets.HeaderModel = Backbone.Model.extend({
+    defaults: {
+        comets: null,
+        email: "",
+        family_name: "",
+        given_name: "",
+        user_id: ""
+    },
+    fetch: function(options) {
+        var model = this;
+        return $.get(document.location).done(function(response, status, xhr) {
+            var response = JSON.parse(xhr.getResponseHeader("OIDC_id_token_payload"))||{};
+            model.set(model.parse(response, xhr));
+        });
+    },
+    parse: function (response, xhr) {
+        var user_metadata = response.user_metadata||{};
+        user_metadata.comets = response.comets||this.defaults.comets;
+        user_metadata.email = response.email;
+        user_metadata.family_name = user_metadata.family_name || response.family_name || "";
+        user_metadata.given_name = user_metadata.given_name || response.given_name || "";
+        user_metadata.user_id = response.user_id;
+        console.log(user_metadata);
+        return user_metadata;
+    }
+});
+
 appComets.HarmonizationFormModel = Backbone.Model.extend({
     defaults: {
-        cohortList: ["DPP", "EPIC", "PLCO-CRC", "PLCO-breast", "Shanghai", "WHI", "Other"],
+        cohortList: ["Other"],
         cohortSelection: null,
         covariates: [],
         csvFile: null,
@@ -89,10 +123,14 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         clustersort: [],
         colorscales: ["Blackbody", "Bluered", "Blues", "Earth", "Electric", "Greens", "Greys", "Hot", "Jet", "Picnic", "Portland", "Rainbow", "RdBu", "Reds", "Viridis", "YlGnBu", "YlOrRd"],
         correlationRun: false,
-        csvFile: null,
+        csv: null,
         displayAnnotations: false,
+        entryCount: 25,
         excorrdata: [],
         exposures: [],
+        filterdata: [],
+        page: 1,
+        pageCount: 1,
         plotColorscale: "Viridis",
         plotHeight: 500,
         plotWidth: 800,
@@ -102,6 +140,16 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         tableOrder: []
     },
     url: "/cometsRest/correlate",
+    fetch: function(options) {
+        var response = Backbone.Model.prototype.fetch.call(this,options);
+        if (options.reset) {
+            var model = this;
+            response.done(function() {
+                model.trigger('reset',model,options);
+            });
+        }
+        return response;
+    },
     parse: function (response, xhr) {
         var excorrdata = response.excorrdata.map(function (biochemical) {
             return $.extend(biochemical, {
@@ -115,6 +163,8 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             displayAnnotations: false,
             excorrdata: excorrdata,
             exposures: exposures,
+            filterdata: excorrdata,
+            pageCount: Math.ceil(excorrdata.length/this.get('entryCount')),
             sortRow: exposures[0]
         });
         delete response.model;

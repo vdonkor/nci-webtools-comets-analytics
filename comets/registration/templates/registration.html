@@ -1,0 +1,44 @@
+<% if ((comets||"") == "pending") { %>
+<h4><strong>Thank you for your interest in COMETS Analytics!</strong></h4>
+<p>Your information will be reviewed and approved by the site administrator. Once approved, you will be sent an email to confirm your access to the COMETS Analytics tool.</p>
+<%
+    } else {
+%>
+<div class="row">
+    <h3><strong>Welcome</strong></h3>
+    <p>Welcome to the COMETS Registration process! To complete your account registration, you have to provide the information below. Please note you will not be able to sign in immediately after registration. You will receive a confirmation email upon approval.</p>
+</div>
+<div class="row">
+    <h3><strong>Information Needed</strong></h3>
+    <p>Please provide the following information to register your account in COMETS:</p>
+    <input type="hidden" name="user_id" value="<%= user_id %>"/>
+    <ul>
+        <li>
+            <label><strong>Email Address:</strong></label>
+            <span id="email"><%= email %></span>
+        </li>
+        <li>
+            <label for="family_name"><strong>Last Name:</strong></label>
+            <input type="text" name="family_name" value="<%= family_name %>"/>
+        </li>
+        <li>
+            <label for="given_name"><strong>First Name:</strong></label>
+            <input type="text" name="given_name" value="<%= given_name %>"/>
+        </li>
+        <li>
+            <label for="affiliation"><strong>Affiliation:</strong></label>
+            <input type="text" name="affiliation" value="<%= affiliation %>"/>
+        </li>
+        <li>
+            <label for="cohort"><strong>Cohort:</strong></label>
+            <select name="cohort">
+                <option value="">-- Select Cohort --</option>
+<% _.each(cohortList,function(option,key,list) { %>
+                <option value="<%= option %>"<%= option === cohort ? " SELECTED" : ""%>><%= option %></option>
+<% }) %>
+            </select>
+        </li>
+    </ul>
+    <input id="submit" type="button" class="btn btn-default" value="Submit" disabled="true"/>
+</div>
+<% } %>
