@@ -141,13 +141,24 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
     },
     url: "/cometsRest/correlate",
     fetch: function(options) {
-        var response = Backbone.Model.prototype.fetch.call(this,options);
-        if (options.reset) {
-            var model = this;
-            response.done(function() {
+        var response = Backbone.Model.prototype.fetch.call(this,options),
+            model = this;
+        response.done(function(response) {
+            if (options.reset) {
                 model.trigger('reset',model,options);
-            });
-        }
+            }
+        }).fail(function(response) {
+            if ('responseJSON' in response) {
+                model.set({
+                    correlationRun: true,
+                    status: response.responseJSON.status,
+                    statusMessage: response.responseJSON.statusMessage
+                });
+                if (options.reset) {
+                    model.trigger('reset',model,options);
+                }
+            }
+        });
         return response;
     },
     parse: function (response, xhr) {
