@@ -15,7 +15,7 @@ var appComets = {
         },
         reauthenticate: function (e) {
             e.preventDefault();
-            window.location = window.location.reload(true);
+            window.location.reload(true);
             /*
             var newWindow = window.open("reauth.html");
             window.reauthCallback = function () {
@@ -191,11 +191,12 @@ appComets.FormView = Backbone.View.extend({
         var harmonizationForm = appComets.models.harmonizationForm,
             integrityResults = appComets.models.integrityResults,
             correlationResults = appComets.models.correlationResults;
-        harmonizationForm.set($.extend({},harmonizationForm.defaults));
-        integrityResults.set($.extend({},integrityResults.defaults));
-        correlationResults.set($.extend({},correlationResults.defaults));
+        harmonizationForm.reset();
+        integrityResults.reset();
+        correlationResults.reset();
         this.$el.find("#calcProgressbar").hide();
         this.$el.find('#inputDataFile').val('');
+        $('[href="#tab-integrity"]').trigger('click');
     },
     runModel: function (e) {
         e.preventDefault();
