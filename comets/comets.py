@@ -1,4 +1,5 @@
-import json, requests, sys, os, time, linecache
+import json, sys, os, time, linecache
+#import requests
 from flask import Flask, request, json, jsonify, send_from_directory
 from rpy2.robjects import r as wrapper
 
