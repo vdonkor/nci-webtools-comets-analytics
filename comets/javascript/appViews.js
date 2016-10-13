@@ -15,7 +15,7 @@ var appComets = {
         },
         reauthenticate: function (e) {
             e.preventDefault();
-            window.location = window.location;
+            window.location = window.location.reload(true);
             /*
             var newWindow = window.open("reauth.html");
             window.reauthCallback = function () {
@@ -49,19 +49,6 @@ var appComets = {
     },
     views: {}
 };
-
-appComets.ErrorsView = Backbone.View.extend({
-    el: '#messageDiv',
-    render: function () {
-        if (this.options && this.options.errors && this.options.errors.length > 0) {
-            this.template = _.template("<%_.each(errors, function(error, i) { %><%= error %> <br/><%}) %>", this.options);
-            this.$el.html("<div class='alert alert-danger'>" + this.template + "</div>");
-        } else {
-            this.$el.html("");
-            this.$el.hide();
-        }
-    }
-});
 
 appComets.HeaderView = Backbone.View.extend({
     el: '#pageContent > div:first-child',
@@ -250,17 +237,6 @@ appComets.FormView = Backbone.View.extend({
             if (data.status === 401) {
                 appComets.events.reauthenticate(e);
             }
-            var response = data.responseJSON,
-                correlationResults = appComets.models.correlationResults;
-            if (response && 'status' in response) {
-                correlationResults.set($.extend({},correlationResults.attributes, {
-                    correlationRun: true,
-                    status: response.status,
-                    statusMessage: response.statusMessage
-                }));
-                $('a[href="#tab-summary"]').tab('show');
-            }
-            appComets.requestFail(data, statusText, errorThrown);
         }).always(function () {
             appComets.hideLoader();
             $('a[href="#tab-summary"]').tab('show');
@@ -542,7 +518,9 @@ appComets.SummaryView = Backbone.View.extend({
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
-            this.renderTable.apply(this);
+            if (this.model.get('status') == true) {
+                this.renderTable.apply(this);
+            }
         } else {
             this.$el.html('');
         }
@@ -572,6 +550,7 @@ appComets.HeatmapView = Backbone.View.extend({
     el: "#tab-heatmap",
     initialize: function () {
         this.model.on({
+            'reset': this.render,
             'change:clusterResults': this.render,
             'change:clustersort': this.render,
             'change:displayAnnotations': this.render,
@@ -702,7 +681,7 @@ $(function () {
     templates = $.ajax({
         type: "GET",
         url: "/cometsRest/templates",
-    }).fail(appComets.requestFail).then(function (data) {
+    }).then(function (data) {
         // attach templates array to module
         appComets.templatesList = data;
     }).done(function () {
@@ -740,7 +719,5 @@ $(function () {
         appComets.views.heatmap = new appComets.HeatmapView({
             model: appComets.models.correlationResults
         });
-
-        appComets.views.errorsDisplay = new appComets.ErrorsView();
     });
 });;

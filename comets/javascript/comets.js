@@ -192,14 +192,6 @@
         });
     };
 
-    appComets.requestFail = function (xhr, textStatus, errorThrown) {
-        appComets.views.errorsDisplay = new appComets.ErrorsView({
-            errors: [textStatus, errorThrown]
-        });
-
-        appComets.views.errorsDisplay.render();
-    };
-
     appComets.validation = {
         rules: {
             inputDataFile: {
