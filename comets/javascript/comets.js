@@ -173,7 +173,8 @@
             },
             margin: {
                 t: 32,
-                l: options.clustered ? 0 : 200
+                b: 7*xLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); }),
+                l: options.clustered ? 0 : Math.max(50,7*yLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); }))
             },
             width: options.width,
             shapes: shapes,

@@ -555,7 +555,6 @@ appComets.HeatmapView = Backbone.View.extend({
             'change:clusterResults': this.render,
             'change:clustersort': this.render,
             'change:displayAnnotations': this.render,
-            'change:excorrdata': this.render,
             'change:plotColorscale': this.render,
             'change:plotHeight': this.render,
             'change:plotWidth': this.render,
@@ -695,6 +694,7 @@ $(function () {
             $('a[href="#tab-summary"]').tab('show');
 
         });
+
         appComets.models.header = new appComets.HeaderModel();
         appComets.models.integrityResults = new appComets.IntegrityResultsModel();
         appComets.models.correlationResults = new appComets.CorrelationResultsModel();
