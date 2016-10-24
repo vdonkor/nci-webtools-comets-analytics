@@ -64,6 +64,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         methodSelection: "Batch",
         modelDescription: "Unadjusted",
         modelList: [],
+        defaultOptions: [{ 'text': "All Metabolites", 'value': "All metabolites" }],
         modelSelection: null,
         outcome:[ "All metabolites" ],
         showMetabolites: false,
@@ -185,7 +186,8 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
     parse: function (response, xhr) {
         var excorrdata = response.excorrdata.map(function (biochemical) {
             return $.extend(biochemical, {
-                model: response.model
+                model: response.model,
+                selected: false
             });
         });
         var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];

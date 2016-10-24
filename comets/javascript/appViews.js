@@ -77,7 +77,9 @@ appComets.FormView = Backbone.View.extend({
             "change:modelList": this.renderModelList,
             "change:modelDescription": this.renderModelDescription,
             "change:showMetabolites": this.renderShowMetabolites,
-            "change:subjectIds change:metaboliteIds": this.renderModelOptions,
+            "change:subjectIds": this.renderModelOptions,
+            "change:metaboliteIds": this.renderModelOptions,
+            "change:defaultOptions": this.renderModelOptions,
             "change:modelSelection": this.renderModelList,
             "change:outcome change:exposure": this.renderRunModelButton
         }, this);
@@ -200,11 +202,13 @@ appComets.FormView = Backbone.View.extend({
     },
     runModel: function (e) {
         e.preventDefault();
+        var makeList = function(entry) { return entry.split(';'); };
         var methodSelection = this.model.get('methodSelection'),
-            outcome = this.model.get('outcome'),
-            exposure = this.model.get('exposure'),
-            metaboliteIds = this.model.get('metaboliteIds'),
-            outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
+            outcome = _.flatten(this.model.get('outcome').map(makeList)),
+            exposure = _.flatten(this.model.get('exposure').map(makeList)),
+            covariates = _.flatten(this.model.get('covariates').map(makeList)),
+            metaboliteIds = this.model.get('metaboliteIds');
+        var outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
             exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
         if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in displaying the results.")) {
             return;
@@ -219,7 +223,7 @@ appComets.FormView = Backbone.View.extend({
             'modelDescription': this.model.get('modelDescription'),
             'outcome': JSON.stringify(outcome),
             'exposure': JSON.stringify(exposure),
-            'covariates': JSON.stringify(this.model.get('covariates')),
+            'covariates': JSON.stringify(covariates),
             'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription')
         };
         for (var key in toAppend) {
@@ -303,10 +307,7 @@ appComets.FormView = Backbone.View.extend({
     },
     renderModelOptions: function() {
         var $that = this;
-        var modelOptions = [{
-            text: 'All Metabolites',
-            value: 'All metabolites'
-        }].concat(this.model.get('subjectIds'));
+        var modelOptions = this.model.get('defaultOptions').concat(this.model.get('subjectIds'));
         if (this.model.get('showMetabolites')) {
             modelOptions = modelOptions.concat(this.model.get('metaboliteIds'));
         }
@@ -402,37 +403,9 @@ appComets.SummaryView = Backbone.View.extend({
         'change select': 'entryCount',
         'keyup input[type="text"]': 'columnSearch',
         'click #pagingRow a': 'pageTab',
-        'click #summaryDownload': 'startDownload'
-    },
-    startDownload: function (e) {
-        e.preventDefault();
-        var $that = this;
-        if (this.model.get('csv')) appComets.events.preauthenticate(e, function () {
-            window.location = $that.model.get('csv');
-        });
-    },
-    entryCount: function(e) {
-        var entryCount = $(e.target).val();
-        this.model.set({
-            'entryCount': entryCount,
-            'page': 1,
-            'pageCount': Math.ceil(this.model.get('filterdata').length/entryCount)
-        });
-    },
-    pageTab: function(e) {
-        e.preventDefault();
-        var e = $(e.target);
-        if (e.parent().hasClass('disabled')) return;
-        var val = e.html(),
-            page = this.model.get('page');
-        if (val == 'Next') {
-            page = Math.min(page+1,this.model.get('pageCount'))||1;
-        } else if (val == 'Previous') {
-            page = Math.max(1,page-1);
-        } else {
-            page = parseInt(val);
-        }
-        this.model.set('page',page);
+        'click #summaryDownload': 'startDownload',
+        'click #customList': 'customList',
+        'change input[type="checkbox"]': 'selectRow'
     },
     columnSearch: function(e) {
         var e = $(e.target);
@@ -516,6 +489,70 @@ appComets.SummaryView = Backbone.View.extend({
             'pageCount': Math.ceil(filterdata.length/this.model.get('entryCount'))
         });
     },
+    customList: function(e) {
+        e.preventDefault(e);
+        var added = [];
+        var metaboliteList = this.model.get('excorrdata').filter(function(entry) {
+            if (entry.selected && added.indexOf(entry.metabolite_name) < 0) {
+                added.push(entry.metabolite_name);
+                return true;
+            } else {
+                return false;
+            }
+        }).map(function(entry) {
+            return entry.metabolite_name
+        });
+        var listName = window.prompt("What name would you like to give the following list of metabolites?\n\n"+metaboliteList.join(", "))||""
+        if (listName === "") return;
+        var model = appComets.models.harmonizationForm,
+            options = model.get('defaultOptions');
+        options.push({'text':listName,'value':metaboliteList.join(";")});
+        model.trigger('change:defaultOptions',model);
+    },
+    entryCount: function(e) {
+        var entryCount = $(e.target).val();
+        this.model.set({
+            'entryCount': entryCount,
+            'page': 1,
+            'pageCount': Math.ceil(this.model.get('filterdata').length/entryCount)
+        });
+    },
+    pageTab: function(e) {
+        e.preventDefault();
+        var e = $(e.target);
+        if (e.parent().hasClass('disabled')) return;
+        var val = e.html(),
+            page = this.model.get('page');
+        if (val == 'Next') {
+            page = Math.min(page+1,this.model.get('pageCount'))||1;
+        } else if (val == 'Previous') {
+            page = Math.max(1,page-1);
+        } else {
+            page = parseInt(val);
+        }
+        this.model.set('page',page);
+    },
+    selectRow: function(e) {
+        var e = $(e.target),
+            name = e.prop('name'),
+            checked = e.prop('checked')||false,
+            data = this.model.get('filterdata');
+        if (name === "all") {
+            for (var index in data) {
+                data[index].selected = checked;
+            }
+        } else {
+            data[name].selected = checked;
+        }
+        this.model.trigger('change:filterdata',this.model);
+    },
+    startDownload: function (e) {
+        e.preventDefault();
+        var $that = this;
+        if (this.model.get('csv')) appComets.events.preauthenticate(e, function () {
+            window.location = $that.model.get('csv');
+        });
+    },
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
@@ -534,7 +571,7 @@ appComets.SummaryView = Backbone.View.extend({
         this.$el.find('#correlationSummary tbody').empty();
         var tr = '';
         for (var index = (page-1)*entryCount; index < Math.min(page*entryCount,map.length); index++) {
-            tr += '<tr>';
+            tr += '<tr><th class="text-center"><input type="checkbox" name="'+index+'"'+(map[index].selected?' checked="true"':'')+'/></th>';
             for (var orderIndex in tableOrder) {
                 tr += '<td>'+map[index][tableOrder[orderIndex]]+'</td>';
             }

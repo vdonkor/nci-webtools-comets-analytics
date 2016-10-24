@@ -122,7 +122,8 @@ td {
     padding: 0px 2px;
 }
 
-td input, th input {
+td input:not([type="checkbox"]),
+th input:not([type="checkbox"]) {
     min-width: 100px;
     max-width: 150px;
 }
@@ -259,10 +260,10 @@ fieldset.well {
 #correlationSummary .form-inline > div:last-child {
     float: right;
 }
-#summaryDownload {
+#correlationButtons {
     padding: 0.5em 1em;
 }
-#summaryDownload a {
+#correlationButtons a {
     padding: 0.5em 1em;
     border: 1px solid #999;
     border-radius: 2px;
@@ -271,12 +272,12 @@ fieldset.well {
     white-space: nowrap;
     background-color: #e9e9e9;
 }
-#summaryDownload a:hover,
-#summaryDownload a:visited {
+#correlationButtons a:hover,
+#correlationButtons a:visited {
     text-decoration: none;
     background-color: #e0e0e0;
 }
-#summaryDownload a:active {
+#correlationButtons a:active {
     background-color: #e2e2e2;
 }
 #pagingRow ul {
