@@ -592,7 +592,6 @@ appComets.HeatmapView = Backbone.View.extend({
             'change:clusterResults': this.render,
             'change:clustersort': this.render,
             'change:displayAnnotations': this.render,
-            'change:excorrdata': this.render,
             'change:plotColorscale': this.render,
             'change:plotHeight': this.render,
             'change:plotWidth': this.render,
@@ -685,7 +684,7 @@ appComets.HeatmapView = Backbone.View.extend({
 $(function () {
     var url = document.location.toString();
     if (url.match('#')) {
-        var tab = $('.navbar a[data-toggle="tab"][href="#' + url.split('#')[1] + '"]');
+        var tab = $('.navbar a[data-toggle="tab"][data-target="#' + url.split('#')[1] + '"]');
         if (tab.length > 0) {
             tab.tab('show');
             setTimeout(function() {
@@ -694,11 +693,12 @@ $(function () {
         }
     }
     $('.navbar a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        var old = $(e.target.hash).removeAttr('id');
-        var anchor = $('<a id="'+e.target.hash+'"/>').prependTo($('body'));
-        window.location.hash = e.target.hash;
+        var target = $(e.target).attr('data-target').substring(1);
+        var old = $('#'+target).removeAttr('id');
+        var anchor = $('<a id="'+target+'"/>').prependTo($('body'));
+        window.location.hash = target;
         anchor.remove();
-        old.attr('id',e.target.hash);
+        old.attr('id',target);
     });
     $('body').on('click','.goto',function(e) {
         var e = e.target;
@@ -708,7 +708,7 @@ $(function () {
     });
     $('body').on('click','.clicktab',function(e) {
         var e = e.target;
-        $('nav a[href="'+$(e).attr('href')+'"]').trigger('click');
+        $('nav a[data-target="'+$(e).attr('href')+'"]').trigger('click');
         return false;
     });
     $('#logoutBtn').on('click', function (e) {
@@ -732,6 +732,7 @@ $(function () {
             $('a[href="#tab-summary"]').tab('show');
 
         });
+
         appComets.models.header = new appComets.HeaderModel();
         appComets.models.integrityResults = new appComets.IntegrityResultsModel();
         appComets.models.correlationResults = new appComets.CorrelationResultsModel();
