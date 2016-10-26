@@ -491,23 +491,12 @@ appComets.SummaryView = Backbone.View.extend({
     },
     customList: function(e) {
         e.preventDefault(e);
-        var added = [];
-        var metaboliteList = this.model.get('excorrdata').filter(function(entry) {
-            if (entry.selected && added.indexOf(entry.metabolite_name) < 0) {
-                added.push(entry.metabolite_name);
-                return true;
-            } else {
-                return false;
-            }
-        }).map(function(entry) {
-            return entry.metabolite_name
+        new appComets.CustomListView({
+            model: new appComets.CustomListModel({
+                'correlationModel': this.model,
+                'formModel': appComets.models.harmonizationForm
+            })
         });
-        var listName = window.prompt("What name would you like to give the following list of metabolites?\n\n"+metaboliteList.join(", "))||""
-        if (listName === "") return;
-        var model = appComets.models.harmonizationForm,
-            options = model.get('defaultOptions');
-        options.push({'text':listName,'value':metaboliteList.join(";")});
-        model.trigger('change:defaultOptions',model);
     },
     entryCount: function(e) {
         var entryCount = $(e.target).val();
@@ -570,6 +559,11 @@ appComets.SummaryView = Backbone.View.extend({
             entryCount = this.model.get('entryCount');
         this.$el.find('#correlationSummary tbody').empty();
         var tr = '';
+        if (map.map(function(row) { return row.selected; }).reduce(function(prev,curr) { return prev||curr; })) {
+            this.$el.find('#customList').removeAttr('disabled');
+        } else {
+            this.$el.find('#customList').attr('disabled',true);
+        }
         for (var index = (page-1)*entryCount; index < Math.min(page*entryCount,map.length); index++) {
             tr += '<tr><th class="text-center"><input type="checkbox" name="'+index+'"'+(map[index].selected?' checked="true"':'')+'/></th>';
             for (var orderIndex in tableOrder) {
@@ -582,6 +576,78 @@ appComets.SummaryView = Backbone.View.extend({
     }
 });
 
+appComets.CustomListView = Backbone.View.extend({
+    initialize: function() {
+        var metaboliteList = [],
+            length = this.model.get('formModel').get('defaultOptions').length;
+        this.model.get('correlationModel').get('excorrdata').filter(function(entry) {
+            if (entry.selected && metaboliteList.indexOf(entry.metabolite_name) < 0) {
+                metaboliteList.push(entry.metabolite_name);
+            }
+        });
+        this.model.set({
+            'listName': "custom"+length,
+            'metaboliteList': metaboliteList
+        });
+        this.render();
+        this.model.on({
+            'change:listName': this.checkName
+        }, this);
+    },
+    events: {
+        'hidden.bs.modal': 'remove',
+        'keyup input[type="text"]': 'updateModel',
+        'click .modal-footer button:first-child': 'createList',
+        'click .modal-footer button:last-child': 'close'
+    },
+    close: function(e) {
+        e.preventDefault();
+        this.$modal.close();
+    },
+    createList: function(e) {
+        e.preventDefault();
+        var listName = this.model.get('listName'),
+            metaboliteList = this.model.get('metaboliteList'),
+            model = this.model.get('formModel'),
+            options = model.get('defaultOptions');
+        options.push({'text':listName,'value':metaboliteList.join(";")});
+        model.trigger('change:defaultOptions',model);
+        this.close.call(this,e);
+    },
+    updateModel: function(e) {
+        if (e.keyCode == 13) {
+            this.createList.call(this,e);
+        } else {
+            appComets.events.updateModel.call(this,e);
+        }
+    },
+    checkName: function() {
+        var listName = this.model.get('listName'),
+            defaultOptions = this.model.get('formModel').get('defaultOptions');
+        if (listName === "" || defaultOptions.map(function(entry) { return listName === entry.text; }).reduce(function(prev,curr) { return prev||curr; })) {
+            this.$el.find('.modal-footer button:first-child').attr('disabled',true);
+        } else {
+            this.$el.find('.modal-footer button:first-child').removeAttr('disabled');
+        }
+    },
+    render: function() {
+        var listName = this.model.get('listName'),
+            metaboliteList = this.model.get('metaboliteList');
+        this.$modal = BootstrapDialog.show({
+            buttons: [{
+                'cssClass': 'btn-primary',
+                'label': "Create List"
+            }, {
+                'cssClass': 'btn-primary',
+                'label': "Cancel"
+            }],
+            closable: false,
+            message: $('<p>The following list of metabolites needs a name:</p><p>'+metaboliteList.join(', ')+'</p><input type="text" name="listName" value="'+listName+'"/>'),
+            title: "Enter list name..."
+        });
+        this.setElement(this.$modal.getModal());
+    }
+});
 
 // view the correlation heatmap
 appComets.HeatmapView = Backbone.View.extend({
@@ -759,4 +825,4 @@ $(function () {
             model: appComets.models.correlationResults
         });
     });
-});;
+});

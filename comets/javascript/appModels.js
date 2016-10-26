@@ -206,3 +206,12 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         return response;
     }
 });
+
+appComets.CustomListModel = Backbone.Model.extend({
+    defaults: {
+        correlationModel: null,
+        formModel: null,
+        'listName': "custom",
+        'metaboliteList': []
+    }
+});

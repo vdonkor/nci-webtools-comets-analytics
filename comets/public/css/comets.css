@@ -321,3 +321,6 @@ fieldset.well {
     color: #777;
     cursor: not-allowed;
 }
+.modal-dialog input {
+    width: 100%;
+}
