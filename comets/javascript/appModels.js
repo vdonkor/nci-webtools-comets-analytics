@@ -183,13 +183,16 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         return response;
     },
     parse: function (response, xhr) {
+        var lookup = {};
         var excorrdata = response.excorrdata.map(function (biochemical) {
+            lookup[biochemical.outcome] = biochemical.outcome_label;
+            lookup[biochemical.exposure] = biochemical.exposure_label;
             return $.extend(biochemical, {
                 model: response.model
             });
         });
         var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
-        var index = response.tableOrder.indexOf('metabolite_name');
+        var index = response.tableOrder.indexOf('outcome');
         if (index !== 1) {
             response.tableOrder.splice(1,0,response.tableOrder.splice(index, 1));
         }
@@ -200,6 +203,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             excorrdata: excorrdata,
             exposures: exposures,
             filterdata: excorrdata,
+            lookup: lookup,
             pageCount: Math.ceil(excorrdata.length/this.get('entryCount')),
             sortRow: exposures[0],
             sortHeader: response.tableOrder[0],

@@ -50,17 +50,9 @@ runModel <- function(jsonData) {
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
                     excorrdata <- excorrdata[!duplicated(excorrdata),]
                     csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
-                    lookup = as.data.frame(exmetabdata$metab[c('metabid','biochemical')])
-                    lapply(exmetabdata$allSubjectMetaData,function(toAdd) { lookup[nrow(lookup)+1,] <<- c(toAdd,toAdd) })
-                    lookup <- lookup[!duplicated(lookup),]
-                    rownames(lookup) <- lookup[,1]
-                    lookup <- as.list(t(lookup)['biochemical',])
-                    #excorrdata$metabolite_name <- replaceList(lookup,excorrdata$metabolite_name)
-                    #excorrdata$exposure <- replaceList(lookup,excorrdata$exposure)
-                    #excorrdata$adjvars = unname(sapply(excorrdata$adjvars,function(a) { paste(replaceList(lookup,strsplit(a,' ')),collapse=' ') }))
                     clustersort = NULL
                     if (length(exmodeldata$ccovs) > 1 && length(exmodeldata$rcovs) > 1) {
-                      heatmapdata <- tidyr::spread(dplyr::select(excorrdata,metabolite_name,exposure,corr),exposure,corr)
+                      heatmapdata <- tidyr::spread(dplyr::select(excorrdata,outcome,exposure,corr),exposure,corr)
                       rownames(heatmapdata) <- heatmapdata[,1]
                       heatmapdata <- heatmapdata[,2:ncol(heatmapdata)]
                       heatmapdata <- as.matrix(heatmapdata)
@@ -80,7 +72,6 @@ runModel <- function(jsonData) {
                       csv = csv,
                       excorrdata = excorrdata,
                       exposures = exmodeldata$ccovs, #replaceList(lookup,exmodeldata$ccovs),
-                      lookup = lookup,
                       model = input$modelName,
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",

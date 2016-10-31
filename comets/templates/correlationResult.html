@@ -25,21 +25,19 @@
         <table class="table-striped table-hover">
             <thead>
                 <tr>
-<%     _.each(tableOrder,function(element,key,list) {
-           var display = element == "metabolite_name" ? "outcome" : element; %>
+<%     _.each(tableOrder,function(element,key,list) { %>
                     <th>
 <%         if (element == "pvalue" || element == "corr") { %>
-                        <input name="<%= element %>" type="text" placeholder="Min" aria-label="Minimum <%= display %>" class="min" /> - <input name="<%= element %>" class="max" type="text" placeholder="Max" aria-label="Maximum <%= display %>" />
+                        <input name="<%= element %>" type="text" placeholder="Min" aria-label="Minimum <%= element %>" class="min" /> - <input name="<%= element %>" class="max" type="text" placeholder="Max" aria-label="Maximum <%= element %>" />
 <%         } else { %>
-                        <input name="<%= element %>" type="text" placeholder="Search <%= display %>" aria-label="Search <%= display %>" />
+                        <input name="<%= element %>" type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
 <%         } %>
                     </th>
 <%     }); %>
                 </tr>
                 <tr>
-<%     _.each(tableOrder,function(element,key,list) {
-           var display = element == "metabolite_name" ? "outcome" : element; %>
-                    <th tabindex="0" data-comets-header="<%= element %>"<%=(sortHeader==element)?"class='"+(sortAsc?"asc":"dsc")+"'":""%>><%= display %></th>
+<%     _.each(tableOrder,function(element,key,list) { %>
+                    <th tabindex="0" data-comets-header="<%= element %>"<%=(sortHeader==element)?"class='"+(sortAsc?"asc":"dsc")+"'":""%>><%= element %></th>
 <%     }); %>
                 </tr>
             </thead>

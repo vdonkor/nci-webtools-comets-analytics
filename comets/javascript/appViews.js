@@ -36,10 +36,10 @@ var appComets = {
     models: {},
     sorts: {
         "Metabolite Name (A-Z)": function (obj1, obj2) {
-            return ((obj1.metabolite_name > obj2.metabolite_name) ? 1 : (obj1.metabolite_name < obj2.metabolite_name) ? -1 : 0);
+            return ((obj1.outcome > obj2.outcome) ? 1 : (obj1.outcome < obj2.outcome) ? -1 : 0);
         },
         "Metabolite Name (Z-A)": function (obj1, obj2) {
-            return ((obj1.metabolite_name < obj2.metabolite_name) ? 1 : (obj1.metabolite_name > obj2.metabolite_name) ? -1 : 0);
+            return ((obj1.outcome < obj2.outcome) ? 1 : (obj1.outcome > obj2.outcome) ? -1 : 0);
         },
         "property": function (property,sortAsc) {
             return function (obj1, obj2) {
@@ -617,10 +617,10 @@ appComets.HeatmapView = Backbone.View.extend({
                     lookup = this.model.get('lookup');
                 var correlationData = {};
                 _.each(this.model.get('excorrdata'), function (metabolite, key, list) {
-                    correlationData[metabolite.metabolite_name] = correlationData[metabolite.metabolite_name] || {
-                        'metabolite_name': metabolite.metabolite_name
+                    correlationData[metabolite.outcome] = correlationData[metabolite.outcome] || {
+                        'outcome': metabolite.outcome
                     };
-                    correlationData[metabolite.metabolite_name][metabolite.exposure] = metabolite.corr;
+                    correlationData[metabolite.outcome][metabolite.exposure] = metabolite.corr;
                 });
                 var clusterResults = this.model.get('clusterResults');
                 var metaboliteNames = [];
@@ -651,7 +651,7 @@ appComets.HeatmapView = Backbone.View.extend({
                         });
                     });
                     metaboliteNames = heatmapData.map(function (biochem) {
-                        return lookup[biochem.metabolite_name];
+                        return lookup[biochem.outcome];
                     });
                 }
                 exposures = exposures.map(function(metabid) {
