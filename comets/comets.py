@@ -1,6 +1,6 @@
 import json, sys, os, time, linecache
 #import requests
-from flask import Flask, request, json, jsonify, send_from_directory
+from flask import Flask, json, jsonify, request, Response, send_from_directory
 from rpy2.robjects import r as wrapper
 
 app = Flask(__name__)
@@ -12,9 +12,15 @@ def buildFailure(message,statusCode = 500):
   return response
 
 def buildSuccess(message):
-  response = jsonify(message)
-  response.status_code = 200
-  return response
+  def generate():
+    forOutput = ""
+    for chunk in json.JSONEncoder().iterencode(message):
+        forOutput += chunk
+        if (len(forOutput) > 10000):
+            yield forOutput
+            forOutput = ""
+    yield forOutput
+  return Response(generate(),status=200)
 
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])
@@ -32,7 +38,9 @@ def integrityCheck():
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
+            print('x')
             result['saveValue']['filename'] = os.path.splitext(filename)[0]
+            print('y')
             response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
