@@ -45,7 +45,6 @@ var appComets = {
             return function (obj1, obj2) {
                 var obj1 = obj1[property],
                     obj2 = obj2[property];
-                console.log(obj1, obj2, obj2 > obj1);
                 if (isNaN(parseFloat(obj1)) || isNaN(parseFloat(obj2))) {
                     obj1 = obj1||"";
                     obj2 = obj2||"";

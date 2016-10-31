@@ -48,6 +48,7 @@ runModel <- function(jsonData) {
                     exmetabdata <- readCOMETSinput(input$filename)
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
+                    excorrdata <- excorrdata[!duplicated(excorrdata),]
                     csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
                     lookup = as.data.frame(exmetabdata$metab[c('metabid','biochemical')])
                     lapply(exmetabdata$allSubjectMetaData,function(toAdd) { lookup[nrow(lookup)+1,] <<- c(toAdd,toAdd) })
@@ -73,7 +74,7 @@ runModel <- function(jsonData) {
                         rowTree=makeBranches(rowDendrogram)
                       )
                     }
-                    excorrdata[,'pvalue'] <- sapply(excorrdata[,'pvalue'],function(value) { format(value, scientific=TRUE,digits=I(3))})
+                    excorrdata[,'pvalue'] <- with(excorrdata,format(pvalue, scientific=TRUE,digits=I(3)))
                     list(
                       clustersort = clustersort,
                       csv = csv,
