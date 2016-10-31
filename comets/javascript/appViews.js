@@ -467,7 +467,7 @@ appComets.SummaryView = Backbone.View.extend({
         }
         this.model.set(name+minmax,value);
         if (!subset) {
-            filterdata = this.model.get('excorrdata');
+            filterdata = this.model.get('excorrdata').sort(appComets.sorts.property(this.model.get('sortHeader'),this.model.get('sortAsc')));
             var tableOrder = this.model.get('tableOrder');
             for (var index in tableOrder) {
                 var val = this.model.get(tableOrder[index]),

@@ -190,8 +190,8 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         });
         var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
         var index = response.tableOrder.indexOf('metabolite_name');
-        if (index > 0) {
-            response.tableOrder.unshift(response.tableOrder.splice(index, 1));
+        if (index !== 1) {
+            response.tableOrder.splice(1,0,response.tableOrder.splice(index, 1));
         }
         $.extend(response, {
             clusterResults: false,
