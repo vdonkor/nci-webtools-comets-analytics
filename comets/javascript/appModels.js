@@ -199,6 +199,10 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             pageCount: Math.ceil(excorrdata.length/this.get('entryCount')),
             sortRow: exposures[0]
         });
+        if (excorrdata.length < 1) {
+            response.status = false;
+            response.statusMessage = "The results contain no correlation data.";
+        }
         delete response.model;
         console.log(response);
         return response;
