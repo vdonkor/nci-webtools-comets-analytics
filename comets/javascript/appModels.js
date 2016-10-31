@@ -189,6 +189,10 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             });
         });
         var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
+        var index = response.tableOrder.indexOf('metabolite_name');
+        if (index > 0) {
+            response.tableOrder.unshift(response.tableOrder.splice(index, 1));
+        }
         $.extend(response, {
             clusterResults: false,
             correlationRun: true,
@@ -197,8 +201,11 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             exposures: exposures,
             filterdata: excorrdata,
             pageCount: Math.ceil(excorrdata.length/this.get('entryCount')),
-            sortRow: exposures[0]
+            sortRow: exposures[0],
+            sortHeader: response.tableOrder[0],
+            sortAsc: true
         });
+        response.filterdata = response.filterdata.sort(appComets.sorts.property(response.sortHeader,response.sortAsc));
         if (excorrdata.length < 1) {
             response.status = false;
             response.statusMessage = "The results contain no correlation data.";

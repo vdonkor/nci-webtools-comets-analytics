@@ -41,6 +41,22 @@ var appComets = {
         "Metabolite Name (Z-A)": function (obj1, obj2) {
             return ((obj1.metabolite_name < obj2.metabolite_name) ? 1 : (obj1.metabolite_name > obj2.metabolite_name) ? -1 : 0);
         },
+        "property": function (property,sortAsc) {
+            return function (obj1, obj2) {
+                var obj1 = obj1[property],
+                    obj2 = obj2[property];
+                console.log(obj1, obj2, obj2 > obj1);
+                if (isNaN(parseFloat(obj1)) || isNaN(parseFloat(obj2))) {
+                    obj1 = obj1||"";
+                    obj2 = obj2||"";
+                    return obj2 > obj1 ? (sortAsc?-1:1) : obj2 < obj1 ? (sortAsc?1:-1) : 0;
+                } else {
+                    obj1 = parseFloat(obj1);
+                    obj2 = parseFloat(obj2);
+                    return sortAsc ? obj1 - obj2 : obj2 - obj1;
+                }
+            };
+        },
         "default": function (property) {
             return function (obj1, obj2) {
                 return obj2[property] - obj1[property];
@@ -402,37 +418,9 @@ appComets.SummaryView = Backbone.View.extend({
         'change select': 'entryCount',
         'keyup input[type="text"]': 'columnSearch',
         'click #pagingRow a': 'pageTab',
-        'click #summaryDownload': 'startDownload'
-    },
-    startDownload: function (e) {
-        e.preventDefault();
-        var $that = this;
-        if (this.model.get('csv')) appComets.events.preauthenticate(e, function () {
-            window.location = $that.model.get('csv');
-        });
-    },
-    entryCount: function(e) {
-        var entryCount = $(e.target).val();
-        this.model.set({
-            'entryCount': entryCount,
-            'page': 1,
-            'pageCount': Math.ceil(this.model.get('filterdata').length/entryCount)
-        });
-    },
-    pageTab: function(e) {
-        e.preventDefault();
-        var e = $(e.target);
-        if (e.parent().hasClass('disabled')) return;
-        var val = e.html(),
-            page = this.model.get('page');
-        if (val == 'Next') {
-            page = Math.min(page+1,this.model.get('pageCount'))||1;
-        } else if (val == 'Previous') {
-            page = Math.max(1,page-1);
-        } else {
-            page = parseInt(val);
-        }
-        this.model.set('page',page);
+        'click #summaryDownload': 'startDownload',
+        'click [data-comets-header]': 'sortColumn',
+        'keypress [data-comets-header]': 'passClick'
     },
     columnSearch: function(e) {
         var e = $(e.target);
@@ -514,6 +502,57 @@ appComets.SummaryView = Backbone.View.extend({
             'filterdata': filterdata,
             'page': 1,
             'pageCount': Math.ceil(filterdata.length/this.model.get('entryCount'))
+        });
+    },
+    entryCount: function(e) {
+        var entryCount = $(e.target).val();
+        this.model.set({
+            'entryCount': entryCount,
+            'page': 1,
+            'pageCount': Math.ceil(this.model.get('filterdata').length/entryCount)
+        });
+    },
+    pageTab: function(e) {
+        e.preventDefault();
+        var e = $(e.target);
+        if (e.parent().hasClass('disabled')) return;
+        var val = e.html(),
+            page = this.model.get('page');
+        if (val == 'Next') {
+            page = Math.min(page+1,this.model.get('pageCount'))||1;
+        } else if (val == 'Previous') {
+            page = Math.max(1,page-1);
+        } else {
+            page = parseInt(val);
+        }
+        this.model.set('page',page);
+    },
+    passClick: function(e) {
+        e.preventDefault();
+        if (e.keyCode == 13 || e.keyCode == 32) {
+            $(e.target).trigger('click');
+        }
+        return false;
+    },
+    sortColumn: function(e) {
+        e.preventDefault();
+        var e = $(e.target),
+            sortAsc = !e.hasClass('asc'),
+            sortHeader = e.attr('data-comets-header'),
+            filterdata = this.model.get('filterdata');
+        e.toggleClass('asc',sortAsc).toggleClass('dsc',!sortAsc).siblings().removeClass('asc').removeClass('dsc');
+        filterdata.sort(appComets.sorts.property(sortHeader,sortAsc));
+        this.model.set({
+            'sortAsc': sortAsc,
+            'sortHeader': sortHeader
+        });
+        this.model.trigger('change:filterdata',this.model);
+    },
+    startDownload: function (e) {
+        e.preventDefault();
+        var $that = this;
+        if (this.model.get('csv')) appComets.events.preauthenticate(e, function () {
+            window.location = $that.model.get('csv');
         });
     },
     render: function () {
