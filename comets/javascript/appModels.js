@@ -191,11 +191,11 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
                 model: response.model
             });
         });
-        var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
-        var index = response.tableOrder.indexOf('outcome');
-        if (index !== 1) {
-            response.tableOrder.splice(1,0,response.tableOrder.splice(index, 1));
-        }
+        var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures],
+            exposureIndex = response.tableOrder.indexOf('exposure'),
+            outcomeIndex = response.tableOrder.indexOf('outcome');
+        if (outcomeIndex > 0) response.tableOrder.unshift(response.tableOrder.splice(outcomeIndex, 1));
+        if (exposureIndex > 0) response.tableOrder.unshift(response.tableOrder.splice(exposureIndex, 1));
         $.extend(response, {
             clusterResults: false,
             correlationRun: true,

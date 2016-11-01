@@ -57,7 +57,7 @@
             if (!('branch' in root)) {
                 return {
                     depth: 0,
-                    height: label.indexOf(options.lookup[root.label])
+                    height: label.indexOf(root.label)
                 };
             }
             var children = [];

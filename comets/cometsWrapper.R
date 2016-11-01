@@ -48,22 +48,29 @@ runModel <- function(jsonData) {
                     exmetabdata <- readCOMETSinput(input$filename)
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
-                    excorrdata <- excorrdata[!duplicated(excorrdata),]
                     csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
                     clustersort = NULL
                     if (length(exmodeldata$ccovs) > 1 && length(exmodeldata$rcovs) > 1) {
-                      heatmapdata <- tidyr::spread(dplyr::select(excorrdata,outcome,exposure,corr),exposure,corr)
+                      heatmapdata <- tidyr::spread(dplyr::select(excorrdata,outcomespec,exposurespec,corr),exposurespec,corr)
                       rownames(heatmapdata) <- heatmapdata[,1]
                       heatmapdata <- heatmapdata[,2:ncol(heatmapdata)]
                       heatmapdata <- as.matrix(heatmapdata)
                       rowDendrogram = rev(reorder(as.dendrogram(hclust(dist(heatmapdata))), rowMeans(heatmapdata,na.rm=TRUE)))
                       colDendrogram <- rev(reorder(as.dendrogram(hclust(dist(t(heatmapdata)))), colMeans(heatmapdata,na.rm=TRUE)))
                       heatmapdata <- heatmapdata[order.dendrogram(rowDendrogram),order.dendrogram(colDendrogram)]
+                      exposureLookup <- excorrdata[!duplicated(excorrdata[,'exposurespec']),c('exposure','exposurespec')]
+                      exposureLookup <- exposureLookup[exposureLookup$exposurespec %in% colnames(heatmapdata),]
+                      exposureLookup <- exposureLookup[order(exposureLookup[,'exposurespec']),]
+                      exposureLookup$heatmaporder <- order(colnames(heatmapdata))
+                      outcomeLookup <- excorrdata[!duplicated(excorrdata[,'outcomespec']),c('outcome','outcomespec')]
+                      outcomeLookup <- outcomeLookup[outcomeLookup$outcomespec %in% rownames(heatmapdata),]
+                      outcomeLookup <- outcomeLookup[order(outcomeLookup[,'outcomespec']),]
+                      outcomeLookup$heatmaporder <- order(rownames(heatmapdata))
                       clustersort = list(
-                        col=names(as.data.frame(heatmapdata)),
-                        colTree=makeBranches(colDendrogram),
-                        row=rownames(heatmapdata),
-                        rowTree=makeBranches(rowDendrogram)
+                        col=exposureLookup[order(exposureLookup$heatmaporder),'exposure'],
+                        colTree=makeBranches(colDendrogram,exposureLookup),
+                        row=outcomeLookup[order(outcomeLookup$heatmaporder),'outcome'],
+                        rowTree=makeBranches(rowDendrogram,outcomeLookup)
                       )
                     }
                     excorrdata[,'pvalue'] <- with(excorrdata,format(pvalue, scientific=TRUE,digits=I(3)))
@@ -71,11 +78,11 @@ runModel <- function(jsonData) {
                       clustersort = clustersort,
                       csv = csv,
                       excorrdata = excorrdata,
-                      exposures = exmodeldata$ccovs, #replaceList(lookup,exmodeldata$ccovs),
+                      exposures = excorrdata[!duplicated(excorrdata[,'exposure']),'exposure'],
                       model = input$modelName,
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
-                      tableOrder = names(excorrdata)
+                      tableOrder = exmetabdata$dispvars
                     )
                 },
                 message=function(m) {
@@ -97,12 +104,12 @@ runModel <- function(jsonData) {
     toJSON(returnValue, auto_unbox = T, digits = I(3))
 }
 
-makeBranches <- function(dendrogram) {
+makeBranches <- function(dendrogram,lookup) {
   root <- list(
-    label = attributes(dendrogram)["label"]$label
+    label = lookup[lookup[,2] == attributes(dendrogram)["label"]$label,1]
   )
   if (!is.leaf(dendrogram)) {
-    root$branch <- lapply(dendrogram, makeBranches)
+    root$branch <- lapply(dendrogram, makeBranches,lookup)
   }
   root
 }
