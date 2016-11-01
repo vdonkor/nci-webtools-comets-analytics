@@ -38,9 +38,7 @@ def integrityCheck():
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
-            print('x')
             result['saveValue']['filename'] = os.path.splitext(filename)[0]
-            print('y')
             response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
