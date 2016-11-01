@@ -184,13 +184,20 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         return response;
     },
     parse: function (response, xhr) {
+        var lookup = {};
         var excorrdata = response.excorrdata.map(function (biochemical) {
+            lookup[biochemical.outcome] = biochemical.outcome_label;
+            lookup[biochemical.exposure] = biochemical.exposure_label;
             return $.extend(biochemical, {
                 model: response.model,
                 selected: false
             });
         });
-        var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
+        var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures],
+            exposureIndex = response.tableOrder.indexOf('exposure'),
+            outcomeIndex = response.tableOrder.indexOf('outcome');
+        if (outcomeIndex > 0) response.tableOrder.unshift(response.tableOrder.splice(outcomeIndex, 1));
+        if (exposureIndex > 0) response.tableOrder.unshift(response.tableOrder.splice(exposureIndex, 1));
         $.extend(response, {
             clusterResults: false,
             correlationRun: true,
@@ -198,9 +205,17 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             excorrdata: excorrdata,
             exposures: exposures,
             filterdata: excorrdata,
+            lookup: lookup,
             pageCount: Math.ceil(excorrdata.length/this.get('entryCount')),
-            sortRow: exposures[0]
+            sortRow: exposures[0],
+            sortHeader: response.tableOrder[0],
+            sortAsc: true
         });
+        response.filterdata = response.filterdata.sort(appComets.sorts.property(response.sortHeader,response.sortAsc));
+        if (excorrdata.length < 1) {
+            response.status = false;
+            response.statusMessage = "The results contain no correlation data.";
+        }
         delete response.model;
         console.log(response);
         return response;

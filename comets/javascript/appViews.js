@@ -36,10 +36,25 @@ var appComets = {
     models: {},
     sorts: {
         "Metabolite Name (A-Z)": function (obj1, obj2) {
-            return ((obj1.metabolite_name > obj2.metabolite_name) ? 1 : (obj1.metabolite_name < obj2.metabolite_name) ? -1 : 0);
+            return ((obj1.outcome > obj2.outcome) ? 1 : (obj1.outcome < obj2.outcome) ? -1 : 0);
         },
         "Metabolite Name (Z-A)": function (obj1, obj2) {
-            return ((obj1.metabolite_name < obj2.metabolite_name) ? 1 : (obj1.metabolite_name > obj2.metabolite_name) ? -1 : 0);
+            return ((obj1.outcome < obj2.outcome) ? 1 : (obj1.outcome > obj2.outcome) ? -1 : 0);
+        },
+        "property": function (property,sortAsc) {
+            return function (obj1, obj2) {
+                var obj1 = obj1[property],
+                    obj2 = obj2[property];
+                if (isNaN(parseFloat(obj1)) || isNaN(parseFloat(obj2))) {
+                    obj1 = obj1||"";
+                    obj2 = obj2||"";
+                    return obj2 > obj1 ? (sortAsc?-1:1) : obj2 < obj1 ? (sortAsc?1:-1) : 0;
+                } else {
+                    obj1 = parseFloat(obj1);
+                    obj2 = parseFloat(obj2);
+                    return sortAsc ? obj1 - obj2 : obj2 - obj1;
+                }
+            };
         },
         "default": function (property) {
             return function (obj1, obj2) {
@@ -405,7 +420,9 @@ appComets.SummaryView = Backbone.View.extend({
         'click #pagingRow a': 'pageTab',
         'click #summaryDownload': 'startDownload',
         'click #customList': 'customList',
-        'change input[type="checkbox"]': 'selectRow'
+        'change input[type="checkbox"]': 'selectRow',
+        'click [data-comets-header]': 'sortColumn',
+        'keypress [data-comets-header]': 'passClick'
     },
     columnSearch: function(e) {
         var e = $(e.target);
@@ -452,7 +469,7 @@ appComets.SummaryView = Backbone.View.extend({
         }
         this.model.set(name+minmax,value);
         if (!subset) {
-            filterdata = this.model.get('excorrdata');
+            filterdata = this.model.get('excorrdata').sort(appComets.sorts.property(this.model.get('sortHeader'),this.model.get('sortAsc')));
             var tableOrder = this.model.get('tableOrder');
             for (var index in tableOrder) {
                 var val = this.model.get(tableOrder[index]),
@@ -521,6 +538,13 @@ appComets.SummaryView = Backbone.View.extend({
         }
         this.model.set('page',page);
     },
+    passClick: function(e) {
+        e.preventDefault();
+        if (e.keyCode == 13 || e.keyCode == 32) {
+            $(e.target).trigger('click');
+        }
+        return false;
+    },
     selectRow: function(e) {
         var e = $(e.target),
             name = e.prop('name'),
@@ -533,6 +557,20 @@ appComets.SummaryView = Backbone.View.extend({
         } else {
             data[name].selected = checked;
         }
+        this.model.trigger('change:filterdata',this.model);
+    },
+    sortColumn: function(e) {
+        e.preventDefault();
+        var e = $(e.target),
+            sortAsc = !e.hasClass('asc'),
+            sortHeader = e.attr('data-comets-header'),
+            filterdata = this.model.get('filterdata');
+        e.toggleClass('asc',sortAsc).toggleClass('dsc',!sortAsc).siblings().removeClass('asc').removeClass('dsc');
+        filterdata.sort(appComets.sorts.property(sortHeader,sortAsc));
+        this.model.set({
+            'sortAsc': sortAsc,
+            'sortHeader': sortHeader
+        });
         this.model.trigger('change:filterdata',this.model);
     },
     startDownload: function (e) {
@@ -581,8 +619,8 @@ appComets.CustomListView = Backbone.View.extend({
         var metaboliteList = [],
             length = this.model.get('formModel').get('defaultOptions').length;
         this.model.get('correlationModel').get('excorrdata').filter(function(entry) {
-            if (entry.selected && metaboliteList.indexOf(entry.metabolite_name) < 0) {
-                metaboliteList.push(entry.metabolite_name);
+            if (entry.selected && metaboliteList.indexOf(entry.outcome) < 0) {
+                metaboliteList.push(entry.outcome);
             }
         });
         this.model.set({
@@ -678,14 +716,13 @@ appComets.HeatmapView = Backbone.View.extend({
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status')) {
                 var sortRow = this.model.get('sortRow'),
-                    exposures = this.model.get('exposures'),
-                    lookup = this.model.get('lookup');
+                    exposures = this.model.get('exposures');
                 var correlationData = {};
                 _.each(this.model.get('excorrdata'), function (metabolite, key, list) {
-                    correlationData[metabolite.metabolite_name] = correlationData[metabolite.metabolite_name] || {
-                        'metabolite_name': metabolite.metabolite_name
+                    correlationData[metabolite.outcome] = correlationData[metabolite.outcome] || {
+                        'outcome': metabolite.outcome
                     };
-                    correlationData[metabolite.metabolite_name][metabolite.exposure] = metabolite.corr;
+                    correlationData[metabolite.outcome][metabolite.exposure] = metabolite.corr;
                 });
                 var clusterResults = this.model.get('clusterResults');
                 var metaboliteNames = [];
@@ -701,9 +738,6 @@ appComets.HeatmapView = Backbone.View.extend({
                             row[row.length] = correlationData[metaboliteNames[metaboliteIndex]][exposures[exposureIndex]];
                         }
                     }
-                    metaboliteNames = metaboliteNames.map(function (metabid) {
-                        return lookup[metabid];
-                    });
                 } else {
                     var heatmapData = [];
                     for (var prop in correlationData) {
@@ -716,12 +750,9 @@ appComets.HeatmapView = Backbone.View.extend({
                         });
                     });
                     metaboliteNames = heatmapData.map(function (biochem) {
-                        return lookup[biochem.metabolite_name];
+                        return biochem.outcome;
                     });
                 }
-                exposures = exposures.map(function(metabid) {
-                    return lookup[metabid];
-                });
                 var plotHeight = this.model.get('plotHeight'),
                     plotWidth = this.model.get('plotWidth');
                 plotHeight = Math.min(Math.max(plotHeight, 200), 9000);
@@ -737,7 +768,6 @@ appComets.HeatmapView = Backbone.View.extend({
                     clustered: clusterResults ? clustersort : null,
                     colorscale: this.model.get('plotColorscale'),
                     height: plotHeight,
-                    lookup: lookup,
                     width: plotWidth
                 }, exposures, metaboliteNames, "Correlation", values);
             }

@@ -57,7 +57,7 @@
             if (!('branch' in root)) {
                 return {
                     depth: 0,
-                    height: label.indexOf(options.lookup[root.label])
+                    height: label.indexOf(root.label)
                 };
             }
             var children = [];
@@ -77,7 +77,6 @@
                 height: (bottom+top)/2,
                 top: top
             };
-            console.log(node);
             if (children.length > 0) node.children = children;
             return node;
         };

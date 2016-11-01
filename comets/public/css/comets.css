@@ -119,13 +119,13 @@ table.summaryTables thead tr:first-child th {
 
 th,
 td {
-    padding: 0px 2px;
+    padding: 8px 18px;
 }
 
 td input:not([type="checkbox"]),
 th input:not([type="checkbox"]) {
-    min-width: 100px;
-    max-width: 150px;
+    min-width: 20px;
+    width: 100%;
 }
 
 hr {
@@ -247,8 +247,24 @@ fieldset.well {
 }
 #correlationSummary thead th,
 #correlationSummary thead td {
-    padding: 10px 18px;
     border-bottom: 1px solid #111;
+    padding: 10px 18px;
+}
+#correlationSummary thead tr:last-child th:not(.borderless),
+#correlationSummary thead tr:last-child td:not(.borderless) {
+    background-image: url('../images/sort.svg');
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-size: auto 70%;
+    cursor: pointer;
+}
+#correlationSummary thead tr:last-child th.asc,
+#correlationSummary thead tr:last-child td.asc {
+    background-image: url('../images/sort_asc.svg');
+}
+#correlationSummary thead tr:last-child th.dsc,
+#correlationSummary thead tr:last-child td.dsc {
+    background-image: url('../images/sort_dsc.svg');
 }
 #correlationSummary .form-inline {
     padding: 20px 0px;
@@ -323,4 +339,7 @@ fieldset.well {
 }
 .modal-dialog input {
     width: 100%;
+}
+input.min, input.max {
+    max-width: 45%;
 }
