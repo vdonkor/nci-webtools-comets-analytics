@@ -18,13 +18,15 @@
                     <span> entries</span>
                 </label>
             </div>
-            <div id="summaryDownload">
-                <a href="#">Download Results in CSV</a>
+            <div id="correlationButtons">
+                <button class="btn btn-default" id="summaryDownload">Download Results in CSV</button>
+                <button class="btn btn-default" id="customList">Create Custom Metabolite List</button>
             </div>
         </div>
         <table class="table-striped table-hover">
             <thead>
                 <tr>
+                    <th class="borderless"></th>
 <%     _.each(tableOrder,function(element,key,list) { %>
                     <th>
 <%         if (element == "pvalue" || element == "corr") { %>
@@ -36,6 +38,7 @@
 <%     }); %>
                 </tr>
                 <tr>
+                    <th class="borderless text-center"><input type="checkbox" name="all"/></th>
 <%     _.each(tableOrder,function(element,key,list) { %>
                     <th tabindex="0" data-comets-header="<%= element %>"<%=(sortHeader==element)?"class='"+(sortAsc?"asc":"dsc")+"'":""%>><%= element %></th>
 <%     }); %>

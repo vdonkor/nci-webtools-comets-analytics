@@ -1,5 +1,4 @@
-import json, sys, os, time, linecache
-#import requests
+import json, linecache, os, requests, sys, time
 from flask import Flask, json, jsonify, request, Response, send_from_directory
 from rpy2.robjects import r as wrapper
 
@@ -119,7 +118,7 @@ def cohorts():
     response = buildSuccess(cohorts)
     return response
 
-#@app.route('/cometsRest/registration/user_metadata', methods=['POST'])
+@app.route('/cometsRest/registration/user_metadata', methods=['POST'])
 def user_metadata():
     try:
         parameters = json.loads(request.data)
@@ -154,7 +153,7 @@ def user_metadata():
     finally:
         return response
 
-#@app.route('/cometsRest/admin/users', methods=['GET'])
+@app.route('/cometsRest/admin/users', methods=['GET'])
 def user_list_get():
     try:
         url = "https://ncicbiit.auth0.com/api/v2/users?q=comets%3A%5B*%20TO%20*%5D&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cuser_id%2Cuser_metadata&include_fields=true&per_page=100&page="
@@ -182,7 +181,7 @@ def user_list_get():
     finally:
         return response
 
-#@app.route('/cometsRest/admin/users', methods=['PATCH'])
+@app.route('/cometsRest/admin/users', methods=['PATCH'])
 def user_list_update():
     try:
         user_list = json.loads(request.data)
@@ -222,7 +221,7 @@ if __name__ == '__main__':
     # Default port is 9200
     parser.add_argument('-p', '--port', type = int, dest = 'port', default = 9200, help = 'Sets the Port')
     parser.add_argument('-d', '--debug', action = 'store_true', help = 'Enables debugging')
-    #parser.add_argument('token', type=str, nargs=1)
+    parser.add_argument('token', type=str, nargs=1)
     args = parser.parse_args()
     if (args.debug):
         @app.route('/')
@@ -237,5 +236,5 @@ if __name__ == '__main__':
         def static_files(path):
             return send_from_directory(os.getcwd(),path)
     #end remove
-    #app.config['token'] = args.token[0]
+    app.config['token'] = args.token[0]
     app.run(host = '0.0.0.0', port = args.port, debug = args.debug, use_evalex = False)
