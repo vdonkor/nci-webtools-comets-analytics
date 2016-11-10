@@ -597,10 +597,10 @@ appComets.SummaryView = Backbone.View.extend({
             entryCount = this.model.get('entryCount');
         this.$el.find('#correlationSummary tbody').empty();
         var tr = '';
-        if (map.map(function(row) { return row.selected; }).reduce(function(prev,curr) { return prev||curr; })) {
-            this.$el.find('#customList').removeAttr('disabled');
+        if (map.map(function(row) { return row.selected; }).reduce(function(prev,curr) { return prev&&curr; })) {
+            this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked',true);
         } else {
-            this.$el.find('#customList').attr('disabled',true);
+            this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked',false);
         }
         for (var index = (page-1)*entryCount; index < Math.min(page*entryCount,map.length); index++) {
             tr += '<tr><th class="text-center"><input type="checkbox" name="'+index+'"'+(map[index].selected?' checked="true"':'')+'/></th>';
@@ -627,6 +627,7 @@ appComets.CustomListView = Backbone.View.extend({
             'listName': "custom"+length,
             'metaboliteList': metaboliteList
         });
+        this.template = _.template(appComets.templatesList.listDialog);
         this.render();
         this.model.on({
             'change:listName': this.checkName
@@ -635,6 +636,7 @@ appComets.CustomListView = Backbone.View.extend({
     events: {
         'hidden.bs.modal': 'remove',
         'keyup input[type="text"]': 'updateModel',
+        'click button[data-index]': 'removeTag',
         'click .modal-footer button:first-child': 'createList',
         'click .modal-footer button:last-child': 'close'
     },
@@ -650,7 +652,20 @@ appComets.CustomListView = Backbone.View.extend({
             options = model.get('defaultOptions');
         options.push({'text':listName,'value':metaboliteList.join(";")});
         model.trigger('change:defaultOptions',model);
+        model = this.model.get('correlationModel');
+        _.each(model.get('excorrdata'),function(row,index,list) { row.selected = false; });
+        model.trigger('change:excorrdata', model);
+        model.trigger('change:filterdata', model);
         this.close.call(this,e);
+    },
+    removeTag: function(e) {
+        e.preventDefault();
+        var e = $(e.target),
+            model = this.model.get('formModel');
+        console.log(model.get('defaultOptions').splice(e.attr('data-index'),1));
+        model.trigger('change:defaultOptions',model);
+        e.closest('tr').remove();
+        
     },
     updateModel: function(e) {
         if (e.keyCode == 13) {
@@ -669,18 +684,16 @@ appComets.CustomListView = Backbone.View.extend({
         }
     },
     render: function() {
-        var listName = this.model.get('listName'),
-            metaboliteList = this.model.get('metaboliteList');
         this.$modal = BootstrapDialog.show({
             buttons: [{
                 'cssClass': 'btn-primary',
                 'label': "Create List"
             }, {
                 'cssClass': 'btn-primary',
-                'label': "Cancel"
+                'label': "Close"
             }],
             closable: false,
-            message: $('<p>The following list of metabolites needs a name:</p><p>'+metaboliteList.join(', ')+'</p><input type="text" name="listName" value="'+listName+'"/>'),
+            message: $(this.template(this.model.attributes)),
             title: "Enter list name..."
         });
         this.setElement(this.$modal.getModal());
