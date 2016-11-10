@@ -20,13 +20,14 @@
             </div>
             <div id="correlationButtons">
                 <button class="btn btn-default" id="summaryDownload">Download Results in CSV</button>
-                <button class="btn btn-default" id="customList">Create Custom Metabolite List</button>
             </div>
         </div>
         <table class="table-striped table-hover">
             <thead>
                 <tr>
-                    <th class="borderless"></th>
+                    <th class="borderless">
+                        <button class="btn btn-default glyphicon glyphicon-tags" id="customList"></button>
+                    </th>
 <%     _.each(tableOrder,function(element,key,list) { %>
                     <th>
 <%         if (element == "pvalue" || element == "corr") { %>
