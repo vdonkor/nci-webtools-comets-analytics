@@ -1,0 +1,15 @@
+<p>The following list of metabolites needs a name:</p>
+<p><%= metaboliteList.join(", ") %></p>
+<input type="text" name="listName" value="<%= listName %>"/>
+<table>
+<%
+    var defaultOptions = formModel.get("defaultOptions");
+    for (var i = 1; i < defaultOptions.length; i++) {
+%>
+    <tr>
+        <td><%= defaultOptions[i].text %></td>
+        <td><%= defaultOptions[i].value.split(";").join(", ") %></td>
+        <td><button class="glyphicon glyphicon-remove" data-index="<%=i%>"></button></td>
+    </tr>
+<% } %>
+</table>
