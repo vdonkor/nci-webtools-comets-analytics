@@ -214,8 +214,8 @@ def user_list_update():
     finally:
         return response
 
-import argparse
 if __name__ == '__main__':
+    import argparse
     parser = argparse.ArgumentParser()
 
     # Default port is 9200

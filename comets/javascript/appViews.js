@@ -576,9 +576,11 @@ appComets.SummaryView = Backbone.View.extend({
     startDownload: function (e) {
         e.preventDefault();
         var $that = this;
-        if (this.model.get('csv')) appComets.events.preauthenticate(e, function () {
-            window.location = $that.model.get('csv');
-        });
+        if (this.model.get('csv')) {
+            appComets.events.preauthenticate(e, function () {
+                window.location = $that.model.get('csv');
+            });
+        }
     },
     render: function () {
         if (this.model.get('correlationRun')) {

@@ -2,6 +2,7 @@
 *.sh
 *.wsgi
 *.csv
+*.yml
 app/
 tmp/
 uploads/
