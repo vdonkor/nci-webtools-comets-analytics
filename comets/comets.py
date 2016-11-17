@@ -113,7 +113,7 @@ def templates():
 @app.route('/cometsRest/public/cohorts', methods=['GET'])
 def cohorts():
     cohorts = {
-        'cohorts': ["DPP", "EPIC", "PLCO-CRC", "PLCO-breast", "Shanghai", "WHI", "Other"]
+        'cohorts': json.loads(wrapper.getCohorts()[0])
     }
     response = buildSuccess(cohorts)
     return response

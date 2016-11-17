@@ -3,6 +3,13 @@ library(jsonlite)
 library(COMETS)
 library(stats)
 
+getCohorts <- function() {
+    dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
+    masterfile <- file.path(dir, "compileduids.RData")
+    load(masterfile)
+    toJSON(as.list(cohorts)$Cohort)
+}
+
 checkIntegrity <- function(filename,cohort) {
     suppressWarnings(suppressMessages({
         returnValue <- list()
@@ -80,6 +87,7 @@ runModel <- function(jsonData) {
                       excorrdata = excorrdata,
                       exposures = excorrdata[!duplicated(excorrdata[,'exposure']),'exposure'],
                       model = input$modelName,
+                      ptime = attr(excorrdata,"ptime"),
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
                       tableOrder = exmetabdata$dispvars

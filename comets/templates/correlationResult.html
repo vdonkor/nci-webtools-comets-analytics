@@ -4,7 +4,7 @@
         <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
     </div>
-    <div id="correlationSummary" class="col-md-12">
+    <div id="correlationSummary">
         <div class="form-inline">
             <div>
                 <label>
@@ -51,6 +51,7 @@
         </table>
         <div id="pagingRow" class="form-inline"></div>
     </div>
+    <div class="text-right"><%= ptime %></div>
 <% } else if (status !== null && statusMessage) { %>
     <div id="resultStatus" class="alert alert-warning">
         <span class="glyphicon glyphicon-warning-sign"></span>
