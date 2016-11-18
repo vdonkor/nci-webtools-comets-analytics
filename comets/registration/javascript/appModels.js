@@ -2,7 +2,12 @@ appRegistration.CohortsModel = Backbone.Model.extend({
     defaults: {
         cohorts: ['Other']
     },
-    url: "/cometsRest/public/cohorts"
+    url: "/cometsRest/public/cohorts",
+    parse: function(response) {
+        response.cohorts.push("Other");
+        console.log(response);
+        return response;
+    }
 });
 appRegistration.FormModel = Backbone.Model.extend({
     defaults: {
