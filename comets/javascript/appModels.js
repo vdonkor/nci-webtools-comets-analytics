@@ -18,6 +18,16 @@ Backbone.Model.prototype.reset = function(attrs,val,options) {
     this.trigger('reset',this,options);
 }
 
+var parentFetch = Backbone.Model.prototype.fetch;
+Backbone.Model.prototype.fetch = function(options) {
+    var $that = this;
+    return parentFetch.call(this,options).fail(function (data, statusText, errorThrown) {
+        if (data.status === 401) {
+            appComets.events.reauthenticate(e);
+        }
+    });
+}
+
 appComets.CohortsModel = Backbone.Model.extend({
     defaults: {
         cohorts: ['Other']
