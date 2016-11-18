@@ -15,7 +15,7 @@ var appComets = {
         },
         reauthenticate: function (e) {
             e.preventDefault();
-            window.location.reload(true);
+            window.location = "public/timeout.html";
             /*
             var newWindow = window.open("reauth.html");
             window.reauthCallback = function () {
@@ -161,9 +161,6 @@ appComets.FormView = Backbone.View.extend({
                         .addClass("active").text("Uploading....Please Wait");
                 }
             }).fail(function (data, statusText, errorThrown) {
-                if (data.status === 401) {
-                    appComets.events.reauthenticate(e);
-                }
                 $that.$el.find("#calcProgressbar [role='progressbar']").addClass("progress-bar-danger").text("Upload Failed!");
                 $that.$el.find("#inputDataFile").wrap("<form></form>").closest("form")[0].reset();
                 $that.$el.find("#inputDataFile").unwrap();
@@ -253,10 +250,6 @@ appComets.FormView = Backbone.View.extend({
             contentType: false,
             beforeSend: appComets.showLoader,
             reset: true
-        }).fail(function (data, statusText, errorThrown) {
-            if (data.status === 401) {
-                appComets.events.reauthenticate(e);
-            }
         }).always(function () {
             appComets.hideLoader();
             $('a[href="#tab-summary"]').tab('show');
