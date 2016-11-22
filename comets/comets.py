@@ -224,16 +224,14 @@ if __name__ == '__main__':
     parser.add_argument('token', type=str, nargs=1)
     args = parser.parse_args()
     if (args.debug):
-        @app.route('/')
-        def index():
-            return app.send_static_file('index.html')
-
         @app.route('/common/<path:path>')
         def common_folder(path):
             return send_from_directory("C:\\common\\",path)
 
         @app.route('/<path:path>')
         def static_files(path):
+            if (path.endswith('/')):
+                path += 'index.html'
             return send_from_directory(os.getcwd(),path)
     #end remove
     app.config['token'] = args.token[0]

@@ -14,6 +14,7 @@ appAdmin.UserTableView = Backbone.View.extend({
         this.render();
         this.collection.fetch({reset: true});
         this.approvalTemplate = _.template('<input name="approval_<%=id%>" type="radio" value="active"<%=(value=="active"?" checked=true":"")%>/> Approve<br/><input name="approval_<%=id%>" type="radio" value="deny"<%=(value=="deny"?" checked=true":"")%>/> Deny');
+        this.adminifyTemplate = _.template('<input name="adminify_<%=id%>" type="checkbox"<%=((value=="admin")?" checked=true":(value=="active")?"":" disabled=true")%>/>');
         this.activationTemplate = _.template('<input name="activation_<%=id%>" type="checkbox"<%=((value=="active"||value=="admin")?" checked=true":"")%>/>');
     },
     events: {
@@ -35,12 +36,19 @@ appAdmin.UserTableView = Backbone.View.extend({
             var id = name.substring(11),
                 model = this.collection.get(id);
             if (checked) {
-                model.set('app_metadata',_.extend({},model.get('app_metadata'),{'comets':model.get('old_comets')||'active'}));
+                $('[name="adminify_'+id+'"]').removeAttr('disabled');
+                model.set('app_metadata',_.extend({},model.get('app_metadata'),{'comets':'active'}));
             } else {
-                model.set({
-                    'app_metadata': _.extend({},model.get('app_metadata'),{'comets':'inactive'}),
-                    'old_comets': model.get('app_metadata').comets
-                });
+                $('[name="adminify_'+id+'"]').removeAttr('checked').attr('disabled',true);
+                model.set('app_metadata',_.extend({},model.get('app_metadata'),{'comets':'inactive'}));
+            }
+        } else if (name.indexOf('adminify') == 0) {
+            var id = name.substring(9),
+                model = this.collection.get(id);
+            if (checked) {
+                model.set('app_metadata',_.extend({},model.get('app_metadata'),{'comets':'admin'}));
+            } else {
+                model.set('app_metadata',_.extend({},model.get('app_metadata'),{'comets':'active'}));
             }
         } else {
             this.model.set(name,checked);
@@ -96,6 +104,14 @@ appAdmin.UserTableView = Backbone.View.extend({
                         return view.activationTemplate({ 'value': value, 'id': obj.id });
                     },
                     width: '4em'
+                },
+                {
+                    title: "Admin",
+                    className: 'text-center',
+                    data: 'app_metadata.comets',
+                    render: function(value,trash,obj) {
+                        return view.adminifyTemplate({ 'value': value, 'id': obj.id });
+                    }
                 }
             ]
         });
