@@ -1,15 +1,21 @@
+<%
+    var defaultOptions = formModel.get("defaultOptions");
+    if (metaboliteList.length > 0) {
+%>
 <p>The following list of metabolites needs a name:</p>
 <p><%= metaboliteList.join(", ") %></p>
 <input type="text" name="listName" value="<%= listName %>"/>
+<% } else if (defaultOptions.length < 2) { %>
+    <p>There are no current lists to edit and no metabolites selected.</p>
+<% } %>
+<% if (defaultOptions.length > 1) { %>
 <table>
-<%
-    var defaultOptions = formModel.get("defaultOptions");
-    for (var i = 1; i < defaultOptions.length; i++) {
-%>
+<%     for (var i = 1; i < defaultOptions.length; i++) { %>
     <tr>
         <td><%= defaultOptions[i].text %></td>
         <td><%= defaultOptions[i].value.split(";").join(", ") %></td>
         <td><button class="glyphicon glyphicon-remove" data-index="<%=i%>"></button></td>
     </tr>
-<% } %>
+<%     } %>
 </table>
+<% } %>

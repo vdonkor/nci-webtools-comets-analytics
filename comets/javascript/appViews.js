@@ -612,7 +612,8 @@ appComets.SummaryView = Backbone.View.extend({
 appComets.CustomListView = Backbone.View.extend({
     initialize: function() {
         var metaboliteList = [],
-            length = this.model.get('formModel').get('defaultOptions').length;
+            formModel = this.model.get('formModel'),
+            length = formModel.get('defaultOptions').length;
         this.model.get('correlationModel').get('excorrdata').filter(function(entry) {
             if (entry.selected && metaboliteList.indexOf(entry.outcome) < 0) {
                 metaboliteList.push(entry.outcome);
@@ -626,14 +627,17 @@ appComets.CustomListView = Backbone.View.extend({
         this.render();
         this.model.on({
             'change:listName': this.checkName
+        });
+        formModel.on({
+            'change:defaultOptions': this.rerender
         }, this);
     },
     events: {
         'hidden.bs.modal': 'remove',
         'keyup input[type="text"]': 'updateModel',
         'click button[data-index]': 'removeTag',
-        'click .modal-footer button:first-child': 'createList',
-        'click .modal-footer button:last-child': 'close'
+        'click .modal-footer button.create': 'createList',
+        'click .modal-footer button:not(.create)': 'close'
     },
     close: function(e) {
         e.preventDefault();
@@ -656,11 +660,10 @@ appComets.CustomListView = Backbone.View.extend({
     removeTag: function(e) {
         e.preventDefault();
         var e = $(e.target),
-            model = this.model.get('formModel');
-        console.log(model.get('defaultOptions').splice(e.attr('data-index'),1));
+            model = this.model.get('formModel'),
+            defaultOptions = model.get('defaultOptions');
+        console.log(defaultOptions.splice(e.attr('data-index'),1));
         model.trigger('change:defaultOptions',model);
-        e.closest('tr').remove();
-        
     },
     updateModel: function(e) {
         if (e.keyCode == 13) {
@@ -673,25 +676,32 @@ appComets.CustomListView = Backbone.View.extend({
         var listName = this.model.get('listName'),
             defaultOptions = this.model.get('formModel').get('defaultOptions');
         if (listName === "" || defaultOptions.map(function(entry) { return listName === entry.text; }).reduce(function(prev,curr) { return prev||curr; })) {
-            this.$el.find('.modal-footer button:first-child').attr('disabled',true);
+            this.$el.find('.modal-footer button.create').attr('disabled',true);
         } else {
-            this.$el.find('.modal-footer button:first-child').removeAttr('disabled');
+            this.$el.find('.modal-footer button.create').removeAttr('disabled');
         }
     },
     render: function() {
+        var buttons = [{
+            'cssClass': 'btn-primary create',
+            'label': "Create List"
+        }, {
+            'cssClass': 'btn-primary',
+            'label': "Close"
+        }];
+        if (this.model.get('metaboliteList').length < 1) {
+            buttons.shift();
+        }
         this.$modal = BootstrapDialog.show({
-            buttons: [{
-                'cssClass': 'btn-primary',
-                'label': "Create List"
-            }, {
-                'cssClass': 'btn-primary',
-                'label': "Close"
-            }],
+            'buttons': buttons,
             closable: false,
             message: $(this.template(this.model.attributes)),
             title: "Enter list name..."
         });
         this.setElement(this.$modal.getModal());
+    },
+    rerender: function() {
+        $('.bootstrap-dialog-message').html(this.template(this.model.attributes));
     }
 });
 
