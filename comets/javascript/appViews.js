@@ -660,7 +660,7 @@ appComets.CustomListView = Backbone.View.extend({
         this.render();
         this.model.on({
             'change:listName': this.checkName
-        });
+        }, this);
         formModel.on({
             'change:defaultOptions': this.rerender
         }, this);
@@ -679,13 +679,14 @@ appComets.CustomListView = Backbone.View.extend({
     createList: function(e) {
         e.preventDefault();
         var listName = this.model.get('listName'),
-            metaboliteList = this.model.get('metaboliteList'),
             formModel = this.model.get('formModel'),
             corrModel = this.model.get('correlationModel'),
+            excorrdata = corrModel.get('excorrdata'),
+            metaboliteList = excorrdata.filter(function(entry) { return entry.selected; }).map(function(entry) { return entry.outcomespec; }),
             options = formModel.get('defaultOptions');
         options.push({'text':listName,'value':metaboliteList.join(";")});
         this.model.set('metaboliteList',[]);
-        _.each(corrModel.get('excorrdata'),function(row,index,list) { row.selected = false; });
+        _.each(excorrdata,function(row,index,list) { row.selected = false; });
         formModel.trigger('change:defaultOptions',formModel);
         corrModel.trigger('change:excorrdata', corrModel);
         corrModel.trigger('change:filterdata', corrModel);
