@@ -26,7 +26,7 @@
             <thead>
                 <tr>
                     <th class="borderless">
-                        <button class="btn btn-default glyphicon glyphicon-tags" id="customList"></button>
+                        <button class="btn btn-default glyphicon glyphicon-tags" id="customList" title="Metabolites Tags"></button>
                     </th>
 <%     _.each(tableOrder,function(element,key,list) { %>
                     <th>
@@ -51,7 +51,6 @@
         </table>
         <div id="pagingRow" class="form-inline"></div>
     </div>
-    <div class="text-right"><%= ptime %></div>
 <% } else if (status !== null && statusMessage) { %>
     <div id="resultStatus" class="alert alert-warning">
         <span class="glyphicon glyphicon-warning-sign"></span>

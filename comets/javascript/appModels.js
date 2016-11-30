@@ -40,8 +40,11 @@ appComets.CohortsModel = Backbone.Model.extend({
     }
 });
 
-appComets.HeaderModel = Backbone.Model.extend({
+appComets.BaseModel = Backbone.Model.extend({
     defaults: {
+        harmonizationForm: {},
+        integrityResults: {},
+        correlationResults: {},
         comets: null,
         email: "",
         family_name: "",
