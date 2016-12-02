@@ -71,6 +71,37 @@ appComets.HeaderView = Backbone.View.extend({
         this.model.on('change', this.render, this);
         this.model.fetch();
     },
+    events: {
+        'click #adminBtn': 'goToAdmin'
+    },
+    goToAdmin: function(e) {
+        var model = this.model;
+        if (model.get('integrityResults').get('integrityChecked') || model.get('correlationResults').get('correlationRun')) {
+            e.preventDefault();
+            this.$modal = BootstrapDialog.show({
+                buttons: [{
+                    'cssClass': 'btn-primary',
+                    'label': "Continue",
+                    'action': function(dialog) {
+                        console.log(e);
+                        var a = $(e.target);
+                        if (a.prop('tagName') !== 'A') a = a.find('a');
+                        window.location = a.attr('href');
+                    }
+                }, {
+                    'cssClass': 'btn-primary',
+                    'label': "Cancel",
+                    'action': function(dialog) {
+                        dialog.close();
+                    }
+                }],
+                closable: false,
+                message: $("<p>If you leave now you will lose access to your current work. Do you wish to continue?</p>" +
+                           "<p>You can also click \"Cancel\" then right-click the \"Admin\" button to open it in a new tab.</p>"),
+                title: "You are about to leave the page."
+            });
+        }
+    },
     render: function() {
         var comets = this.model.get('comets'),
             name = this.model.get('given_name')+' '+this.model.get('family_name');
@@ -577,6 +608,7 @@ appComets.SummaryView = Backbone.View.extend({
     },
     render: function () {
         if (this.model.get('correlationRun')) {
+            console.log(this.model.get('correlationRun'));
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status') == true) {
                 this.renderTable.apply(this);
@@ -586,6 +618,7 @@ appComets.SummaryView = Backbone.View.extend({
         }
     },
     renderTable: function() {
+        if (!(this.model.get('correlationRun') && this.model.get('status'))) return;
         var map = this.model.get('filterdata'),
             page = this.model.get('page'),
             tableOrder = this.model.get('tableOrder'),
@@ -612,7 +645,8 @@ appComets.SummaryView = Backbone.View.extend({
 appComets.CustomListView = Backbone.View.extend({
     initialize: function() {
         var metaboliteList = [],
-            length = this.model.get('formModel').get('defaultOptions').length;
+            formModel = this.model.get('formModel'),
+            length = formModel.get('defaultOptions').length;
         this.model.get('correlationModel').get('excorrdata').filter(function(entry) {
             if (entry.selected && metaboliteList.indexOf(entry.outcome) < 0) {
                 metaboliteList.push(entry.outcome);
@@ -627,13 +661,16 @@ appComets.CustomListView = Backbone.View.extend({
         this.model.on({
             'change:listName': this.checkName
         }, this);
+        formModel.on({
+            'change:defaultOptions': this.rerender
+        }, this);
     },
     events: {
         'hidden.bs.modal': 'remove',
         'keyup input[type="text"]': 'updateModel',
         'click button[data-index]': 'removeTag',
-        'click .modal-footer button:first-child': 'createList',
-        'click .modal-footer button:last-child': 'close'
+        'click button.create': 'createList',
+        'click .modal-footer button:not(.create)': 'close'
     },
     close: function(e) {
         e.preventDefault();
@@ -642,25 +679,25 @@ appComets.CustomListView = Backbone.View.extend({
     createList: function(e) {
         e.preventDefault();
         var listName = this.model.get('listName'),
-            metaboliteList = this.model.get('metaboliteList'),
-            model = this.model.get('formModel'),
-            options = model.get('defaultOptions');
+            formModel = this.model.get('formModel'),
+            corrModel = this.model.get('correlationModel'),
+            excorrdata = corrModel.get('excorrdata'),
+            metaboliteList = excorrdata.filter(function(entry) { return entry.selected; }).map(function(entry) { return entry.outcomespec; }),
+            options = formModel.get('defaultOptions');
         options.push({'text':listName,'value':metaboliteList.join(";")});
-        model.trigger('change:defaultOptions',model);
-        model = this.model.get('correlationModel');
-        _.each(model.get('excorrdata'),function(row,index,list) { row.selected = false; });
-        model.trigger('change:excorrdata', model);
-        model.trigger('change:filterdata', model);
-        this.close.call(this,e);
+        this.model.set('metaboliteList',[]);
+        _.each(excorrdata,function(row,index,list) { row.selected = false; });
+        formModel.trigger('change:defaultOptions',formModel);
+        corrModel.trigger('change:excorrdata', corrModel);
+        corrModel.trigger('change:filterdata', corrModel);
     },
     removeTag: function(e) {
         e.preventDefault();
         var e = $(e.target),
-            model = this.model.get('formModel');
-        console.log(model.get('defaultOptions').splice(e.attr('data-index'),1));
+            model = this.model.get('formModel'),
+            defaultOptions = model.get('defaultOptions');
+        console.log(defaultOptions.splice(e.attr('data-index'),1));
         model.trigger('change:defaultOptions',model);
-        e.closest('tr').remove();
-        
     },
     updateModel: function(e) {
         if (e.keyCode == 13) {
@@ -673,25 +710,25 @@ appComets.CustomListView = Backbone.View.extend({
         var listName = this.model.get('listName'),
             defaultOptions = this.model.get('formModel').get('defaultOptions');
         if (listName === "" || defaultOptions.map(function(entry) { return listName === entry.text; }).reduce(function(prev,curr) { return prev||curr; })) {
-            this.$el.find('.modal-footer button:first-child').attr('disabled',true);
+            this.$el.find('button.create').attr('disabled',true);
         } else {
-            this.$el.find('.modal-footer button:first-child').removeAttr('disabled');
+            this.$el.find('button.create').removeAttr('disabled');
         }
     },
     render: function() {
         this.$modal = BootstrapDialog.show({
             buttons: [{
                 'cssClass': 'btn-primary',
-                'label': "Create List"
-            }, {
-                'cssClass': 'btn-primary',
                 'label': "Close"
             }],
             closable: false,
             message: $(this.template(this.model.attributes)),
-            title: "Enter list name..."
+            title: "Metabolites Tag"
         });
         this.setElement(this.$modal.getModal());
+    },
+    rerender: function() {
+        $('.bootstrap-dialog-message').html(this.template(this.model.attributes));
     }
 });
 
@@ -837,7 +874,6 @@ $(function () {
 
         });
 
-        appComets.models.header = new appComets.HeaderModel();
         appComets.models.integrityResults = new appComets.IntegrityResultsModel();
         appComets.models.correlationResults = new appComets.CorrelationResultsModel();
         
@@ -849,9 +885,14 @@ $(function () {
                 model: appComets.models.harmonizationForm
             });
         });
+        appComets.models.base = new appComets.BaseModel({
+            'harmonizationForm': appComets.models.harmonizationForm,
+            'integrityResults': appComets.models.integrityResults,
+            'correlationResults': appComets.models.correlationResults,
+        });
         
         appComets.views.header = new appComets.HeaderView({
-            model: appComets.models.header
+            model: appComets.models.base
         });
         appComets.views.integrity = new appComets.IntegrityView({
             model: appComets.models.integrityResults

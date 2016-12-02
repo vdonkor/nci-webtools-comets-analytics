@@ -167,6 +167,7 @@ $(function() {
     $('#logoutBtn').on('click', function (e) {
         e.preventDefault();
         var path = window.location.href;
+        path = path.substring(0,path.lastIndexOf('/'));
         window.location = "/auth0_redirect?logout=" + encodeURIComponent(path.substring(0,path.lastIndexOf('/'))+"/public/logout.html");
     });
 });

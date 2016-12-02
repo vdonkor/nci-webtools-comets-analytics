@@ -62,7 +62,10 @@ nav.navbar.navbar-default {
 #loader:not(.show) {
     display: none;
 }
-
+#HelpIcon,
+#downloadIcon {
+    padding: 6px 0px;
+}
 input.input:valid {
     background: #DAFADA;
 }
@@ -250,6 +253,24 @@ fieldset.well {
     border-bottom: 1px solid #111;
     padding: 10px 18px;
 }
+.bootstrap-dialog-message table {
+    width: 100%;
+    border-bottom: 1px solid #000;
+}
+.bootstrap-dialog-message table button {
+    padding: 6px;
+}
+.bootstrap-dialog-message thead th,
+.bootstrap-dialog-message thead td {
+    border: solid #111;
+    border-width: 1px 0px;
+    padding: 10px 18px;
+}
+.bootstrap-dialog-message th:last-child,
+.bootstrap-dialog-message td:last-child {
+    width: 6em;
+    text-align:center;
+}
 #correlationSummary thead tr:last-child th:not(.borderless),
 #correlationSummary thead tr:last-child td:not(.borderless) {
     background-image: url('../images/sort.svg');
@@ -277,10 +298,10 @@ fieldset.well {
     float: right;
 }
 #correlationButtons {
-    padding: 0.5em 1em;
+    padding: 6px 12px;
 }
 #correlationButtons a {
-    padding: 0.5em 1em;
+    padding: 6px 12px;
     border: 1px solid #999;
     border-radius: 2px;
     cursor: pointer;
@@ -296,8 +317,12 @@ fieldset.well {
 #correlationButtons a:active {
     background-color: #e2e2e2;
 }
+#pagingRow > div {
+    padding: 12px 0px;
+}
 #pagingRow ul {
     list-style: none;
+    margin: -12px 0px;
     padding-left: 0px;
 }
 #pagingRow li {
@@ -305,7 +330,7 @@ fieldset.well {
     border-radius: 2px;
     display: inline-block;
     min-width: 1.5em;
-    padding: 0.5em 1em;
+    padding: 6px 12px;
 }
 #pagingRow li:hover,
 #pagingRow li.active {
@@ -336,6 +361,16 @@ fieldset.well {
 #pagingRow li.disabled a {
     color: #777;
     cursor: not-allowed;
+}
+.modal-dialog .fixed-right {
+    position: relative;
+    margin-right:10em;
+}
+.modal-dialog .fixed-right button {
+    position: absolute;
+    right: -10em;
+    top: 0px;
+    width: 8em;
 }
 .modal-dialog input {
     width: 100%;
