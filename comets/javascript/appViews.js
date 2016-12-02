@@ -348,7 +348,7 @@ appComets.FormView = Backbone.View.extend({
         var $that = this;
         var modelOptions = this.model.get('defaultOptions').concat(this.model.get('subjectIds'));
         if (this.model.get('showMetabolites')) {
-            modelOptions = modelOptions.concat(this.model.get('metaboliteIds'));
+            modelOptions = modelOptions.concat(this.model.get('metaboliteIds').map(function(entry) { return { text: entry, value: entry }; }));
         }
         modelOptions = modelOptions.map(function (option, key) {
             return {
@@ -534,8 +534,10 @@ appComets.SummaryView = Backbone.View.extend({
         e.preventDefault(e);
         new appComets.CustomListView({
             model: new appComets.CustomListModel({
-                'correlationModel': this.model,
-                'formModel': appComets.models.harmonizationForm
+                correlationModel: this.model,
+                excorrdata: this.model.get('excorrdata'),
+                formModel: appComets.models.harmonizationForm,
+                metaboliteIds: appComets.models.harmonizationForm.get('metaboliteIds')
             })
         });
     },
@@ -608,7 +610,6 @@ appComets.SummaryView = Backbone.View.extend({
     },
     render: function () {
         if (this.model.get('correlationRun')) {
-            console.log(this.model.get('correlationRun'));
             this.$el.html(this.template(this.model.attributes));
             if (this.model.get('status') == true) {
                 this.renderTable.apply(this);
@@ -644,21 +645,26 @@ appComets.SummaryView = Backbone.View.extend({
 
 appComets.CustomListView = Backbone.View.extend({
     initialize: function() {
-        var metaboliteList = [],
-            formModel = this.model.get('formModel'),
+        var model = this.model,
+            metabolites = {},
+            metaboliteIds = model.get('metaboliteIds'),
+            metaboliteList = [],
+            formModel = model.get('formModel'),
             length = formModel.get('defaultOptions').length;
-        this.model.get('correlationModel').get('excorrdata').filter(function(entry) {
-            if (entry.selected && metaboliteList.indexOf(entry.outcome) < 0) {
-                metaboliteList.push(entry.outcome);
-            }
+        model.get('excorrdata').filter(function(entry) { return entry.selected; }).forEach(function(entry) {
+            if (metaboliteIds.indexOf(entry.exposurespec) > -1) metabolites[entry.exposurespec] = true;
+            if (metaboliteIds.indexOf(entry.outcomespec) > -1) metabolites[entry.outcomespec] = true;
         });
-        this.model.set({
+        for (var index in metabolites) {
+            metaboliteList.push(index);
+        }
+        model.set({
             'listName': "custom"+length,
             'metaboliteList': metaboliteList
         });
         this.template = _.template(appComets.templatesList.listDialog);
         this.render();
-        this.model.on({
+        model.on({
             'change:listName': this.checkName
         }, this);
         formModel.on({
@@ -678,15 +684,13 @@ appComets.CustomListView = Backbone.View.extend({
     },
     createList: function(e) {
         e.preventDefault();
-        var listName = this.model.get('listName'),
-            formModel = this.model.get('formModel'),
-            corrModel = this.model.get('correlationModel'),
-            excorrdata = corrModel.get('excorrdata'),
-            metaboliteList = excorrdata.filter(function(entry) { return entry.selected; }).map(function(entry) { return entry.outcomespec; }),
+        var model = this.model,
+            formModel = model.get('formModel'),
+            corrModel = model.get('correlationModel'),
             options = formModel.get('defaultOptions');
-        options.push({'text':listName,'value':metaboliteList.join(";")});
+        options.push({'text':model.get('listName'),'value':model.get('metaboliteList').join(";")});
         this.model.set('metaboliteList',[]);
-        _.each(excorrdata,function(row,index,list) { row.selected = false; });
+        _.each(model.get('excorrdata'),function(row,index,list) { row.selected = false; });
         formModel.trigger('change:defaultOptions',formModel);
         corrModel.trigger('change:excorrdata', corrModel);
         corrModel.trigger('change:filterdata', corrModel);
@@ -700,7 +704,7 @@ appComets.CustomListView = Backbone.View.extend({
         model.trigger('change:defaultOptions',model);
     },
     updateModel: function(e) {
-        if (e.keyCode == 13) {
+        if (e.keyCode == 13 && !this.$el.find('button.create').attr('disabled')) {
             this.createList.call(this,e);
         } else {
             appComets.events.updateModel.call(this,e);

@@ -22,12 +22,6 @@ appAdmin.UserTableView = Backbone.View.extend({
         'change input:radio': 'radioUpdate',
         'click input:button': 'saveData'
     },
-    noSubmit: function (e) {
-        if (e.keyCode == 13) {
-            e.preventDefault();
-            return false;
-        }
-    },
     checkboxUpdate: function(e) {
         var e = $(e.target);
         var name = e.prop('id') || e.prop('name');
@@ -69,14 +63,14 @@ appAdmin.UserTableView = Backbone.View.extend({
         this.$el.find('input[type="button"]').removeAttr('disabled');
     },
     resetTables: function() {
-        
         this.renderApprovalTable.apply(this);
         this.renderActivationTable.apply(this);
     },
     saveData: function() {
-        var view = this;
+        var $that = this;
         this.collection.sync('patch').done(function() {
-            view.$el.find('input[type="button"]').attr('disabled',true);
+            $that.$el.find('[href="#tab-active"]').trigger('click');
+            $that.$el.find('input[type="button"]').attr('disabled',true);
         });
     },
     render: function() {
@@ -163,7 +157,7 @@ $(function() {
     new appAdmin.UserTableView({
         collection: new appAdmin.UserCollection(),
         model: new appAdmin.UserTableModel()
-    })
+    });
     $('#logoutBtn').on('click', function (e) {
         e.preventDefault();
         var path = window.location.href;

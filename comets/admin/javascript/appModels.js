@@ -48,8 +48,10 @@ appAdmin.UserCollection = Backbone.Collection.extend({
             response.done(function(responseJSON) {
                 responseJSON = collection.parse(responseJSON);
                 for (var index in responseJSON) {
-                    var model = new collection.model(responseJSON[index]);
-                    collection.get(model.id).set(model.attributes);
+                    var model = new collection.model(responseJSON[index]),
+                        oldModel = collection.get(model.id);
+                    oldModel.set(model.attributes);
+                    oldModel.unset('unsaved');
                 }
                 collection.trigger('reset',collection,response,options);
             });

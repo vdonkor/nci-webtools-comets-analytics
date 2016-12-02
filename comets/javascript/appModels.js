@@ -122,7 +122,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
             },
             integrityChecked: true,
             log2var: response.metab.map(function (obj) { return obj.var; }),
-            metaboliteIds: response.allMetabolites.map(function(subject) { return { text: subject, value: subject }; }),
+            metaboliteIds: response.allMetabolites,
             metaboliteSummary: {
                 'N Metabolites': response.metab.length,
                 'N Harmonized': response.metab.map(function (obj) {
@@ -243,8 +243,10 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
 appComets.CustomListModel = Backbone.Model.extend({
     defaults: {
         correlationModel: null,
+        excorrdata: [],
         formModel: null,
-        'listName': "custom",
-        'metaboliteList': []
+        listName: "custom",
+        metaboliteIds: [],
+        metaboliteList: []
     }
 });
