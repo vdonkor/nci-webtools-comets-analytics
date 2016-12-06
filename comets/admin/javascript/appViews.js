@@ -22,6 +22,36 @@ appAdmin.UserTableView = Backbone.View.extend({
         'change input:radio': 'radioUpdate',
         'click input:button': 'saveData'
     },
+    createColumns: function(addons) {
+        return [
+            { title: "First Name", data: 'user_metadata.given_name' },
+            { title: "Last Name", data: 'user_metadata.family_name' },
+            {
+                title: "Email",
+                data: 'email',
+                render: function(value) {
+                    return '<b>'+value+'</b>';
+                }
+            },
+            {
+                title: "Type",
+                data: 'identity',
+                render: function(value) {
+                    if (value.indexOf('facebook') > -1) {
+                        return "Facebook";
+                    } else if (value.indexOf('google') > -1) {
+                        return "Google";
+                    } else if (value === "Username-Password-Authentication") {
+                        return "Local"
+                    } else {
+                        return value;
+                    }
+                }
+            },
+            { title: "Affiliation", data: 'user_metadata.affiliation' },
+            { title: "Cohort", data: 'user_metadata.cohort' }
+        ].concat(addons);
+    },
     checkboxUpdate: function(e) {
         var e = $(e.target);
         var name = e.prop('id') || e.prop('name');
@@ -78,18 +108,7 @@ appAdmin.UserTableView = Backbone.View.extend({
         if (this.model.get('showDenied')) this.$el.find('[name="showDenied"]').attr('checked',true);
         if (this.model.get('showInactive')) this.$el.find('[name="showInactive"]').attr('checked',true);
         this.$el.find('#activationTable').DataTable({
-            columns: [
-                { title: "First Name", data: 'user_metadata.given_name' },
-                { title: "Last Name", data: 'user_metadata.family_name' },
-                {
-                    title: "Email",
-                    data: 'email',
-                    render: function(value) {
-                        return '<b>'+value+'</b>';
-                    }
-                },
-                { title: "Affiliation", data: 'user_metadata.affiliation' },
-                { title: "Cohort", data: 'user_metadata.cohort' },
+            columns: this.createColumns([
                 {
                     title: "Active",
                     className: 'text-center',
@@ -107,21 +126,10 @@ appAdmin.UserTableView = Backbone.View.extend({
                         return view.adminifyTemplate({ 'value': value, 'id': obj.id });
                     }
                 }
-            ]
+            ])
         });
         this.$el.find('#approvalTable').DataTable({
-            columns: [
-                { title: "First Name", data: 'user_metadata.given_name' },
-                { title: "Last Name", data: 'user_metadata.family_name' },
-                {
-                    title: "Email",
-                    data: 'email',
-                    render: function(value) {
-                        return '<b>'+value+'</b>';
-                    }
-                },
-                { title: "Affiliation", data: 'user_metadata.affiliation' },
-                { title: "Cohort", data: 'user_metadata.cohort' },
+            columns: this.createColumns([
                 {
                     title: "Access",
                     data: 'app_metadata.comets',
@@ -129,7 +137,7 @@ appAdmin.UserTableView = Backbone.View.extend({
                         return view.approvalTemplate({ 'value': value, 'id': obj.id });
                     }
                 }
-            ]
+            ])
         });
     },
     renderApprovalTable: function() {

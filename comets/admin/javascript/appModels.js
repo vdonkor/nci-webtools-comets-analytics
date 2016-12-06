@@ -24,6 +24,7 @@ appAdmin.UserModel = Backbone.Model.extend({
         new_metadata.cohort = metadata.cohort || "";
         new_metadata.family_name = metadata.family_name || response.family_name || "";
         new_metadata.given_name = metadata.given_name || response.given_name || "";
+        parsedResponse.identity = (response.identities || [{}])[0].connection || "";
         parsedResponse.user_metadata = new_metadata;
         return parsedResponse;
     }
