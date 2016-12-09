@@ -22,16 +22,28 @@ def buildSuccess(message):
   return Response(generate(),status=200)
 
 def composeMail(sender,recipients,subject,content):
-    if (not isinstance(recipients,list)):
-        recipients = [ recipients ]
-    if (app.config['email.auth']):
-        smtp = smtplib.SMTP_SSL(app.config['email.host'], app.config['email.port'])
-        smtp.login(app.config['email.username'],app.config['email.password'])
-    else:
-        smtp = smtplib.SMTP(app.config['email.host'], app.config['email.port'])
-    message = "From: "+sender+"\n"+"To: "+", ".join(recipients)+"\n"+"Subject: "+subject+"\n\n"+content
-    smtp.sendmail(sender,recipients,message)
-    smtp.quit()
+    try:
+        if (not isinstance(recipients,list)):
+            recipients = [ recipients ]
+        if (app.config['email.auth']):
+            smtp = smtplib.SMTP_SSL(app.config['email.host'], app.config['email.port'])
+            smtp.login(app.config['email.username'],app.config['email.password'])
+        else:
+            smtp = smtplib.SMTP(app.config['email.host'], app.config['email.port'])
+        message = "From: "+sender+"\n"+"To: "+", ".join(recipients)+"\n"+"Subject: "+subject+"\n\n"+content
+        smtp.sendmail(sender,recipients,message)
+        smtp.quit()
+        return True
+    except Exception as e:
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        pass
+    return False
 
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])

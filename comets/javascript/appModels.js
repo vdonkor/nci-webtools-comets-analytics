@@ -211,11 +211,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
                 selected: false
             });
         });
-        var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures],
-            exposureIndex = response.tableOrder.indexOf('exposure'),
-            outcomeIndex = response.tableOrder.indexOf('outcome');
-        if (outcomeIndex > 0) response.tableOrder.unshift(response.tableOrder.splice(outcomeIndex, 1));
-        if (exposureIndex > 0) response.tableOrder.unshift(response.tableOrder.splice(exposureIndex, 1));
+        var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
         $.extend(response, {
             clusterResults: false,
             correlationRun: true,
