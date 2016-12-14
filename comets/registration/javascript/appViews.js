@@ -42,8 +42,9 @@ appRegistration.FormView = Backbone.View.extend({
         var view = this;
         this.model.save(null,{
             "success": function() {
-                // callback hell, but re-rendering on change causes unintended results
-                view.render.apply(view);
+                setTimeout(function() {
+                    window.location = '../';
+                }, 6000);
             }
         });
     },

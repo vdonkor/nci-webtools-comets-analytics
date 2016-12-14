@@ -148,7 +148,7 @@ def user_metadata():
         parameters = json.loads(request.data)
         data = {
             "app_metadata": {
-                "comets": "pending"
+                "comets": "active"
             },
             "user_metadata" : {
                 "affiliation": parameters['affiliation'],
@@ -163,25 +163,22 @@ def user_metadata():
             "Content-Type": "application/json"
         }
         response = json.loads(requests.patch(url,data=json.dumps(data),headers=headers).text)
-        response['comets'] = 'pending'
+        response['comets'] = 'active'
         user = response['user_metadata']
-        name = user['given_name']+" "+user["family_name"]
         email = response['email']
-        connection = response['identities'][0]['connection']
-        if "facebook" in connection:
-            connection = "Facebook"
-        elif "google" in connection:
-            connection = "Google"
-        elif connection == "Username-Password-Authentication":
-            connection = "Local"
         composeMail(
             app.config['email.sender'],
             app.config['email.admin'],
-            "User "+name+" registered",
-            "A new user has registered with the following information.\n\n"+
-            "Name: "+name+"\n"+
-            "E-Mail: "+email+"\n"+
-            "Type: "+connection+"\n"
+            "Comets User Registration",
+            "Dear Comets Admins,\n\n"+
+            "This email is to let you know a user just registered on the Comets Analytics web site and entered the following information.\n\n"+
+            "Email Address: "+email+"\n"+
+            "Last Name: "+user["family_name"]+"\n"+
+            "First Name: "+user["given_name"]+"\n"+
+            "Affiliation: "+user["affiliation"]+"\n"+
+            "Cohort: "+user["cohort"]+"\n\n"+
+            "Sincerely,\n"+
+            "Sent from the Comets Analytics Web Tool"
         )
         response = buildSuccess(response)
     except Exception as e:
@@ -243,14 +240,6 @@ def user_list_update():
             }
             line = json.loads(requests.patch(url,data=json.dumps(data),headers=headers).text)
             line['comets'] = line['app_metadata']['comets']
-            if (line['comets'] == 'active'):
-                email = line['email']
-                composeMail(
-                    app.config['email.sender'],
-                    email,
-                    "Your Comets account has been approved.",
-                    "The account you registered with the online COMETS Analytics tool has been moved to active status."
-                )
             response.append(line)
         response = buildSuccess({'user_list': response})
     except Exception as e:
