@@ -12,7 +12,12 @@ appRegistration.FormView = Backbone.View.extend({
             view.model.set('cohortList',view.cohortsModel.get('cohorts'));
             view.render.apply(view);
         });
-        this.model.on('change', this.updateButton, this);
+        this.model.on({
+            'change:email', this.updateButton,
+            'change:family_name', this.updateButton,
+            'change:given_name', this.updateButton,
+            'change:affiliation', this.updateButton
+        }, this);
         this.cohortsModel.on('change', this.after, this);
         this.model.fetch().then(this.after);
         this.cohortsModel.fetch();
@@ -41,12 +46,10 @@ appRegistration.FormView = Backbone.View.extend({
         e.preventDefault();
         var view = this;
         this.$el.find('input').attr('disabled',true);
-        this.model.save(null,{
-            "success": function() {
-                setTimeout(function() {
-                    window.location = '../';
-                }, 6000);
-            }
+        this.model.save(null).done(function() {
+            setTimeout(function() {
+                window.location = '../';
+            }, 6000);
         });
     },
     render: function(e) {
