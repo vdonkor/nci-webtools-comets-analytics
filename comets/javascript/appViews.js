@@ -65,13 +65,54 @@ var appComets = {
     views: {}
 };
 
+appComets.BaseView = Backbone.View.extend({
+    el: 'body',
+    initialize: function() {
+        var url = document.location.toString();
+        if (url.match('#')) {
+            var tab = $('.navbar a[data-toggle="tab"][data-target="#' + url.split('#')[1] + '"]');
+            if (tab.length > 0) {
+                tab.tab('show');
+                setTimeout(function() {
+                    window.scrollTo(0, 0);
+                }, 1);
+            }
+        }
+        this.render();
+    },
+    render: function() {
+        appComets.views.home = new appComets.HomeView();
+        appComets.views.header = new appComets.HeaderView({
+            model: this.model
+        });
+        appComets.views.combineView = new appComets.CombineView({
+            model: this.model.get('combineForm')
+        });
+        appComets.views.formView = new appComets.FormView({
+            model: this.model.get('harmonizationForm')
+        });
+        appComets.views.integrity = new appComets.IntegrityView({
+            model: this.model.get('integrityResults')
+        });
+        appComets.views.summary = new appComets.SummaryView({
+            model: this.model.get('correlationResults')
+        });
+        appComets.views.heatmap = new appComets.HeatmapView({
+            model: this.model.get('correlationResults')
+        });
+        appComets.views.help = new appComets.HelpView();
+    }
+});
+
 appComets.HeaderView = Backbone.View.extend({
-    el: '#pageContent > div:first-child',
+    el: '#header',
     initialize: function() {
         this.model.on('change', this.render, this);
         this.model.fetch();
     },
     events: {
+        'click #logoutBtn': 'logout',
+        'shown.bs.tab a[data-toggle="tab"]': 'onTab',
         'click #adminBtn': 'goToAdmin'
     },
     goToAdmin: function(e) {
@@ -102,11 +143,89 @@ appComets.HeaderView = Backbone.View.extend({
             });
         }
     },
+    logout: function (e) {
+        e.preventDefault();
+        var path = window.location.href;
+        window.location = "/auth0_redirect?logout=" + encodeURIComponent(path.substring(0,path.lastIndexOf('/'))+"/public/logout.html");
+    },
+    onTab: function(e) {
+        var target = $(e.target).attr('data-target').substring(1);
+        var old = $('#'+target).removeAttr('id');
+        var anchor = $('<a id="'+target+'"/>').prependTo($('body'));
+        window.location.hash = target;
+        anchor.remove();
+        old.attr('id',target);
+    },
     render: function() {
         var comets = this.model.get('comets'),
             name = this.model.get('given_name')+' '+this.model.get('family_name');
         $('#adminBtn').toggleClass('show',(comets == 'admin'))
         $('#logoutBtn').siblings('span').html('Welcome'+((name||' ')!==' '?', '+name:'')+'!');
+    }
+});
+
+appComets.CombineView = Backbone.View.extend({
+    el: "#tab-combine",
+    initialize: function() {
+        this.model.on({
+            'change:file1': this.renderSubmit,
+            'change:file2': this.renderSubmit,
+            'change:file3': this.renderSubmit,
+            'change:downloadLink': this.renderDownload
+        }, this);
+    },
+    events: {
+        'change input[type="file"]': 'uploadFile',
+        'click #resetCombine': 'reset',
+        'click #combineFiles': 'combineFiles'
+    },
+    combineFiles: function(e) {
+        e.preventDefault();
+        $(e.target).attr('disabled',true);
+        this.$el.find('input').attr('disabled',true);
+        this.model.fetch({
+            type: 'POST',
+            contentType: 'application/json',
+            data: {
+                'file1': this.model.get('file1'),
+                'file2': this.model.get('file2'),
+                'file3': this.model.get('file3')
+            },
+            dataType: 'json'
+        });
+    },
+    reset: function(e) {
+        e.preventDefault();
+        this.$el.find('input')
+            .val('')
+            .trigger('change')
+            .removeAttr('disabled');
+        this.model.set('downloadLink',"");
+    },
+    uploadFile: function(e) {
+        e.preventDefault();
+        var el = $(e.target),
+            name = el.attr('name') || el.attr('id');
+        if (el.val().length > 0) {
+            this.model.set(name,{"xyz": "abc"});
+        } else {
+            this.model.set(name,{});
+        }
+    },
+    renderSubmit: function() {
+        var file1 = Object.keys(this.model.get('file1')).length > 0,
+            file2 = Object.keys(this.model.get('file2')).length > 0,
+            file3 = Object.keys(this.model.get('file3')).length > 0;
+        if (file1 && file2 && file3) {
+            this.$el.find('#combineFiles').removeAttr('disabled');
+        } else {
+            this.$el.find('#combineFiles').attr('disabled',true);
+        }
+    },
+    renderDownload: function() {
+        this.$el.find('#combineDownload')
+            .toggleClass('show',this.model.get('downloadLink'))
+            .find('a').attr('href',this.model.get('downloadLink'));
     }
 });
 
@@ -826,41 +945,37 @@ appComets.HeatmapView = Backbone.View.extend({
     }
 });
 
-$(function () {
-    var url = document.location.toString();
-    if (url.match('#')) {
-        var tab = $('.navbar a[data-toggle="tab"][data-target="#' + url.split('#')[1] + '"]');
-        if (tab.length > 0) {
-            tab.tab('show');
-            setTimeout(function() {
-                window.scrollTo(0, 0);
-            }, 1);
-        }
+appComets.HomeView = Backbone.View.extend({
+    el: '#tab-home',
+    events: {
+        'click .clicktab': 'tabTo'
+    },
+    tabTo: function(e) {
+        var e = e.target;
+        $('nav a[data-target="'+$(e).attr('href')+'"]').trigger('click');
+        return false;
     }
-    $('.navbar a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        var target = $(e.target).attr('data-target').substring(1);
-        var old = $('#'+target).removeAttr('id');
-        var anchor = $('<a id="'+target+'"/>').prependTo($('body'));
-        window.location.hash = target;
-        anchor.remove();
-        old.attr('id',target);
-    });
-    $('body').on('click','.goto',function(e) {
+});
+
+appComets.HelpView = Backbone.View.extend({
+    el: '#tab-help',
+    events: {
+        'click .goto': 'scrollToAnchor'
+    },
+    scrollToAnchor: function(e) {
         var e = e.target;
         var offset = $($(e).attr('href')).offset();
         $('html, body').animate({scrollTop: offset.top},500);
         return false;
-    });
-    $('body').on('click','.clicktab',function(e) {
-        var e = e.target;
-        $('nav a[data-target="'+$(e).attr('href')+'"]').trigger('click');
-        return false;
-    });
-    $('#logoutBtn').on('click', function (e) {
-        e.preventDefault();
-        var path = window.location.href;
-        window.location = "/auth0_redirect?logout=" + encodeURIComponent(path.substring(0,path.lastIndexOf('/'))+"/public/logout.html");
-    });
+    }
+});
+
+$(function () {
+    appComets.models.cohortsList = new appComets.CohortsModel();
+    appComets.models.combineForm = new appComets.CombineFormModel();
+    appComets.models.integrityResults = new appComets.IntegrityResultsModel();
+    appComets.models.correlationResults = new appComets.CorrelationResultsModel();
+
     templates = $.ajax({
         type: "GET",
         url: "/cometsRest/templates",
@@ -877,35 +992,18 @@ $(function () {
             $('a[href="#tab-summary"]').tab('show');
 
         });
-
-        appComets.models.integrityResults = new appComets.IntegrityResultsModel();
-        appComets.models.correlationResults = new appComets.CorrelationResultsModel();
-        
-        appComets.models.cohortsList = new appComets.CohortsModel();
         appComets.models.cohortsList.fetch().done(function(resp) {
             appComets.HarmonizationFormModel.prototype.defaults.cohortList = appComets.models.cohortsList.get('cohorts');
             appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
-            appComets.views.formView = new appComets.FormView({
-                model: appComets.models.harmonizationForm
+            appComets.models.base = new appComets.BaseModel({
+                'combineForm': appComets.models.combineForm,
+                'harmonizationForm': appComets.models.harmonizationForm,
+                'integrityResults': appComets.models.integrityResults,
+                'correlationResults': appComets.models.correlationResults,
             });
-        });
-        appComets.models.base = new appComets.BaseModel({
-            'harmonizationForm': appComets.models.harmonizationForm,
-            'integrityResults': appComets.models.integrityResults,
-            'correlationResults': appComets.models.correlationResults,
-        });
-        
-        appComets.views.header = new appComets.HeaderView({
-            model: appComets.models.base
-        });
-        appComets.views.integrity = new appComets.IntegrityView({
-            model: appComets.models.integrityResults
-        });
-        appComets.views.summary = new appComets.SummaryView({
-            model: appComets.models.correlationResults
-        });
-        appComets.views.heatmap = new appComets.HeatmapView({
-            model: appComets.models.correlationResults
+            appComets.views.baseView = new appComets.BaseView({
+                model: appComets.models.base
+            });
         });
     });
 });

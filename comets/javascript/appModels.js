@@ -70,6 +70,19 @@ appComets.BaseModel = Backbone.Model.extend({
     }
 });
 
+appComets.CombineFormModel = Backbone.Model.extend({
+    defaults: {
+        file1: {},
+        file2: {},
+        file3: {},
+        downloadLink: ""
+    },
+    url: "/cometsRest/combine",
+    fetch: function() {
+        this.set('downloadLink',"showme");
+    }
+});
+
 appComets.HarmonizationFormModel = Backbone.Model.extend({
     defaults: {
         cohortList: ["Other"],

@@ -53,6 +53,7 @@ nav.navbar.navbar-default {
     box-shadow: 0 2px 4px 0 rgba(1, 90, 129, 0.4);
 }
 
+#combineDownload:not(.show),
 #messageBoard:not(.show),
 #inputHelp:not(.show),
 #calcProgressbar:not(.show),
@@ -63,7 +64,7 @@ nav.navbar.navbar-default {
     display: none;
 }
 #HelpIcon,
-#downloadIcon {
+.downloadIcon {
     padding: 6px 0px;
 }
 input.input:valid {

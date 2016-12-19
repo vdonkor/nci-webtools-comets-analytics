@@ -40,7 +40,7 @@
     </header>
     <div class="container-fluid">
         <div id="pageContent">
-            <div class="container-fluid">
+            <div id="header" class="container-fluid">
                 <div class="row">
                     <div id='page-head' class="col-xs-12">
                         <strong>CO</strong>nsortium of <strong>MET</strong>abolomics <strong>S</strong>tudies
@@ -52,6 +52,7 @@
                         <div id="comets-tab-nav">
                             <ul class="nav nav-pills">
                                 <li role="presentation" class="active"><a data-toggle="tab" data-target="#tab-home">Home</a></li>
+                                <li role="presentation"><a data-toggle="tab" data-target="#tab-combine">Combine</a></li>
                                 <li role="presentation"><a data-toggle="tab" data-target="#tab-correlate">Correlate</a></li>
                                 <li role="presentation"><a data-toggle="tab" data-target="#tab-help">Help</a></li>
                                 <li id="adminBtn" role="presentation" class="pull-right"><a href="admin/index.html">Admin</a></li>
@@ -67,6 +68,39 @@
                             <h3><strong>Welcome to COMETS Analytics!</strong></h3>
                             <p>This web-based self-service application supports all individual cohort analyses of the COMETS consortium to produce aggregated data for meta-analyses. This collaborative work is done via the COMETS harmonization group to enable consistent and reproducible analyses across studies.  Specifically, the platform: 1)  harmonizes metabolite names; 2) performs statistical analyses of metabolomics data; and 3) outputs analysis results in a standardized format ready for meta-analysis. Data are not saved in the system, but output must be downloaded and submitted centrally for meta-analyses. Each type of analyses will be available in the navigation bar.  At present, only correlation analyses are available (see <a href="#tab-correlate" class="clicktab">Correlate tab</a>).  For details, see the <a href="#tab-help" class="clicktab">Help tab</a>.
 							<p>For more information on the consortium, see <a href=" http://epi.grants.cancer.gov/comets/" target="_blank">COMETS website</a>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="tab-combine">
+                    <div class="row">
+                        <div class="col-xs-12 col-md-4 col-lg-3">
+                            <form id="combineForm"class="well clearfix">
+                                <fieldset class="well">
+                                    <div>
+                                        <label for="file1">File 1</label>
+                                        <input type="file" name="file1"/>
+                                    </div>
+                                </fieldset>
+                                <fieldset class="well">
+                                    <div>
+                                        <label for="file2">File 2</label>
+                                        <input type="file" name="file2"/>
+                                    </div>
+                                </fieldset>
+                                <fieldset class="well">
+                                    <div>
+                                        <label for="file3">File 3</label>
+                                        <input type="file" name="file3"/>
+                                    </div>
+                                </fieldset>
+                            </form>
+                            <div class="pull-right">
+                                <button id="resetCombine" class="btn btn-default">Reset</button>
+                                <button id="combineFiles" class="btn btn-default" disabled="true">Combine</button>
+                            </div>
+                            <div id="combineDownload" class="downloadIcon">
+                                <a href=""><span class="glyphicon glyphicon-download"></span> Download Combined File</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -161,10 +195,10 @@
                                 <div id="HelpIcon" style="margin-bottom:8px">
                                     <i class="glyphicon glyphicon-question-sign" style="color:#337Ab7"></i><a id="toggleHelp" href="javascript:void(0);"> Help</a>
                                 </div>                                
-                                <div id=downloadIcon>
+                                <div class="downloadIcon">
                                     <a id="sampleDownload" href="examples/cometsInput.xlsx"><span class="glyphicon glyphicon-download"></span> Download Sample Input</a>
                                 </div>
-                                <div id=downloadIcon>
+                                <div class="downloadIcon">
                                     <a id="harmonizeDownload" href="examples/uid.xls"><span class="glyphicon glyphicon-download"></span> Download Master Metabolite List</a>
                                 </div>
                                 <div id="inputHelp">
