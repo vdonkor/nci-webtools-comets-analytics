@@ -13,10 +13,10 @@ appRegistration.FormView = Backbone.View.extend({
             view.render.apply(view);
         });
         this.model.on({
-            'change:email': this.updateButton,
             'change:family_name': this.updateButton,
             'change:given_name': this.updateButton,
-            'change:affiliation': this.updateButton
+            'change:affiliation': this.updateButton,
+            'change:cohort': this.updateButton
         }, this);
         this.cohortsModel.on('change', this.after, this);
         this.model.fetch().then(this.after);
