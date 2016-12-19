@@ -45,7 +45,7 @@ appRegistration.FormView = Backbone.View.extend({
     register: function(e) {
         e.preventDefault();
         var view = this;
-        this.$el.find('input').attr('disabled',true);
+        this.$el.find('input,select').attr('disabled',true);
         this.model.save(null).done(function() {
             setTimeout(function() {
                 window.location = '../';
