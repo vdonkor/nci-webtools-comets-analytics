@@ -157,9 +157,9 @@ def user_metadata():
                 "given_name": parameters['given_name']
             }
         }
-        url = "https://ncicbiit.auth0.com/api/v2/users/"+parameters['user_id']
+        url = "https://"+app.config['auth0.domain']+".auth0.com/api/v2/users/"+parameters['user_id']
         headers = {
-            "Authorization": "Bearer "+app.config['token'],
+            "Authorization": "Bearer "+app.config['auth0.token'],
             "Content-Type": "application/json"
         }
         response = json.loads(requests.patch(url,data=json.dumps(data),headers=headers).text)
@@ -196,9 +196,9 @@ def user_metadata():
 @app.route('/cometsRest/admin/users', methods=['GET'])
 def user_list_get():
     try:
-        url = "https://ncicbiit.auth0.com/api/v2/users?q=comets%3A%5B*%20TO%20*%5D&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cidentities.connection%2Cuser_id%2Cuser_metadata&include_fields=true&per_page=100&page="
+        url = "https://"+app.config['auth0.domain']+".auth0.com/api/v2/users?q=comets%5B*%20TO%20*%5D&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cidentities.connection%2Cuser_id%2Cuser_metadata&include_fields=true&per_page=100&page="
         headers = {
-            "Authorization": "Bearer "+app.config['token'],
+            "Authorization": "Bearer "+app.config['auth0.token'],
             "Content-Type": "application/json"
         }
         page = 0
@@ -233,9 +233,9 @@ def user_list_update():
                     "comets": comets
                 }
             }
-            url = "https://ncicbiit.auth0.com/api/v2/users/"+parameters['user_id']
+            url = "https://"+app.config['auth0.domain']+".auth0.com/api/v2/users/"+parameters['user_id']
             headers = {
-                "Authorization": "Bearer "+app.config['token'],
+                "Authorization": "Bearer "+app.config['auth0.token'],
                 "Content-Type": "application/json"
             }
             line = json.loads(requests.patch(url,data=json.dumps(data),headers=headers).text)

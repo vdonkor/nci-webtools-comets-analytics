@@ -7,7 +7,7 @@ getCohorts <- function() {
     dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
     masterfile <- file.path(dir, "compileduids.RData")
     load(masterfile)
-    toJSON(as.list(cohorts)$Cohort)
+    toJSON(sort(as.list(cohorts)$Cohort))
 }
 
 checkIntegrity <- function(filename,cohort) {
