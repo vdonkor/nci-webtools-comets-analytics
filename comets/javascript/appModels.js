@@ -30,11 +30,23 @@ Backbone.Model.prototype.fetch = function(options) {
 
 appComets.CohortsModel = Backbone.Model.extend({
     defaults: {
-        cohorts: ['Other']
+        cohorts: [{'text': 'Other', 'value': 'Other'}]
     },
     url: "/cometsRest/public/cohorts",
     parse: function(response) {
         response.cohorts.push("Other");
+        response.cohorts = response.cohorts.map(function(entry) { return { 'text': entry, 'value': entry } });
+        console.log(response);
+        return response;
+    }
+});
+
+appComets.TemplatesModel = Backbone.Model.extend({
+    defaults: {
+        templates: []
+    },
+    url: "/cometsRest/excelTemplates",
+    parse: function(response) {
         console.log(response);
         return response;
     }
@@ -72,9 +84,9 @@ appComets.BaseModel = Backbone.Model.extend({
 
 appComets.CombineFormModel = Backbone.Model.extend({
     defaults: {
-        file1: {},
-        file2: {},
-        file3: {},
+        metadata: {},
+        abundances: {},
+        sample: {},
         downloadLink: ""
     },
     url: "/cometsRest/combine",

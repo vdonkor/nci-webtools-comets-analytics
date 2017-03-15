@@ -59,8 +59,8 @@ nav.navbar.navbar-default {
 #calcProgressbar:not(.show),
 #Interactive:not(.show),
 #Batch:not(.show),
-#analysisOptions:not(.show),
-#loader:not(.show) {
+#loader:not(.show),
+fieldset.well ~ fieldset.well:not(show) {
     display: none;
 }
 #HelpIcon,

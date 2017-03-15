@@ -168,13 +168,20 @@ appComets.CombineView = Backbone.View.extend({
     el: "#tab-combine",
     initialize: function() {
         this.model.on({
-            'change:file1': this.renderSubmit,
-            'change:file2': this.renderSubmit,
-            'change:file3': this.renderSubmit,
-            'change:downloadLink': this.renderDownload
+            'change:templateSelection': this.renderFiles,
+            'change:metadata': this.renderSubmit,
+            'change:abundances': this.renderSubmit,
+            'change:sample': this.renderSubmit
         }, this);
+        this.template = _.template(appComets.templatesList['harmonizationForm.options']);
+        this.$el.find('#templateSelection').html(this.template({
+            optionType: "Template",
+            optionList: this.model.get("templateList"),
+            selectedOption: this.model.get("templateSelection")
+        }));
     },
     events: {
+        'change #templateSelection': appComets.events.updateModel,
         'change input[type="file"]': 'uploadFile',
         'click #resetCombine': 'reset',
         'click #combineFiles': 'combineFiles'
@@ -196,26 +203,32 @@ appComets.CombineView = Backbone.View.extend({
     },
     reset: function(e) {
         e.preventDefault();
-        this.$el.find('input')
-            .val('')
-            .trigger('change')
-            .removeAttr('disabled');
-        this.model.set('downloadLink',"");
+        this.$el.find('#templateSelection').prop('selectedIndex',0).trigger('change');
     },
     uploadFile: function(e) {
         e.preventDefault();
-        var el = $(e.target),
+        var $that = this,
+            el = $(e.target),
             name = el.attr('name') || el.attr('id');
-        if (el.val().length > 0) {
-            this.model.set(name,{"xyz": "abc"});
+        if (window.FileReader && e.target.files[0]) {
+            var file = e.target.files[0],
+                reader = new window.FileReader();
+            reader.onload = function(evt) {
+                var content = evt.target.result.replace(/[\r\n]+/g,'\n').split('\n').map(function(entry) {
+                    return entry.split(',');
+                }),
+                header = content.shift();
+                $that.model.set(name, content);
+            };
+            reader.readAsText(file);
         } else {
-            this.model.set(name,{});
+            $that.model.set(name, {});
         }
     },
     renderSubmit: function() {
-        var file1 = Object.keys(this.model.get('file1')).length > 0,
-            file2 = Object.keys(this.model.get('file2')).length > 0,
-            file3 = Object.keys(this.model.get('file3')).length > 0;
+        var file1 = Object.keys(this.model.get('metadata')).length > 0,
+            file2 = Object.keys(this.model.get('abundances')).length > 0,
+            file3 = Object.keys(this.model.get('sample')).length > 0;
         if (file1 && file2 && file3) {
             this.$el.find('#combineFiles').removeAttr('disabled');
         } else {
@@ -226,6 +239,22 @@ appComets.CombineView = Backbone.View.extend({
         this.$el.find('#combineDownload')
             .toggleClass('show',this.model.get('downloadLink'))
             .find('a').attr('href',this.model.get('downloadLink'));
+    },
+    renderFiles: function() {
+        var templateSelection = this.model.get('templateSelection');
+        if (templateSelection.length > 0) {
+            var varmap = {};
+            templateSelection.split(',').map(function(entry) {
+                varmap[entry] = "";
+            });
+            this.model.set('varmap',varmap);
+            this.$el.find('fieldset').eq(1).addClass('show');
+        } else {
+            this.model.set('varmap',{});
+            this.$el.find('fieldset').eq(1).removeClass('show');
+            this.$el.find('form')[0].reset();
+            this.$el.find('[type="file"]').trigger('change');
+        }
     }
 });
 
@@ -972,38 +1001,39 @@ appComets.HelpView = Backbone.View.extend({
 
 $(function () {
     appComets.models.cohortsList = new appComets.CohortsModel();
-    appComets.models.combineForm = new appComets.CombineFormModel();
+    appComets.models.templatesList = new appComets.TemplatesModel();
     appComets.models.integrityResults = new appComets.IntegrityResultsModel();
     appComets.models.correlationResults = new appComets.CorrelationResultsModel();
-
+    var after3 = _.after(3,function() {
+        appComets.CombineFormModel.prototype.defaults.templateList = appComets.models.templatesList.get('templates');
+        appComets.models.combineForm = new appComets.CombineFormModel();
+        appComets.HarmonizationFormModel.prototype.defaults.cohortList = appComets.models.cohortsList.get('cohorts');
+        appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
+        appComets.models.base = new appComets.BaseModel({
+            'combineForm': appComets.models.combineForm,
+            'harmonizationForm': appComets.models.harmonizationForm,
+            'integrityResults': appComets.models.integrityResults,
+            'correlationResults': appComets.models.correlationResults,
+        });
+        appComets.views.baseView = new appComets.BaseView({
+            model: appComets.models.base
+        });
+    }),
+    setTitle = function (e) {
+        document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
+    };
+    $('#pageContent').on('show.bs.tab', '#comets-tab-nav', setTitle);
+    $('#pageContent').on('show.bs.tab', '#correlate-tab-nav', setTitle);
+    $('#pageContent').on('click', '#runModel', function () {
+        $('a[href="#tab-summary"]').tab('show');
+    });
     templates = $.ajax({
         type: "GET",
         url: "/cometsRest/templates",
     }).then(function (data) {
         // attach templates array to module
         appComets.templatesList = data;
-    }).done(function () {
-        var setTitle = function (e) {
-            document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
-        };
-        $('#pageContent').on('show.bs.tab', '#comets-tab-nav', setTitle);
-        $('#pageContent').on('show.bs.tab', '#correlate-tab-nav', setTitle);
-        $('#pageContent').on('click', '#runModel', function () {
-            $('a[href="#tab-summary"]').tab('show');
-
-        });
-        appComets.models.cohortsList.fetch().done(function(resp) {
-            appComets.HarmonizationFormModel.prototype.defaults.cohortList = appComets.models.cohortsList.get('cohorts');
-            appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
-            appComets.models.base = new appComets.BaseModel({
-                'combineForm': appComets.models.combineForm,
-                'harmonizationForm': appComets.models.harmonizationForm,
-                'integrityResults': appComets.models.integrityResults,
-                'correlationResults': appComets.models.correlationResults,
-            });
-            appComets.views.baseView = new appComets.BaseView({
-                model: appComets.models.base
-            });
-        });
-    });
+    }).done(after3);
+    appComets.models.cohortsList.fetch().done(after3);
+    appComets.models.templatesList.fetch().done(after3);
 });

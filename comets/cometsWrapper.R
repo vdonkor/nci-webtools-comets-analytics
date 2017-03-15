@@ -7,7 +7,15 @@ getCohorts <- function() {
     dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
     masterfile <- file.path(dir, "compileduids.RData")
     load(masterfile)
-    toJSON(as.list(cohorts)$Cohort)
+    toJSON(as.list(cohorts)$Cohort, auto_unbox = T)
+}
+
+getTemplates <- function() {
+    dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
+    ageData = paste0(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4)$VARREFERENCE,collapse=",")
+    basicData = paste0(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4)$VARREFERENCE,collapse=",")
+    templateData = data.frame(text=c("Age","Basic"),value=c(ageData,basicData))
+    toJSON(templateData)
 }
 
 checkIntegrity <- function(filename,cohort) {

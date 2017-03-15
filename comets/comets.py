@@ -96,6 +96,10 @@ def correlate():
             parameters['covariates'] = json.loads(parameters['covariates'])
             if (len(parameters['covariates']) == 0):
                 parameters['covariates'] = None
+        #with open('test.in','w') as file:
+        #    file.write(json.dumps(parameters))
+        #response = buildFailure({'status': False, 'statusMessage': 'show me'})
+        #return response
         result = json.loads(wrapper.runModel(json.dumps(parameters))[0])
         if ("error" in result):
             response = buildFailure(result['error'])
@@ -134,6 +138,14 @@ def templates():
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
 
+@app.route('/cometsRest/excelTemplates', methods=['GET'])
+def excelTemplates():
+    templates = {
+        'templates': json.loads(wrapper.getTemplates()[0])
+    }
+    response = buildSuccess(templates)
+    return response
+        
 @app.route('/cometsRest/public/cohorts', methods=['GET'])
 def cohorts():
     cohorts = {
