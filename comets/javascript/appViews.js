@@ -124,7 +124,6 @@ appComets.HeaderView = Backbone.View.extend({
                     'cssClass': 'btn-primary',
                     'label': "Continue",
                     'action': function(dialog) {
-                        console.log(e);
                         var a = $(e.target);
                         if (a.prop('tagName') !== 'A') a = a.find('a');
                         window.location = a.attr('href');
@@ -173,8 +172,9 @@ appComets.CombineView = Backbone.View.extend({
             'change:abundances': this.renderSubmit,
             'change:sample': this.renderSubmit
         }, this);
-        this.template = _.template(appComets.templatesList['harmonizationForm.options']);
-        this.$el.find('#templateSelection').html(this.template({
+        this.optionsTemplate = _.template(appComets.templatesList['harmonizationForm.options']);
+        this.template = _.template(appComets.templatesList['combineDropdown']);
+        this.$el.find('#templateSelection').html(this.optionsTemplate({
             optionType: "Template",
             optionList: this.model.get("templateList"),
             selectedOption: this.model.get("templateSelection")
@@ -183,6 +183,7 @@ appComets.CombineView = Backbone.View.extend({
     events: {
         'change #templateSelection': appComets.events.updateModel,
         'change input[type="file"]': 'uploadFile',
+        'change fieldset:last-child select': 'updateVarmap',
         'click #resetCombine': 'reset',
         'click #combineFiles': 'combineFiles'
     },
@@ -214,10 +215,8 @@ appComets.CombineView = Backbone.View.extend({
             var file = e.target.files[0],
                 reader = new window.FileReader();
             reader.onload = function(evt) {
-                var content = evt.target.result.replace(/[\r\n]+/g,'\n').split('\n').map(function(entry) {
-                    return entry.split(',');
-                }),
-                header = content.shift();
+                var content = evt.target.result;
+                content = content.substring(0,content.search(/[\r\n]/)).split(',');
                 $that.model.set(name, content);
             };
             reader.readAsText(file);
@@ -225,15 +224,12 @@ appComets.CombineView = Backbone.View.extend({
             $that.model.set(name, {});
         }
     },
-    renderSubmit: function() {
-        var file1 = Object.keys(this.model.get('metadata')).length > 0,
-            file2 = Object.keys(this.model.get('abundances')).length > 0,
-            file3 = Object.keys(this.model.get('sample')).length > 0;
-        if (file1 && file2 && file3) {
-            this.$el.find('#combineFiles').removeAttr('disabled');
-        } else {
-            this.$el.find('#combineFiles').attr('disabled',true);
-        }
+    updateVarmap: function (e) {
+        var e = $(e.target),
+            name = e.attr('name') || e.attr('id'),
+            varmap = $.extend({},this.model.get('varmap'));
+        varmap[name] = e.val();
+        this.model.set('varmap',varmap);
     },
     renderDownload: function() {
         this.$el.find('#combineDownload')
@@ -254,6 +250,28 @@ appComets.CombineView = Backbone.View.extend({
             this.$el.find('fieldset').eq(1).removeClass('show');
             this.$el.find('form')[0].reset();
             this.$el.find('[type="file"]').trigger('change');
+        }
+    },
+    renderMatch: function() {
+        this.$el.find('fieldset').eq(2).html(this.template({
+            'options': this.model.get('sample').slice().concat(this.model.get('metadata')).map(function(entry) {
+                return {'text': entry, 'value': entry};
+            }),
+            'template': this.optionsTemplate,
+            'varmap': this.model.get('varmap')
+        }));
+    },
+    renderSubmit: function() {
+        var file1 = Object.keys(this.model.get('metadata')).length > 0,
+            file2 = Object.keys(this.model.get('abundances')).length > 0,
+            file3 = Object.keys(this.model.get('sample')).length > 0;
+        if (file1 && file2 && file3) {
+            this.$el.find('#combineFiles').removeAttr('disabled');
+            this.$el.find('fieldset').eq(2).addClass('show');
+            this.renderMatch.apply(this);
+        } else {
+            this.$el.find('#combineFiles').attr('disabled',true);
+            this.$el.find('fieldset').eq(2).removeClass('show');
         }
     }
 });
@@ -848,7 +866,6 @@ appComets.CustomListView = Backbone.View.extend({
         var e = $(e.target),
             model = this.model.get('formModel'),
             defaultOptions = model.get('defaultOptions');
-        console.log(defaultOptions.splice(e.attr('data-index'),1));
         model.trigger('change:defaultOptions',model);
     },
     updateModel: function(e) {

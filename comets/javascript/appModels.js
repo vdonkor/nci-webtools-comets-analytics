@@ -84,9 +84,10 @@ appComets.BaseModel = Backbone.Model.extend({
 
 appComets.CombineFormModel = Backbone.Model.extend({
     defaults: {
-        metadata: {},
         abundances: {},
+        metadata: {},
         sample: {},
+        varmap: {},
         downloadLink: ""
     },
     url: "/cometsRest/combine",
