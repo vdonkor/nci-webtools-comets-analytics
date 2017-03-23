@@ -167,9 +167,10 @@ appComets.CombineView = Backbone.View.extend({
     el: "#tab-combine",
     initialize: function() {
         this.model.on({
+            'change:downloadLink': this.renderDownload,
             'change:templateSelection': this.renderFiles,
-            'change:metadata': this.renderSubmit,
             'change:abundances': this.renderSubmit,
+            'change:metadata': this.renderSubmit,
             'change:sample': this.renderSubmit
         }, this);
         this.optionsTemplate = _.template(appComets.templatesList['harmonizationForm.options']);
@@ -189,21 +190,21 @@ appComets.CombineView = Backbone.View.extend({
     },
     combineFiles: function(e) {
         e.preventDefault();
-        $(e.target).attr('disabled',true);
-        this.$el.find('input').attr('disabled',true);
+        var formData = new FormData(this.$el.find('form')[0]);
+        this.$el.find('input,select,#combineFiles').attr('disabled',true);
         this.model.fetch({
-            type: 'POST',
-            contentType: 'application/json',
-            data: {
-                'file1': this.model.get('file1'),
-                'file2': this.model.get('file2'),
-                'file3': this.model.get('file3')
-            },
-            dataType: 'json'
+            type: "POST",
+            data: formData,
+            dataType: "json",
+            cache: false,
+            processData: false,
+            contentType: false
         });
     },
     reset: function(e) {
         e.preventDefault();
+        this.model.set('downloadLink',null);
+        this.$el.find('input,select').removeAttr('disabled');
         this.$el.find('#templateSelection').prop('selectedIndex',0).trigger('change');
     },
     uploadFile: function(e) {
@@ -232,17 +233,21 @@ appComets.CombineView = Backbone.View.extend({
         this.model.set('varmap',varmap);
     },
     renderDownload: function() {
+        var downloadLink = this.model.get('downloadLink');
         this.$el.find('#combineDownload')
-            .toggleClass('show',this.model.get('downloadLink'))
-            .find('a').attr('href',this.model.get('downloadLink'));
+            .toggleClass('show',downloadLink)
+            .find('a').attr('href',downloadLink);
     },
     renderFiles: function() {
         var templateSelection = this.model.get('templateSelection');
         if (templateSelection.length > 0) {
             var varmap = {};
-            templateSelection.split(',').map(function(entry) {
-                varmap[entry] = "";
-            });
+            this.model.get('templateList')
+                .filter(function(entry) { return entry.value == templateSelection; })[0]
+                .data.split(',')
+                .map(function(entry) {
+                    varmap[entry] = "";
+                });
             this.model.set('varmap',varmap);
             this.$el.find('fieldset').eq(1).addClass('show');
         } else {

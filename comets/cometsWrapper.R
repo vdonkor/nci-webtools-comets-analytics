@@ -14,8 +14,47 @@ getTemplates <- function() {
     dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
     ageData = paste0(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4)$VARREFERENCE,collapse=",")
     basicData = paste0(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4)$VARREFERENCE,collapse=",")
-    templateData = data.frame(text=c("Age","Basic"),value=c(ageData,basicData))
+    templateData = data.frame(text=c("Age","Basic"),value=c('age','basic'),data=c(ageData,basicData))
     toJSON(templateData)
+}
+
+combineInputs <- function(jsonData) {
+  suppressWarnings(suppressMessages({
+    returnValue <- list()
+    returnValue$saveValue <- tryCatch(
+      withCallingHandlers(
+        {
+          input = fromJSON(jsonData)
+          filename = paste0("tmp/combinedInput",as.integer(Sys.time()),".xlsx")
+          COMETS::createCOMETSinput(
+            template=input$templateSelection,
+            filenames=list(
+                metabfile=input$metadata,
+                subjfile=input$sample,
+                abundancesfiles=input$abundances
+            ),
+            varmap=input,
+            outputfile=filename
+          )
+          list(downloadLink=filename)
+        },
+        message=function(m) {
+          print(m$message)
+        },
+        warning=function(w) {
+          returnValue$warnings <<- append(returnValue$warnings, w$message)
+        }
+      ),
+      error=function(e) {
+        returnValue$error <<- list(
+          status = FALSE,
+          statusMessage = e$message
+        )
+        return(NULL)
+      }
+    )
+  }))
+  toJSON(returnValue, auto_unbox = T)
 }
 
 checkIntegrity <- function(filename,cohort) {

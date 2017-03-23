@@ -88,11 +88,13 @@ appComets.CombineFormModel = Backbone.Model.extend({
         metadata: {},
         sample: {},
         varmap: {},
-        downloadLink: ""
+        templateSelection: "",
+        downloadLink: null
     },
     url: "/cometsRest/combine",
-    fetch: function() {
-        this.set('downloadLink',"showme");
+    parse: function(response, xhr) {
+        console.log(response);
+        return response;
     }
 });
 

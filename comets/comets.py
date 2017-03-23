@@ -116,7 +116,57 @@ def correlate():
         response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
     finally:
         return response
-        
+
+@app.route('/cometsRest/combine', methods = ['POST'])
+def combine():
+    try:
+        parameters = dict(request.form)
+        for field in parameters:
+            parameters[field] = parameters[field][0]
+        if not os.path.exists('tmp'):
+            os.makedirs('tmp')
+        timestamp = time.strftime("%Y_%m_%d_%I_%M")
+        # abundences
+        abundances = request.files['abundances']
+        name, ext = os.path.splitext(abundances.filename)
+        filename = os.path.join('tmp',"abundances_" + timestamp + ext)
+        saveFile = abundances.save(filename)
+        parameters['abundances'] = filename
+        if os.path.isfile(filename):
+            print("Successfully Uploaded Abundances")
+        # metadata
+        metadata = request.files['metadata']
+        name, ext = os.path.splitext(metadata.filename)
+        filename = os.path.join('tmp',"metadata_" + timestamp + ext)
+        saveFile = metadata.save(filename)
+        parameters['metadata'] = filename
+        if os.path.isfile(filename):
+            print("Successfully Uploaded Metadata")
+        #samples
+        sample = request.files['sample']
+        name, ext = os.path.splitext(sample.filename)
+        filename = os.path.join('tmp',"sample_" + timestamp + ext)
+        saveFile = sample.save(filename)
+        parameters['sample'] = filename
+        if os.path.isfile(filename):
+            print("Successfully Uploaded Sample")
+        result=json.loads(wrapper.combineInputs(json.dumps(parameters))[0])
+        if ("error" in result):
+            response = buildFailure(result['error'])
+        else:
+            response = buildSuccess(result['saveValue'])
+    except Exception as e:
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+    finally:
+        return response
+
 @app.route('/cometsRest/templates', methods = ['GET'])
 def templates():
     try:
