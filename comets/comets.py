@@ -96,6 +96,10 @@ def correlate():
             parameters['covariates'] = json.loads(parameters['covariates'])
             if (len(parameters['covariates']) == 0):
                 parameters['covariates'] = None
+        if ('strata' in parameters):
+            parameters['strata'] = json.loads(parameters['strata'])
+            if (len(parameters['strata']) == 0):
+                parameters['strata'] = None
         #with open('test.in','w') as file:
         #    file.write(json.dumps(parameters))
         #response = buildFailure({'status': False, 'statusMessage': 'show me'})

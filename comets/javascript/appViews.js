@@ -298,10 +298,11 @@ appComets.FormView = Backbone.View.extend({
             "change:metaboliteIds": this.renderModelOptions,
             "change:defaultOptions": this.renderModelOptions,
             "change:modelSelection": this.renderModelList,
-            "change:outcome change:exposure": this.renderRunModelButton
+            "change:outcome change:exposure": this.renderRunModelButton,
+            "change:covariates": this.renderStrataOptions
         }, this);
         this.template = _.template(appComets.templatesList['harmonizationForm.options']);
-        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+        this.$el.find('#outcome, #exposure, #covariates, #strata').each(function (i, el) {
             $(el).selectize({
                 plugins: ['remove_button'],
                 sortField: 'order'
@@ -421,6 +422,7 @@ appComets.FormView = Backbone.View.extend({
             outcome = _.flatten(this.model.get('outcome').map(makeList)),
             exposure = _.flatten(this.model.get('exposure').map(makeList)),
             covariates = _.flatten(this.model.get('covariates').map(makeList)),
+            strata = _.flatten(this.model.get('strata').map(makeList)),
             metaboliteIds = this.model.get('metaboliteIds');
         var outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
             exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
@@ -438,6 +440,7 @@ appComets.FormView = Backbone.View.extend({
             'outcome': JSON.stringify(outcome),
             'exposure': JSON.stringify(exposure),
             'covariates': JSON.stringify(covariates),
+            'strata': JSON.stringify(strata),
             'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription')
         };
         for (var key in toAppend) {
@@ -511,10 +514,6 @@ appComets.FormView = Backbone.View.extend({
     renderModelDescription: function() {
         this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
     },
-    renderShowMetabolites: function() {
-        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
-        this.renderModelOptions.apply(this);
-    },
     renderModelOptions: function() {
         var $that = this;
         var modelOptions = this.model.get('defaultOptions').concat(this.model.get('subjectIds'));
@@ -544,6 +543,47 @@ appComets.FormView = Backbone.View.extend({
             }
             sEl.setValue($that.model.get(el.id), true);
         });
+    },
+    renderShowMetabolites: function() {
+        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
+        this.renderModelOptions.apply(this);
+    },
+    renderStrataOptions: function() {
+        var $that = this,
+            el = this.$el.find('#strata'),
+            sEl = el[0].selectize,
+            strataOptions = this.model.get('covariates'),
+            modelOptions = this.model.get('defaultOptions').concat(this.model.get('subjectIds'));
+        if (this.model.get('showMetabolites')) {
+            modelOptions = modelOptions.concat(this.model.get('metaboliteIds').map(function(entry) { return { text: entry, value: entry }; }));
+        }
+        strataOptions = modelOptions
+            .filter(function(entry) { return entry.value != "All metabolites" && strataOptions.includes(entry.value); })
+            .map(function (option, key) {
+                return {
+                    text: option.text,
+                    value: option.value,
+                    order: key
+                };
+            });
+        if (strataOptions.length == 0) {
+            el.parent().removeClass('show');
+        } else {
+            el.parent().addClass('show');
+        }
+        var oldOptions = $.extend({}, sEl.options);
+        _.each(strataOptions, function (option, key, list) {
+            if (sEl.options[option.value] === undefined) {
+                sEl.addOption(option);
+            } else {
+                sEl.updateOption(option.value, option);
+            }
+            delete oldOptions[option.value];
+        });
+        for (var option in oldOptions) {
+            sEl.removeOption(option);
+        }
+        sEl.setValue($that.model.get('strata'), true);
     },
     renderRunModelButton: function() {
         var methodSelection = this.model.get('methodSelection');
@@ -932,7 +972,9 @@ appComets.HeatmapView = Backbone.View.extend({
     updateModel: appComets.events.updateModel,
     render: function () {
         if (this.model.get('correlationRun')) {
+            var focusId = $(':focus').attr('id');
             this.$el.html(this.template(this.model.attributes));
+            if (focusId) $('#'+focusId).trigger('focus');
             if (this.model.get('status')) {
                 var sortRow = this.model.get('sortRow'),
                     exposures = this.model.get('exposures');

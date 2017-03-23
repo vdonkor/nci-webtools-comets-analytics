@@ -60,7 +60,8 @@ nav.navbar.navbar-default {
 #Interactive:not(.show),
 #Batch:not(.show),
 #loader:not(.show),
-fieldset.well ~ fieldset.well:not(show) {
+fieldset.well ~ fieldset.well:not(.show),
+#Interactive .form-group:last-child:not(.show) {
     display: none;
 }
 #HelpIcon,

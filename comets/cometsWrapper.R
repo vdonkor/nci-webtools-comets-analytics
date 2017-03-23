@@ -100,7 +100,14 @@ runModel <- function(jsonData) {
                 {
                     input = fromJSON(jsonData)
                     exmetabdata <- readCOMETSinput(input$filename)
-                    exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
+                    exmodeldata <- getModelData(exmetabdata,
+                      modelspec=input$methodSelection,
+                      modbatch=input$modelSelection,
+                      rowvars=input$outcome,
+                      colvars=input$exposure,
+                      adjvars=input$covariates,
+                      strvars=input$strata
+                    )
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
                     csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
                     heatmapdata = excorrdata[!is.na(excorrdata$pvalue),]
