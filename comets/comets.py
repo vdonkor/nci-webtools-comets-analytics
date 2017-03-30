@@ -1,9 +1,8 @@
 import json, linecache, os, requests, smtplib, sys, time
+import pyper as pr
 from flask import Flask, json, jsonify, request, Response, send_from_directory
-from rpy2.robjects import r as wrapper
 
 app = Flask(__name__)
-wrapper.source('./cometsWrapper.R')
 
 def buildFailure(message,statusCode = 500):
   response = jsonify(message)
@@ -57,7 +56,13 @@ def integrityCheck():
         saveFile = userFile.save(os.path.join('tmp', filename))
         if os.path.isfile(os.path.join('tmp', filename)):
             print("Successfully Uploaded")
-        result=json.loads(wrapper.checkIntegrity(os.path.join('tmp', filename),request.form['cohortSelection'])[0])
+        r = pr.R()
+        r('source("./cometsWrapper.R")')
+        r.assign('filename',os.path.join('tmp',filename))
+        r.assign('cohort',request.form['cohortSelection'])
+        r('checkIntegrity = checkIntegrity(filename,cohort)')
+        with open(r['checkIntegrity']) as file:
+            result = json.loads(file.read())
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -96,11 +101,12 @@ def correlate():
             parameters['covariates'] = json.loads(parameters['covariates'])
             if (len(parameters['covariates']) == 0):
                 parameters['covariates'] = None
-        #with open('test.in','w') as file:
-        #    file.write(json.dumps(parameters))
-        #response = buildFailure({'status': False, 'statusMessage': 'show me'})
-        #return response
-        result = json.loads(wrapper.runModel(json.dumps(parameters))[0])
+        r = pr.R()
+        r('source("./cometsWrapper.R")')
+        r.assign('parameters',json.dumps(parameters))
+        r('correlate = runModel(parameters)')
+        with open(r['correlate']) as file:
+            result = json.loads(file.read())
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -150,7 +156,12 @@ def combine():
         parameters['sample'] = filename
         if os.path.isfile(filename):
             print("Successfully Uploaded Sample")
-        result=json.loads(wrapper.combineInputs(json.dumps(parameters))[0])
+        r = pr.R()
+        r('source("./cometsWrapper.R")')
+        r.assign('parameters',json.dumps(parameters))
+        r('combine = combineInputs(parameters)')
+        with open(r['combine']) as file:
+            result = json.loads(file.read())
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -190,16 +201,22 @@ def templates():
 
 @app.route('/cometsRest/excelTemplates', methods=['GET'])
 def excelTemplates():
+    r = pr.R()
+    r('source("./cometsWrapper.R")')
+    r('templates = getTemplates()')
     templates = {
-        'templates': json.loads(wrapper.getTemplates()[0])
+        'templates': json.loads(r['templates'])
     }
     response = buildSuccess(templates)
     return response
         
 @app.route('/cometsRest/public/cohorts', methods=['GET'])
 def cohorts():
+    r = pr.R()
+    r('source("./cometsWrapper.R")')
+    r('cohorts = getCohorts()')
     cohorts = {
-        'cohorts': json.loads(wrapper.getCohorts()[0])
+        'cohorts': json.loads(r['cohorts'])
     }
     response = buildSuccess(cohorts)
     return response

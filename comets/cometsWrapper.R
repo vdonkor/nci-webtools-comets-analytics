@@ -19,13 +19,14 @@ getTemplates <- function() {
 }
 
 combineInputs <- function(jsonData) {
+  timestamp = as.integer(Sys.time())
   suppressWarnings(suppressMessages({
     returnValue <- list()
     returnValue$saveValue <- tryCatch(
       withCallingHandlers(
         {
           input = fromJSON(jsonData)
-          filename = paste0("tmp/combinedInput",as.integer(Sys.time()),".xlsx")
+          filename = paste0("tmp/combinedInput",timestamp,".xlsx")
           COMETS::createCOMETSinput(
             template=input$templateSelection,
             filenames=list(
@@ -54,23 +55,23 @@ combineInputs <- function(jsonData) {
       }
     )
   }))
-  toJSON(returnValue, auto_unbox = T)
+  output = toJSON(returnValue, auto_unbox = T)
+  filename = paste0('tmp/chkInt',timestamp,'.out')
+  fileConn = file(filename)
+  writeLines(output,fileConn)
+  close(fileConn)
+  filename
 }
 
 checkIntegrity <- function(filename,cohort) {
+    timestamp = as.integer(Sys.time())
     suppressWarnings(suppressMessages({
         returnValue <- list()
         returnValue$saveValue <- tryCatch(
             withCallingHandlers(
                 {
                   exmetabdata = readCOMETSinput(filename)
-                  exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',as.integer(Sys.time())),exmetabdata$metab,cohort)
-                  #lookup = exmetabdata$metab[c('metabid','biochemical')]
-                  #names(lookup) <- c('joint','new')
-                  #replaceWith <- as.data.frame(replaceList(lookup,exmetabdata$allMetabolites))
-                  #replaceWith[,2] <- exmetabdata$allMetabolites
-                  #names(replaceWith) <- c("text","value")
-                  #exmetabdata$allMetabolites <- replaceWith
+                  exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
                   exmetabdata
                 },
                 message=function(m) {
@@ -89,10 +90,16 @@ checkIntegrity <- function(filename,cohort) {
             }
         )
     }))
-    toJSON(returnValue, auto_unbox = T)
+    output = toJSON(returnValue, auto_unbox = T)
+    filename = paste0('tmp/chkInt',timestamp,'.out')
+    fileConn = file(filename)
+    writeLines(output,fileConn)
+    close(fileConn)
+    filename
 }
 
 runModel <- function(jsonData) {
+    timestamp = as.integer(Sys.time())
     suppressWarnings(suppressMessages({
         returnValue <- list()
         returnValue$saveValue <- tryCatch(
@@ -102,7 +109,7 @@ runModel <- function(jsonData) {
                     exmetabdata <- readCOMETSinput(input$filename)
                     exmodeldata <- getModelData(exmetabdata,modelspec=input$methodSelection,modbatch=input$modelSelection,rowvars=input$outcome,colvars=input$exposure,adjvars=input$covariates)
                     excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
-                    csv <- OutputCSVResults(paste0('tmp/corr',as.integer(Sys.time())),excorrdata,input$cohortSelection)
+                    csv <- OutputCSVResults(paste0('tmp/corr',timestamp),excorrdata,input$cohortSelection)
                     heatmapdata = excorrdata[!is.na(excorrdata$pvalue),]
                     clustersort = NULL
                     if (length(unique(heatmapdata$outcomespec)) > 1 && length(unique(heatmapdata$exposurespec)) > 1) {
@@ -157,7 +164,12 @@ runModel <- function(jsonData) {
             }
         )
     }))
-    toJSON(returnValue, auto_unbox = T, digits = I(3))
+    output = toJSON(returnValue, auto_unbox = T, digits = I(3))
+    filename = paste0('tmp/runMdl',timestamp,'.out')
+    fileConn = file(filename)
+    writeLines(output,fileConn)
+    close(fileConn)
+    filename
 }
 
 makeBranches <- function(dendrogram,lookup) {

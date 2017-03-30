@@ -198,7 +198,12 @@ appComets.CombineView = Backbone.View.extend({
             dataType: "json",
             cache: false,
             processData: false,
-            contentType: false
+            contentType: false,
+            beforeSend: function () {
+                appComets.showLoader();
+            }
+        }).always(function() {
+            appComets.hideLoader();
         });
     },
     reset: function(e) {
@@ -390,7 +395,7 @@ appComets.FormView = Backbone.View.extend({
                     filename: data.filename,
                     metaboliteIds: data.metaboliteIds,
                     modelList: data.models.map(function (model) {
-                        return model.model;
+                        return { 'text': model.model, 'value': model.model };
                     }),
                     status: data.status,
                     subjectIds: data.subjectIds
