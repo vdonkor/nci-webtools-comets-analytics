@@ -115,6 +115,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         outcome:[ "All metabolites" ],
         showMetabolites: false,
         status: false,
+        strata: [],
         subjectIds: []
     }
 });
