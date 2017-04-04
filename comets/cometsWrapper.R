@@ -115,7 +115,11 @@ runModel <- function(jsonData) {
                       adjvars=input$covariates,
                       strvars=input$strata
                     )
-                    excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
+                    if (length(exmodeldata$scovs) > 0) {
+                      excorrdata <- stratCorr(exmodeldata,exmetabdata,input$cohortSelection)
+                    } else {
+                      excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
+                    }
                     csv <- OutputCSVResults(paste0('tmp/corr',timestamp),excorrdata,input$cohortSelection)
                     heatmapdata = excorrdata[!is.na(excorrdata$pvalue),]
                     clustersort = NULL
@@ -152,6 +156,7 @@ runModel <- function(jsonData) {
                       ptime = attr(excorrdata,"ptime"),
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
+                      strata = if(any(names(excorrdata) == "stratavar")) excorrdata[!duplicated(excorrdata[,'stratavar']),'stratavar'] else list(),
                       tableOrder = exmetabdata$dispvars
                     )
                 },

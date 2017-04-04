@@ -204,8 +204,10 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         plotHeight: 500,
         plotWidth: 800,
         sortRow: null,
+        sortStratum: null,
         status: false,
         statusMessage: "An unknown error occurred",
+        strata: [],
         tableOrder: []
     },
     url: "/cometsRest/correlate",
@@ -231,6 +233,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         return response;
     },
     parse: function (response, xhr) {
+        console.log(response);
         var lookup = {};
         var excorrdata = response.excorrdata.map(function (biochemical) {
             lookup[biochemical.outcome] = biochemical.outcome_label;
@@ -241,6 +244,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             });
         });
         var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
+        var strata = response.strata.constructor === Array ? response.strata : [response.strata];
         $.extend(response, {
             clusterResults: false,
             correlationRun: true,
@@ -251,8 +255,10 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             lookup: lookup,
             pageCount: Math.ceil(excorrdata.length/this.get('entryCount')),
             sortRow: exposures[0],
+            sortStratum: "All participants (no stratification)",
             sortHeader: response.tableOrder[0],
-            sortAsc: true
+            sortAsc: true,
+            strata: strata
         });
         response.filterdata = response.filterdata.sort(appComets.sorts.property(response.sortHeader,response.sortAsc));
         if (excorrdata.length < 1) {

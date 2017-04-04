@@ -2,6 +2,15 @@
     <p>The heatmap below displays EXPOSUREs on the x axis and OUTCOMEs on the y axis.</p>
     <div class="row">
         <div class="col-xs-12 col-sm-6 col-md-3">
+            <label for="sortStratum">Strata Sort By:</label>
+            <select id="sortStratum" class="form-control"<%= clusterResults ? " disabled" : "" %>>
+                <option value="All participants (no stratification)"<%= sortRow == "All participants (no stratification)" ? " selected" : "" %>>All participants (no stratification)</option>
+                <% _.each(strata,function(stratum,key,list) { %>
+                    <option value="<%= stratum %>"<%= sortStratum == stratum ? "selected" : "" %>><%= stratum %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-3">
             <label for="sortRow">Outcomes Sort By:</label>
             <select id="sortRow" class="form-control"<%= clusterResults ? " disabled" : "" %>>
                 <% _.each(exposures,function(exposure,key,list) { %>
@@ -11,6 +20,8 @@
                 <option value="Metabolite Name (Z-A)"<%= sortRow == "Metabolite Name (Z-A)" ? " selected" : "" %>>Metabolite Name (Z-A)</option>
             </select>
         </div>
+    </div>
+    <div class="row">
         <div class="col-xs-12 col-sm-6 col-md-3">
             <label for="plotColorscale">Palette:</label>
             <select id="plotColorscale" class="form-control">
