@@ -140,10 +140,6 @@ def correlate():
             parameters['strata'] = json.loads(parameters['strata'])
             if (len(parameters['strata']) == 0):
                 parameters['strata'] = None
-        #with open('output.txt','w') as f:
-        #    f.write(json.dumps(parameters))
-        #response = buildFailure({"status": False, "statusMessage":"writing to output file"})
-        #return response
         r = pr.R()
         r('source("./cometsWrapper.R")')
         r.assign('parameters',json.dumps(parameters))

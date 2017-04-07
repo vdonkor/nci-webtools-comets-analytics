@@ -58,7 +58,7 @@ var appComets = {
         },
         "default": function (property) {
             return function (obj1, obj2) {
-                return (obj2[property]||Number.POSITIVE_INFINITY) - (obj1[property]||Number.POSITIVE_INFINITY);
+                return (obj2[property]==0?0:obj2[property]||Number.POSITIVE_INFINITY) - (obj1[property]==0?0:obj1[property]||Number.POSITIVE_INFINITY);
             };
         }
     },
@@ -924,7 +924,8 @@ appComets.HeatmapView = Backbone.View.extend({
             'change:plotColorscale': this.render,
             'change:plotHeight': this.render,
             'change:plotWidth': this.render,
-            'change:sortRow': this.render
+            'change:sortRow': this.render,
+            'change:sortStratum': this.render
         }, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.heatmapResult);
@@ -943,13 +944,15 @@ appComets.HeatmapView = Backbone.View.extend({
             if (focusId) $('#'+focusId).trigger('focus');
             if (this.model.get('status')) {
                 var sortRow = this.model.get('sortRow'),
-                    exposures = this.model.get('exposures');
-                var correlationData = {};
+                    sortStratum = this.model.get('sortStratum'),
+                    exposures = this.model.get('exposures'),
+                    correlationData = {};
                 _.each(this.model.get('excorrdata'), function (metabolite, key, list) {
                     correlationData[metabolite.outcome] = correlationData[metabolite.outcome] || {
                         'outcome': metabolite.outcome
                     };
                     correlationData[metabolite.outcome][metabolite.exposure] = metabolite.corr;
+                    correlationData[metabolite.outcome][metabolite.stratavar] = metabolite.strata;
                 });
                 var clusterResults = this.model.get('clusterResults');
                 var metaboliteNames = [];
@@ -971,6 +974,18 @@ appComets.HeatmapView = Backbone.View.extend({
                         heatmapData[heatmapData.length] = correlationData[prop];
                     }
                     heatmapData = heatmapData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
+                    if (sortStratum != "All participants (no stratification)") {
+                        var strataSort = {};
+                        _.each(heatmapData, function (datum) {
+                            var stratum = strataSort[datum[sortStratum]]||[];
+                            stratum.push(datum);
+                            strataSort[datum[sortStratum]] = stratum;
+                        });
+                        heatmapData = [];
+                        for (var prop in strataSort) {
+                            heatmapData = heatmapData.concat(strataSort[prop]);
+                        }
+                    }
                     values = heatmapData.map(function (biochem) {
                         return exposures.map(function (exposure) {
                             return biochem[exposure];
