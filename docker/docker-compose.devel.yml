@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
   comets:
     image: "cbiitss/comets:base0_devel"
