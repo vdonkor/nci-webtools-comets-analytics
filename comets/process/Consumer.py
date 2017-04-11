@@ -3,6 +3,7 @@ from twisted.internet import defer, reactor
 from stompest.config import StompConfig
 from stompest.async import Stomp
 from stompest.async.listener import SubscriptionListener
+from stompest.protocol import StompSpec
 
 class Consumer(object):
   
