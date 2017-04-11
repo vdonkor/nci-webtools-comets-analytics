@@ -47,31 +47,13 @@ RUN R -e "devtools::install_version('jsonlite',   version = '0.9.22'  ); \
           devtools::install_bioc('Biobase'); \
           devtools::install_version('ClassComparison', repos = 'http://silicovore.com/OOMPA/' ); "
 
-RUN adduser -u 4004 ncianalysis
+RUN mkdir -p /deploy/app /deploy/logs
 
-RUN mkdir -p /deploy/app /deploy/logs \
- && chown -R ncianalysis:ncianalysis /deploy
+WORKDIR /deploy/app
 
-USER ncianalysis
-WORKDIR /deploy
+COPY "./entrypoint.sh" "/usr/bin/entrypoint.sh"
 
-ENTRYPOINT ["mod_wsgi-express"]
-CMD ["start-server", "app/deploy.wsgi", \
-  "--port", "8000", \
-  "--user", "ncianalysis", \
-  "--group", "ncianalysis", \
-  "--server-root", "wsgi", \
-  "--document-root", "app", \
-  "--working-directory", "app", \
-  "--directory-index", "index.html", \
-  "--log-directory", "logs", \
-  "--socket-timeout", "900", \
-  "--queue-timeout", "900", \
-  "--shutdown-timeout", "900", \
-  "--graceful-timeout", "900", \
-  "--connect-timeout", "900", \
-  "--request-timeout", "900", \
-  "--reload-on-changes", \
-  "--processes", "3", \
-  "--threads", "1", \
-  "--rotate-logs"]
+RUN chmod 755 /usr/bin/entrypoint.sh \
+ && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]

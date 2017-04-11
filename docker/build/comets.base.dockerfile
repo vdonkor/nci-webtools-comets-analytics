@@ -47,10 +47,16 @@ RUN R -e "devtools::install_version('jsonlite',   version = '0.9.22'  ); \
           devtools::install_bioc('Biobase'); \
           devtools::install_version('ClassComparison', repos = 'http://silicovore.com/OOMPA/' ); "
 
-RUN mkdir -p /deploy/app /deploy/logs
+RUN adduser -u 4004 ncianalysis
 
-WORKDIR /deploy/app
+RUN mkdir -p /deploy/app /deploy/logs \
+ && chown -R ncianalysis:ncianalysis /deploy
 
-ENTRYPOINT ["python"]
+WORKDIR /deploy
 
-CMD ["comets.py", "--debug", "--port", "8000"]
+COPY "./entrypoint.sh" "/usr/bin/entrypoint.sh"
+
+RUN chmod 755 /usr/bin/entrypoint.sh \
+ && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]
