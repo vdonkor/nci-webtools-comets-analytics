@@ -39,7 +39,7 @@ RUN R -e "devtools::install_version('jsonlite',   version = '0.9.22'  ); \
 
 RUN adduser -u 4004 ncianalysis
 
-RUN mkdir -p /deploy \
+RUN mkdir -p /deploy/app /deploy/logs \
  && chown -R ncianalysis:ncianalysis /deploy
 
 USER ncianalysis

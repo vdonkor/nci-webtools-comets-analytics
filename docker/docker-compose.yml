@@ -11,7 +11,7 @@ services:
     links:
       - activemq
     ports:
-      - '80:80'
+      - '8000:80'
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost']
   processor:
@@ -24,8 +24,9 @@ services:
       - activemq
     links:
       - activemq
-    ports:
-      - '1001:1001'
+    entrypoint:
+      - python
+      - /deploy/app/process/Consumer.py
   activemq:
     image: "webcenter/activemq:latest"
     container_name: activemq
