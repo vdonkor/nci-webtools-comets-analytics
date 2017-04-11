@@ -5,7 +5,7 @@ services:
     volumes:
       - ./app:/deploy/app
       - ./logs:/deploy/logs
-    container_name: comets
+    container_name: comets_devel
     depends_on:
       - activemq
     links:
