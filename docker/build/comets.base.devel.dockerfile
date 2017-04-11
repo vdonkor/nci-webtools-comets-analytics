@@ -51,7 +51,7 @@ RUN mkdir -p /deploy/app /deploy/logs
 
 WORKDIR /deploy/
 
-COPY "./entrypoint.sh" "/usr/bin/entrypoint.sh"
+COPY "./entrypoint.devel.sh" "/usr/bin/entrypoint.sh"
 
 RUN chmod 755 /usr/bin/entrypoint.sh \
  && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
