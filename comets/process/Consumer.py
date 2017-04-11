@@ -1,3 +1,4 @@
+import logging
 
 from twisted.internet import defer, reactor
 from stompest.config import StompConfig
@@ -9,7 +10,8 @@ class Consumer(object):
   
     @defer.inlineCallbacks
     def run(self):
-        client = Stomp(StompConfig('tcp://activemq:61613')).connect()
+        client = Stomp(StompConfig('tcp://activemq:61613'))
+        yield client.connect()
         headers = { StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL }
         client.subscribe('/queue/test', headers, listener = SubscriptionListener(self.consume, errorDestination = '/queue/error'))
 
@@ -17,6 +19,7 @@ class Consumer(object):
         print('Received frame: %s' % frame.body)
 
 if __name__ == '__main__':
+    logging.basicConfig(level = logging.DEBUG)
     Consumer().run()
     reactor.run()
 
