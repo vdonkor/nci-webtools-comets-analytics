@@ -90,14 +90,17 @@
                                     <div class="form-group">
                                         <label for="metadata">Select Metabolite Meta-Data CSV File <span class="required">*</span></label>
                                         <input type="file" name="metadata" accept=".csv,text/csv"/>
+                                        <a href="examples/testmetab.csv">Example Metabolite Meta-Data</a>
                                     </div>
                                     <div class="form-group">
                                         <label for="abundances">Select Metabolite Abundances CSV File <span class="required">*</span></label>
                                         <input type="file" name="abundances" accept=".csv,text/csv"/>
+                                        <a href="examples/testabundances.csv">Example Metabolite Abundances</a>
                                     </div>
                                     <div class="form-group">
                                         <label for="sample">Select Sample Meta-Data CSV File <span class="required">*</span></label>
                                         <input type="file" name="sample" accept=".csv,text/csv"/>
+                                        <a href="examples/testsubject.csv">Example Sample Meta-Data</a>
                                     </div>
                                 </fieldset>
                                 <fieldset class="well">
@@ -360,6 +363,15 @@
             <!-- end of correlate Tab -->
         </div>
         <div id="loader"><img src="public/images/loader.gif" alt="Loading....Please Wait"></div>
+        <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function()
+        { (i[r].q=i[r].q||[]).push(arguments)}
+        ,i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-62346354-7', 'auto');
+        ga('send', 'pageview');
+        </script>
     </div>
 </body>
 
