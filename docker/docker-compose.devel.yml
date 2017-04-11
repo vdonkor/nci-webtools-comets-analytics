@@ -1,7 +1,7 @@
 version: '2'
 services:
   comets:
-    image: "cbiitss/comets:devel"
+    image: "cbiitss/comets:base0_devel"
     volumes:
       - ./app:/deploy/app
       - ./logs:/deploy/logs
@@ -15,7 +15,7 @@ services:
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost']
   processor:
-    image: "cbiitss/comets:processor"
+    image: "cbiitss/comets:processor_devel"
     volumes:
       - ./app:/deploy/app
       - ./logs:/deploy/logs

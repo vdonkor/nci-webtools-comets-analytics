@@ -47,15 +47,10 @@ RUN R -e "devtools::install_version('jsonlite',   version = '0.9.22'  ); \
           devtools::install_bioc('Biobase'); \
           devtools::install_version('ClassComparison', repos = 'http://silicovore.com/OOMPA/' ); "
 
-RUN pip install
+RUN mkdir -p /deploy/app /deploy/logs
 
-RUN adduser -u 4004 ncianalysis
-
-RUN mkdir -p /deploy/app /deploy/logs \
- && chown -R ncianalysis:ncianalysis /deploy
-
-USER ncianalysis
-WORKDIR /deploy/app
+WORKDIR /deploy
 
 ENTRYPOINT ["python"]
-CMD ["RequestProcessor.py"]
+
+CMD ["comets.py", "--debug", "--port", "8000"]

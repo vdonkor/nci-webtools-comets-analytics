@@ -9,16 +9,26 @@ RUN yum -y upgrade \
         libcurl-devel \
         libpng-devel \
         libssh2-devel \
-        libxml2-devel \ 
+        libxml2-devel \
         openssl-devel \
         readline-devel \
         subversion \
  && yum clean all
 
-RUN pip install --upgrade pip rpy2 mod_wsgi flask requests pyyaml pyper
+RUN pip install --upgrade pip \
+ && pip install \
+        flask \
+        mod_wsgi \
+        pyper \
+        pyyaml \
+        requests \
+        rpy2  \
+        stompest \
+        stompest.async \
+        twisted
 
-RUN R -e "install.packages(c('devtools', 'roxygen2'), INSTALL_opts = c('--no-html')); "
-
+RUN R -e "install.packages(c('devtools', 'roxygen2'), \
+          INSTALL_opts = c('--no-html')); "
 
 RUN R -e "devtools::install_version('jsonlite',   version = '0.9.22'  ); \
           devtools::install_version('plyr',       version = '1.8.3'   ); \
