@@ -7,6 +7,7 @@ R CMD INSTALL .
 popd
 
 # start wsgi server
+pushd /deploy
 mod_wsgi-express start-server /deploy/app/deploy.wsgi \
   --port 8000 \
   --user ncianalysis \

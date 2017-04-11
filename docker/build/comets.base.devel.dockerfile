@@ -49,7 +49,7 @@ RUN R -e "devtools::install_version('jsonlite',   version = '0.9.22'  ); \
 
 RUN mkdir -p /deploy/app /deploy/logs
 
-WORKDIR /deploy/
+WORKDIR /deploy/app
 
 COPY "./entrypoint.devel.sh" "/usr/bin/entrypoint.sh"
 

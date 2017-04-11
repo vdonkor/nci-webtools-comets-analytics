@@ -7,4 +7,5 @@ R CMD INSTALL .
 popd
 
 # start python development server
-python /deploy/app/comets.py --debug --port 8000
+pushd /deploy/app
+python comets.py --debug --port 8000

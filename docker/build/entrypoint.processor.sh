@@ -7,4 +7,5 @@ R CMD INSTALL .
 popd
 
 # start python development server
-python /deploy/app/RequestProcessor.py
+pushd /deploy/app
+python RequestProcessor.py
