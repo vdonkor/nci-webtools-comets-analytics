@@ -3,8 +3,8 @@ services:
   comets:
     image: "cbiitss/comets:base0.devel"
     volumes:
-      - ./app:/deploy/app
-      - ./logs:/deploy/logs
+      - ./run/app:/deploy/app
+      - ./run/logs:/deploy/logs
     container_name: comets_devel
     depends_on:
       - activemq
@@ -17,8 +17,8 @@ services:
   processor:
     image: "cbiitss/comets:processor.devel"
     volumes:
-      - ./app:/deploy/app
-      - ./logs:/deploy/logs
+      - ./run/app:/deploy/app
+      - ./run/logs:/deploy/logs
     container_name: comets_processor_devel
     depends_on:
       - activemq

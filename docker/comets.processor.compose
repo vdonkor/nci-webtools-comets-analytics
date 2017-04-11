@@ -3,6 +3,6 @@ services:
   processor:
     image: cbiitss/comets:processor
       volumes:
-        - ./app:/deploy/app
-        - ./logs:/deploy/logs
+        - ./run/app:/deploy/app
+        - ./run/logs:/deploy/logs
       container_name: comets_processor
