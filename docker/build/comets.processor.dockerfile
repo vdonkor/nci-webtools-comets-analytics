@@ -52,12 +52,13 @@ RUN adduser -u 4004 ncianalysis
 RUN mkdir -p /deploy/app /deploy/logs \
  && chown -R ncianalysis:ncianalysis /deploy
 
-USER ncianalysis
 WORKDIR /deploy/app
 
 COPY "./entrypoint.processor.sh" "/usr/bin/entrypoint.sh"
 
 RUN chmod 755 /usr/bin/entrypoint.sh \
  && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
+
+USER ncianalysis
 
 ENTRYPOINT ["entrypoint.sh"]
