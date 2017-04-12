@@ -5,6 +5,7 @@ services:
     volumes:
       - ./run/app:/deploy/app
       - ./run/logs:/deploy/logs
+      - /etc/localtime:/etc/localtime:ro
     container_name: comets
     depends_on:
       - activemq
@@ -19,6 +20,7 @@ services:
     volumes:
       - ./run/app:/deploy/app
       - ./run/logs:/deploy/logs
+      - /etc/localtime:/etc/localtime:ro
     container_name: comets_processor
     depends_on:
       - activemq
@@ -27,6 +29,8 @@ services:
     entrypoint: "bash -c 'sleep 4 && python /deploy/app/process/Consumer.py'"
   activemq:
     image: "webcenter/activemq:latest"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     container_name: activemq
     expose:
       - '61613'

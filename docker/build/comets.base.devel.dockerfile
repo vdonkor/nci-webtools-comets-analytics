@@ -56,4 +56,9 @@ COPY "./entrypoint.devel.sh" "/usr/bin/entrypoint.sh"
 RUN chmod 755 /usr/bin/entrypoint.sh \
  && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
 
+COPY "./install_comets_package.sh" "/usr/bin/install_comets_package.sh"
+
+RUN chmod 755 /usr/bin/install_comets_package.sh \
+ && ln -s /usr/bin/install_comets_package.sh /install_comets_package.sh
+
 ENTRYPOINT ["entrypoint.sh"]
