@@ -1,0 +1,5 @@
+flask
+rpy2
+stompest
+stompest.async
+twisted
