@@ -12,7 +12,7 @@ services:
     links:
       - activemq
     ports:
-      - '8000:80'
+      - '8100:8000'
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost']
   processor:
