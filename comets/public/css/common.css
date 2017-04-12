@@ -35,3 +35,6 @@ strong {
     overflow: auto;
     padding: 15px;
 }
+select.disabled {
+    background: #EBEBE4;
+}

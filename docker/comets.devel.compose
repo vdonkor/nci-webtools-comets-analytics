@@ -1,0 +1,35 @@
+version: '3'
+services:
+  comets:
+    image: "cbiitss/comets:base0.devel"
+    volumes:
+      - ./run/app:/deploy/app
+      - ./run/logs:/deploy/logs
+    container_name: comets_devel
+    depends_on:
+      - activemq
+    links:
+      - activemq
+    ports:
+      - '8000:8000'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost']
+  processor:
+    image: "cbiitss/comets:processor.devel"
+    volumes:
+      - ./run/app:/deploy/app
+      - ./run/logs:/deploy/logs
+    container_name: comets_processor_devel
+    depends_on:
+      - activemq
+    links:
+      - activemq
+    entrypoint: "bash -c 'sleep 10 && python /deploy/app/process/Consumer.py'"
+  activemq:
+    image: "webcenter/activemq:latest"
+    container_name: activemq
+    expose:
+      - '61613'
+    ports:
+      - '8161:8161'
+      - '61613:61613'

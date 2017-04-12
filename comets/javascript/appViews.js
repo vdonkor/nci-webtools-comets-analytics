@@ -643,7 +643,8 @@ appComets.SummaryView = Backbone.View.extend({
             if (value >= oldValue) {
                 subset = true;
                 filterdata = filterdata.filter(function(entry) {
-                    return entry[name] >= value;
+                    var source = parseFloat(entry[name]);
+                    return (Number.isNaN(source)?Number.NEGATIVE_INFINITY:source) >= value;
                 });
             }
         } else if (max) {
@@ -655,7 +656,8 @@ appComets.SummaryView = Backbone.View.extend({
             if (value <= oldValue) {
                 subset = true;
                 filterdata = filterdata.filter(function(entry) {
-                    return entry[name] <= value;
+                    var source = parseFloat(entry[name]);
+                    return (Number.isNaN(source)?Number.POSITIVE_INFINITY:source) <= value;
                 });
             }
         } else {
@@ -680,18 +682,18 @@ appComets.SummaryView = Backbone.View.extend({
                     if (!Number.isNaN(max)) {
                         filterdata = filterdata.filter(function(entry) {
                             source = Number.parseFloat(entry[tableOrder[index]]);
-                            return source >= min && source <= max;
+                            return (Number.isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min && (Number.isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
                         });
                     } else {
                         filterdata = filterdata.filter(function(entry) {
                             source = Number.parseFloat(entry[tableOrder[index]]);
-                            return source >= min;
+                            return (Number.isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min;
                         });
                     }
                 } else if (!Number.isNaN(max)) {
                     filterdata = filterdata.filter(function(entry) {
                         source = Number.parseFloat(entry[tableOrder[index]]);
-                        return source <= max;
+                        return (Number.isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
                     });
                 } else if (val !== undefined && val !== null) {
                     filterdata = filterdata.filter(function(entry) {
@@ -811,7 +813,8 @@ appComets.SummaryView = Backbone.View.extend({
         for (var index = (page-1)*entryCount; index < Math.min(page*entryCount,map.length); index++) {
             tr += '<tr><th class="text-center"><input type="checkbox" name="'+index+'"'+(map[index].selected?' checked="true"':'')+'/></th>';
             for (var orderIndex in tableOrder) {
-                tr += '<td>'+map[index][tableOrder[orderIndex]]+'</td>';
+                var val = map[index][tableOrder[orderIndex]];
+                tr += '<td>'+(val === undefined?"NA":val)+'</td>';
             }
             tr += '</tr>';
         }
@@ -877,6 +880,7 @@ appComets.CustomListView = Backbone.View.extend({
         var e = $(e.target),
             model = this.model.get('formModel'),
             defaultOptions = model.get('defaultOptions');
+        defaultOptions.splice(e.attr('data-index'),1);
         model.trigger('change:defaultOptions',model);
     },
     updateModel: function(e) {
