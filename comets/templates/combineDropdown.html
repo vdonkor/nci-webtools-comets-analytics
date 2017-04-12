@@ -1,0 +1,16 @@
+<%  for (var varname in varmap) { %>
+<div class="form-group">
+    <label for="<%=varname%>">Select <%=varname%></label>
+    <div class="row">
+        <div class="col-xs-12">
+            <select name="<%=varname%>" class="form-control col-xs-12">
+<%=template({
+    "optionType": varname,
+    "optionList": options,
+    "selectedOption": varmap[varname]
+}) %>
+            </select>
+        </div>
+    </div>
+</div>
+<%  } %>

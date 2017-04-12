@@ -30,11 +30,23 @@ Backbone.Model.prototype.fetch = function(options) {
 
 appComets.CohortsModel = Backbone.Model.extend({
     defaults: {
-        cohorts: ['Other']
+        cohorts: [{'text': 'Other', 'value': 'Other'}]
     },
     url: "/cometsRest/public/cohorts",
     parse: function(response) {
         response.cohorts.push("Other");
+        response.cohorts = response.cohorts.map(function(entry) { return { 'text': entry, 'value': entry } });
+        console.log(response);
+        return response;
+    }
+});
+
+appComets.TemplatesModel = Backbone.Model.extend({
+    defaults: {
+        templates: []
+    },
+    url: "/cometsRest/excelTemplates",
+    parse: function(response) {
         console.log(response);
         return response;
     }
@@ -70,6 +82,22 @@ appComets.BaseModel = Backbone.Model.extend({
     }
 });
 
+appComets.CombineFormModel = Backbone.Model.extend({
+    defaults: {
+        abundances: {},
+        metadata: {},
+        sample: {},
+        varmap: {},
+        templateSelection: "",
+        downloadLink: null
+    },
+    url: "/cometsRest/combine",
+    parse: function(response, xhr) {
+        console.log(response);
+        return response;
+    }
+});
+
 appComets.HarmonizationFormModel = Backbone.Model.extend({
     defaults: {
         cohortList: ["Other"],
@@ -87,6 +115,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         outcome:[ "All metabolites" ],
         showMetabolites: false,
         status: false,
+        strata: [],
         subjectIds: []
     }
 });
@@ -175,8 +204,10 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         plotHeight: 500,
         plotWidth: 800,
         sortRow: null,
+        sortStratum: null,
         status: false,
         statusMessage: "An unknown error occurred",
+        strata: [],
         tableOrder: []
     },
     url: "/cometsRest/correlate",
@@ -202,6 +233,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         return response;
     },
     parse: function (response, xhr) {
+        console.log(response);
         var lookup = {};
         var excorrdata = response.excorrdata.map(function (biochemical) {
             lookup[biochemical.outcome] = biochemical.outcome_label;
@@ -212,6 +244,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             });
         });
         var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
+        var strata = response.strata.constructor === Array ? response.strata : [response.strata];
         $.extend(response, {
             clusterResults: false,
             correlationRun: true,
@@ -222,8 +255,10 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             lookup: lookup,
             pageCount: Math.ceil(excorrdata.length/this.get('entryCount')),
             sortRow: exposures[0],
+            sortStratum: "All participants (no stratification)",
             sortHeader: response.tableOrder[0],
-            sortAsc: true
+            sortAsc: true,
+            strata: strata
         });
         response.filterdata = response.filterdata.sort(appComets.sorts.property(response.sortHeader,response.sortAsc));
         if (excorrdata.length < 1) {

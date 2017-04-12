@@ -1,9 +1,43 @@
-import json, linecache, os, requests, smtplib, sys, time
+import json, linecache, os, requests, smtplib, sys, time, yaml
+import pyper as pr
 from flask import Flask, json, jsonify, request, Response, send_from_directory
-from rpy2.robjects import r as wrapper
 
 app = Flask(__name__)
-wrapper.source('./cometsWrapper.R')
+
+def flatten(yaml,parent=None):
+    for param in yaml:
+        if (isinstance(yaml[param],dict)):
+            flatten(yaml[param],param)
+        else:
+            app.config[(parent+"." if parent else "")+param] = yaml[param]
+
+def loadHtmlTemplates(app):
+    templates = {}
+    if os.path.exists('templates'):
+        for templateFile in os.listdir("templates"):
+            if templateFile.endswith('.html'):
+                with open(os.path.join('templates', templateFile), 'r') as content_file:
+                    content = content_file.read()
+                    filename = os.path.splitext(templateFile)[0]
+                    templates[filename] = content
+    app.config["htmlTemplates"] = templates
+
+def loadExcelTemplates(app):
+    r = pr.R()
+    r('source("./cometsWrapper.R")')
+    r('templates = getTemplates()')
+    app.config["excelTemplates"] = {
+        'templates': json.loads(r['templates'])
+    }
+
+def loadCohortList(app):
+    r = pr.R()
+    r('source("./cometsWrapper.R")')
+    r('cohorts = getCohorts()')
+    app.config["cohortList"] = {
+        'cohorts': json.loads(r['cohorts'])
+    }
+
 
 def buildFailure(message,statusCode = 500):
   response = jsonify(message)
@@ -57,7 +91,13 @@ def integrityCheck():
         saveFile = userFile.save(os.path.join('tmp', filename))
         if os.path.isfile(os.path.join('tmp', filename)):
             print("Successfully Uploaded")
-        result=json.loads(wrapper.checkIntegrity(os.path.join('tmp', filename),request.form['cohortSelection'])[0])
+        r = pr.R()
+        r('source("./cometsWrapper.R")')
+        r.assign('filename',os.path.join('tmp',filename))
+        r.assign('cohort',request.form['cohortSelection'])
+        r('checkIntegrity = checkIntegrity(filename,cohort)')
+        with open(r['checkIntegrity']) as file:
+            result = json.loads(file.read())
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -96,7 +136,16 @@ def correlate():
             parameters['covariates'] = json.loads(parameters['covariates'])
             if (len(parameters['covariates']) == 0):
                 parameters['covariates'] = None
-        result = json.loads(wrapper.runModel(json.dumps(parameters))[0])
+        if ('strata' in parameters):
+            parameters['strata'] = json.loads(parameters['strata'])
+            if (len(parameters['strata']) == 0):
+                parameters['strata'] = None
+        r = pr.R()
+        r('source("./cometsWrapper.R")')
+        r.assign('parameters',json.dumps(parameters))
+        r('correlate = runModel(parameters)')
+        with open(r['correlate']) as file:
+            result = json.loads(file.read())
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -112,19 +161,50 @@ def correlate():
         response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
     finally:
         return response
-        
-@app.route('/cometsRest/templates', methods = ['GET'])
-def templates():
+
+@app.route('/cometsRest/combine', methods = ['POST'])
+def combine():
     try:
-        templates = {}
-        if os.path.exists('templates'):
-            for templateFile in os.listdir("templates"):
-                if templateFile.endswith('.html'):
-                    with open(os.path.join('templates', templateFile), 'r') as content_file:
-                        content = content_file.read()
-                        filename = os.path.splitext(templateFile)[0]
-                        templates[filename] = content
-        return jsonify(templates)
+        parameters = dict(request.form)
+        for field in parameters:
+            parameters[field] = parameters[field][0]
+        if not os.path.exists('tmp'):
+            os.makedirs('tmp')
+        timestamp = time.strftime("%Y_%m_%d_%I_%M")
+        # abundences
+        abundances = request.files['abundances']
+        name, ext = os.path.splitext(abundances.filename)
+        filename = os.path.join('tmp',"abundances_" + timestamp + ext)
+        saveFile = abundances.save(filename)
+        parameters['abundances'] = filename
+        if os.path.isfile(filename):
+            print("Successfully Uploaded Abundances")
+        # metadata
+        metadata = request.files['metadata']
+        name, ext = os.path.splitext(metadata.filename)
+        filename = os.path.join('tmp',"metadata_" + timestamp + ext)
+        saveFile = metadata.save(filename)
+        parameters['metadata'] = filename
+        if os.path.isfile(filename):
+            print("Successfully Uploaded Metadata")
+        #samples
+        sample = request.files['sample']
+        name, ext = os.path.splitext(sample.filename)
+        filename = os.path.join('tmp',"sample_" + timestamp + ext)
+        saveFile = sample.save(filename)
+        parameters['sample'] = filename
+        if os.path.isfile(filename):
+            print("Successfully Uploaded Sample")
+        r = pr.R()
+        r('source("./cometsWrapper.R")')
+        r.assign('parameters',json.dumps(parameters))
+        r('combine = combineInputs(parameters)')
+        with open(r['combine']) as file:
+            result = json.loads(file.read())
+        if ("error" in result):
+            response = buildFailure(result['error'])
+        else:
+            response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame
@@ -133,14 +213,21 @@ def templates():
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+    finally:
+        return response
 
+@app.route('/cometsRest/templates', methods = ['GET'])
+def templates():
+    return jsonify(app.config["htmlTemplates"])
+
+@app.route('/cometsRest/excelTemplates', methods=['GET'])
+def excelTemplates():
+    return buildSuccess(app.config["excelTemplates"])
+        
 @app.route('/cometsRest/public/cohorts', methods=['GET'])
 def cohorts():
-    cohorts = {
-        'cohorts': json.loads(wrapper.getCohorts()[0])
-    }
-    response = buildSuccess(cohorts)
-    return response
+    return buildSuccess(app.config['cohortList'])
 
 @app.route('/cometsRest/registration/user_metadata', methods=['POST'])
 def user_metadata():
@@ -254,21 +341,19 @@ def user_list_update():
     finally:
         return response
 
+with open("restricted/settings.yml", 'r') as f:
+    flatten(yaml.safe_load(f))
+loadHtmlTemplates(app)
+loadExcelTemplates(app)
+loadCohortList(app)
+
 if __name__ == '__main__':
-    import argparse, yaml
+    import argparse
     parser = argparse.ArgumentParser()
 
     # Default port is 9200
     parser.add_argument('-p', '--port', type = int, dest = 'port', default = 9200, help = 'Sets the Port')
     parser.add_argument('-d', '--debug', action = 'store_true', help = 'Enables debugging')
-    def flatten(yaml,parent=None):
-        for param in yaml:
-            if (isinstance(yaml[param],dict)):
-                flatten(yaml[param],param)
-            else:
-                app.config[(parent+"." if parent else "")+param] = yaml[param]
-    with open("restricted/settings.yml", 'r') as f:
-        flatten(yaml.safe_load(f))
     args = parser.parse_args()
     if (args.debug):
         @app.route('/common/<path:path>')

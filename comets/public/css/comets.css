@@ -53,17 +53,18 @@ nav.navbar.navbar-default {
     box-shadow: 0 2px 4px 0 rgba(1, 90, 129, 0.4);
 }
 
+#combineDownload:not(.show),
 #messageBoard:not(.show),
 #inputHelp:not(.show),
 #calcProgressbar:not(.show),
 #Interactive:not(.show),
 #Batch:not(.show),
-#analysisOptions:not(.show),
-#loader:not(.show) {
+#loader:not(.show),
+fieldset.well ~ fieldset.well:not(.show) {
     display: none;
 }
 #HelpIcon,
-#downloadIcon {
+.downloadIcon {
     padding: 6px 0px;
 }
 input.input:valid {

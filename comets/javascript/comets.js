@@ -172,8 +172,8 @@
             },
             margin: {
                 t: 32,
-                b: 7*xLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); }),
-                l: options.clustered ? 0 : Math.max(50,7*yLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); }))
+                b: Math.min(50,7*xLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); })),
+                l: options.clustered ? 0 : 150
             },
             width: options.width,
             shapes: shapes,

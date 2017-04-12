@@ -58,20 +58,61 @@ var appComets = {
         },
         "default": function (property) {
             return function (obj1, obj2) {
-                return obj2[property] - obj1[property];
+                return (obj2[property]==0?0:obj2[property]||Number.POSITIVE_INFINITY) - (obj1[property]==0?0:obj1[property]||Number.POSITIVE_INFINITY);
             };
         }
     },
     views: {}
 };
 
+appComets.BaseView = Backbone.View.extend({
+    el: 'body',
+    initialize: function() {
+        var url = document.location.toString();
+        if (url.match('#')) {
+            var tab = $('.navbar a[data-toggle="tab"][data-target="#' + url.split('#')[1] + '"]');
+            if (tab.length > 0) {
+                tab.tab('show');
+                setTimeout(function() {
+                    window.scrollTo(0, 0);
+                }, 1);
+            }
+        }
+        this.render();
+    },
+    render: function() {
+        appComets.views.home = new appComets.HomeView();
+        appComets.views.header = new appComets.HeaderView({
+            model: this.model
+        });
+        appComets.views.combineView = new appComets.CombineView({
+            model: this.model.get('combineForm')
+        });
+        appComets.views.formView = new appComets.FormView({
+            model: this.model.get('harmonizationForm')
+        });
+        appComets.views.integrity = new appComets.IntegrityView({
+            model: this.model.get('integrityResults')
+        });
+        appComets.views.summary = new appComets.SummaryView({
+            model: this.model.get('correlationResults')
+        });
+        appComets.views.heatmap = new appComets.HeatmapView({
+            model: this.model.get('correlationResults')
+        });
+        appComets.views.help = new appComets.HelpView();
+    }
+});
+
 appComets.HeaderView = Backbone.View.extend({
-    el: '#pageContent > div:first-child',
+    el: '#header',
     initialize: function() {
         this.model.on('change', this.render, this);
         this.model.fetch();
     },
     events: {
+        'click #logoutBtn': 'logout',
+        'shown.bs.tab a[data-toggle="tab"]': 'onTab',
         'click #adminBtn': 'goToAdmin'
     },
     goToAdmin: function(e) {
@@ -101,11 +142,147 @@ appComets.HeaderView = Backbone.View.extend({
             });
         }
     },
+    logout: function (e) {
+        e.preventDefault();
+        var path = window.location.href;
+        window.location = "/auth0_redirect?logout=" + encodeURIComponent(path.substring(0,path.lastIndexOf('/'))+"/public/logout.html");
+    },
+    onTab: function(e) {
+        var target = $(e.target).attr('data-target').substring(1);
+        var old = $('#'+target).removeAttr('id');
+        var anchor = $('<a id="'+target+'"/>').prependTo($('body'));
+        window.location.hash = target;
+        anchor.remove();
+        old.attr('id',target);
+    },
     render: function() {
         var comets = this.model.get('comets'),
             name = this.model.get('given_name')+' '+this.model.get('family_name');
         $('#adminBtn').toggleClass('show',(comets == 'admin'))
         $('#logoutBtn').siblings('span').html('Welcome'+((name||' ')!==' '?', '+name:'')+'!');
+    }
+});
+
+appComets.CombineView = Backbone.View.extend({
+    el: "#tab-combine",
+    initialize: function() {
+        this.model.on({
+            'change:downloadLink': this.renderDownload,
+            'change:templateSelection': this.renderFiles,
+            'change:abundances': this.renderSubmit,
+            'change:metadata': this.renderSubmit,
+            'change:sample': this.renderSubmit
+        }, this);
+        this.optionsTemplate = _.template(appComets.templatesList['harmonizationForm.options']);
+        this.template = _.template(appComets.templatesList['combineDropdown']);
+        this.$el.find('#templateSelection').html(this.optionsTemplate({
+            optionType: "Template",
+            optionList: this.model.get("templateList"),
+            selectedOption: this.model.get("templateSelection")
+        }));
+    },
+    events: {
+        'change #templateSelection': appComets.events.updateModel,
+        'change input[type="file"]': 'uploadFile',
+        'change fieldset:last-child select': 'updateVarmap',
+        'click #resetCombine': 'reset',
+        'click #combineFiles': 'combineFiles'
+    },
+    combineFiles: function(e) {
+        e.preventDefault();
+        var formData = new FormData(this.$el.find('form')[0]);
+        this.$el.find('input,select,#combineFiles').attr('disabled',true);
+        this.model.fetch({
+            type: "POST",
+            data: formData,
+            dataType: "json",
+            cache: false,
+            processData: false,
+            contentType: false,
+            beforeSend: function () {
+                appComets.showLoader();
+            }
+        }).always(function() {
+            appComets.hideLoader();
+        });
+    },
+    reset: function(e) {
+        e.preventDefault();
+        this.model.set('downloadLink',null);
+        this.$el.find('input,select').removeAttr('disabled');
+        this.$el.find('#templateSelection').prop('selectedIndex',0).trigger('change');
+    },
+    uploadFile: function(e) {
+        e.preventDefault();
+        var $that = this,
+            el = $(e.target),
+            name = el.attr('name') || el.attr('id');
+        if (window.FileReader && e.target.files[0]) {
+            var file = e.target.files[0],
+                reader = new window.FileReader();
+            reader.onload = function(evt) {
+                var content = evt.target.result;
+                content = content.substring(0,content.search(/[\r\n]/)).split(',');
+                $that.model.set(name, content);
+            };
+            reader.readAsText(file);
+        } else {
+            $that.model.set(name, {});
+        }
+    },
+    updateVarmap: function (e) {
+        var e = $(e.target),
+            name = e.attr('name') || e.attr('id'),
+            varmap = $.extend({},this.model.get('varmap'));
+        varmap[name] = e.val();
+        this.model.set('varmap',varmap);
+    },
+    renderDownload: function() {
+        var downloadLink = this.model.get('downloadLink');
+        this.$el.find('#combineDownload')
+            .toggleClass('show',downloadLink)
+            .find('a').attr('href',downloadLink);
+    },
+    renderFiles: function() {
+        var templateSelection = this.model.get('templateSelection');
+        if (templateSelection.length > 0) {
+            var varmap = {};
+            this.model.get('templateList')
+                .filter(function(entry) { return entry.value == templateSelection; })[0]
+                .data.split(',')
+                .map(function(entry) {
+                    varmap[entry] = "";
+                });
+            this.model.set('varmap',varmap);
+            this.$el.find('fieldset').eq(1).addClass('show');
+        } else {
+            this.model.set('varmap',{});
+            this.$el.find('fieldset').eq(1).removeClass('show');
+            this.$el.find('form')[0].reset();
+            this.$el.find('[type="file"]').trigger('change');
+        }
+    },
+    renderMatch: function() {
+        this.$el.find('fieldset').eq(2).html(this.template({
+            'options': this.model.get('sample').slice().concat(this.model.get('metadata')).map(function(entry) {
+                return {'text': entry, 'value': entry};
+            }),
+            'template': this.optionsTemplate,
+            'varmap': this.model.get('varmap')
+        }));
+    },
+    renderSubmit: function() {
+        var file1 = Object.keys(this.model.get('metadata')).length > 0,
+            file2 = Object.keys(this.model.get('abundances')).length > 0,
+            file3 = Object.keys(this.model.get('sample')).length > 0;
+        if (file1 && file2 && file3) {
+            this.$el.find('#combineFiles').removeAttr('disabled');
+            this.$el.find('fieldset').eq(2).addClass('show');
+            this.renderMatch.apply(this);
+        } else {
+            this.$el.find('#combineFiles').attr('disabled',true);
+            this.$el.find('fieldset').eq(2).removeClass('show');
+        }
     }
 });
 
@@ -122,14 +299,12 @@ appComets.FormView = Backbone.View.extend({
             "change:modelList": this.renderModelList,
             "change:modelDescription": this.renderModelDescription,
             "change:showMetabolites": this.renderShowMetabolites,
-            "change:subjectIds": this.renderModelOptions,
-            "change:metaboliteIds": this.renderModelOptions,
-            "change:defaultOptions": this.renderModelOptions,
+            "change:subjectIds change:metaboliteIds change:defaultOptions": this.renderModelOptions,
             "change:modelSelection": this.renderModelList,
             "change:outcome change:exposure": this.renderRunModelButton
         }, this);
         this.template = _.template(appComets.templatesList['harmonizationForm.options']);
-        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+        this.$el.find('#outcome, #exposure, #covariates, #strata').each(function (i, el) {
             $(el).selectize({
                 plugins: ['remove_button'],
                 sortField: 'order'
@@ -218,7 +393,7 @@ appComets.FormView = Backbone.View.extend({
                     filename: data.filename,
                     metaboliteIds: data.metaboliteIds,
                     modelList: data.models.map(function (model) {
-                        return model.model;
+                        return { 'text': model.model, 'value': model.model };
                     }),
                     status: data.status,
                     subjectIds: data.subjectIds
@@ -249,6 +424,7 @@ appComets.FormView = Backbone.View.extend({
             outcome = _.flatten(this.model.get('outcome').map(makeList)),
             exposure = _.flatten(this.model.get('exposure').map(makeList)),
             covariates = _.flatten(this.model.get('covariates').map(makeList)),
+            strata = _.flatten(this.model.get('strata').map(makeList)),
             metaboliteIds = this.model.get('metaboliteIds');
         var outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
             exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
@@ -266,6 +442,7 @@ appComets.FormView = Backbone.View.extend({
             'outcome': JSON.stringify(outcome),
             'exposure': JSON.stringify(exposure),
             'covariates': JSON.stringify(covariates),
+            'strata': JSON.stringify(strata),
             'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription')
         };
         for (var key in toAppend) {
@@ -339,10 +516,6 @@ appComets.FormView = Backbone.View.extend({
     renderModelDescription: function() {
         this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
     },
-    renderShowMetabolites: function() {
-        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
-        this.renderModelOptions.apply(this);
-    },
     renderModelOptions: function() {
         var $that = this;
         var modelOptions = this.model.get('defaultOptions').concat(this.model.get('subjectIds'));
@@ -356,10 +529,11 @@ appComets.FormView = Backbone.View.extend({
                 order: key
             };
         });
-        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
+        this.$el.find('#outcome, #exposure, #covariates, #strata').each(function (i, el) {
             var sEl = el.selectize;
             var oldOptions = $.extend({}, sEl.options);
             _.each(modelOptions, function (option, key, list) {
+                if (option.value == 'All metabolites' && $(el).prop('id') == 'strata') return;
                 if (sEl.options[option.value] === undefined) {
                     sEl.addOption(option);
                 } else {
@@ -372,6 +546,10 @@ appComets.FormView = Backbone.View.extend({
             }
             sEl.setValue($that.model.get(el.id), true);
         });
+    },
+    renderShowMetabolites: function() {
+        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
+        this.renderModelOptions.apply(this);
     },
     renderRunModelButton: function() {
         var methodSelection = this.model.get('methodSelection');
@@ -750,7 +928,8 @@ appComets.HeatmapView = Backbone.View.extend({
             'change:plotColorscale': this.render,
             'change:plotHeight': this.render,
             'change:plotWidth': this.render,
-            'change:sortRow': this.render
+            'change:sortRow': this.render,
+            'change:sortStratum': this.render
         }, this);
         if (appComets.templatesList) {
             this.template = _.template(appComets.templatesList.heatmapResult);
@@ -764,16 +943,20 @@ appComets.HeatmapView = Backbone.View.extend({
     updateModel: appComets.events.updateModel,
     render: function () {
         if (this.model.get('correlationRun')) {
+            var focusId = $(':focus').attr('id');
             this.$el.html(this.template(this.model.attributes));
+            if (focusId) $('#'+focusId).trigger('focus');
             if (this.model.get('status')) {
                 var sortRow = this.model.get('sortRow'),
-                    exposures = this.model.get('exposures');
-                var correlationData = {};
+                    sortStratum = this.model.get('sortStratum'),
+                    exposures = this.model.get('exposures'),
+                    correlationData = {};
                 _.each(this.model.get('excorrdata'), function (metabolite, key, list) {
                     correlationData[metabolite.outcome] = correlationData[metabolite.outcome] || {
                         'outcome': metabolite.outcome
                     };
                     correlationData[metabolite.outcome][metabolite.exposure] = metabolite.corr;
+                    correlationData[metabolite.outcome][metabolite.stratavar] = metabolite.strata;
                 });
                 var clusterResults = this.model.get('clusterResults');
                 var metaboliteNames = [];
@@ -795,6 +978,18 @@ appComets.HeatmapView = Backbone.View.extend({
                         heatmapData[heatmapData.length] = correlationData[prop];
                     }
                     heatmapData = heatmapData.sort((appComets.sorts[sortRow] || appComets.sorts.default(sortRow)));
+                    if (sortStratum != "All participants (no stratification)") {
+                        var strataSort = {};
+                        _.each(heatmapData, function (datum) {
+                            var stratum = strataSort[datum[sortStratum]]||[];
+                            stratum.push(datum);
+                            strataSort[datum[sortStratum]] = stratum;
+                        });
+                        heatmapData = [];
+                        for (var prop in strataSort) {
+                            heatmapData = heatmapData.concat(strataSort[prop]);
+                        }
+                    }
                     values = heatmapData.map(function (biochem) {
                         return exposures.map(function (exposure) {
                             return biochem[exposure];
@@ -828,40 +1023,58 @@ appComets.HeatmapView = Backbone.View.extend({
     }
 });
 
-$(function () {
-    var url = document.location.toString();
-    if (url.match('#')) {
-        var tab = $('.navbar a[data-toggle="tab"][data-target="#' + url.split('#')[1] + '"]');
-        if (tab.length > 0) {
-            tab.tab('show');
-            setTimeout(function() {
-                window.scrollTo(0, 0);
-            }, 1);
-        }
+appComets.HomeView = Backbone.View.extend({
+    el: '#tab-home',
+    events: {
+        'click .clicktab': 'tabTo'
+    },
+    tabTo: function(e) {
+        var e = e.target;
+        $('nav a[data-target="'+$(e).attr('href')+'"]').trigger('click');
+        return false;
     }
-    $('.navbar a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        var target = $(e.target).attr('data-target').substring(1);
-        var old = $('#'+target).removeAttr('id');
-        var anchor = $('<a id="'+target+'"/>').prependTo($('body'));
-        window.location.hash = target;
-        anchor.remove();
-        old.attr('id',target);
-    });
-    $('body').on('click','.goto',function(e) {
+});
+
+appComets.HelpView = Backbone.View.extend({
+    el: '#tab-help',
+    events: {
+        'click .goto': 'scrollToAnchor'
+    },
+    scrollToAnchor: function(e) {
         var e = e.target;
         var offset = $($(e).attr('href')).offset();
         $('html, body').animate({scrollTop: offset.top},500);
         return false;
-    });
-    $('body').on('click','.clicktab',function(e) {
-        var e = e.target;
-        $('nav a[data-target="'+$(e).attr('href')+'"]').trigger('click');
-        return false;
-    });
-    $('#logoutBtn').on('click', function (e) {
-        e.preventDefault();
-        var path = window.location.href;
-        window.location = "/auth0_redirect?logout=" + encodeURIComponent(path.substring(0,path.lastIndexOf('/'))+"/public/logout.html");
+    }
+});
+
+$(function () {
+    appComets.models.cohortsList = new appComets.CohortsModel();
+    appComets.models.templatesList = new appComets.TemplatesModel();
+    appComets.models.integrityResults = new appComets.IntegrityResultsModel();
+    appComets.models.correlationResults = new appComets.CorrelationResultsModel();
+    var after3 = _.after(3,function() {
+        appComets.CombineFormModel.prototype.defaults.templateList = appComets.models.templatesList.get('templates');
+        appComets.models.combineForm = new appComets.CombineFormModel();
+        appComets.HarmonizationFormModel.prototype.defaults.cohortList = appComets.models.cohortsList.get('cohorts');
+        appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
+        appComets.models.base = new appComets.BaseModel({
+            'combineForm': appComets.models.combineForm,
+            'harmonizationForm': appComets.models.harmonizationForm,
+            'integrityResults': appComets.models.integrityResults,
+            'correlationResults': appComets.models.correlationResults,
+        });
+        appComets.views.baseView = new appComets.BaseView({
+            model: appComets.models.base
+        });
+    }),
+    setTitle = function (e) {
+        document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
+    };
+    $('#pageContent').on('show.bs.tab', '#comets-tab-nav', setTitle);
+    $('#pageContent').on('show.bs.tab', '#correlate-tab-nav', setTitle);
+    $('#pageContent').on('click', '#runModel', function () {
+        $('a[href="#tab-summary"]').tab('show');
     });
     templates = $.ajax({
         type: "GET",
@@ -869,45 +1082,7 @@ $(function () {
     }).then(function (data) {
         // attach templates array to module
         appComets.templatesList = data;
-    }).done(function () {
-        var setTitle = function (e) {
-            document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
-        };
-        $('#pageContent').on('show.bs.tab', '#comets-tab-nav', setTitle);
-        $('#pageContent').on('show.bs.tab', '#correlate-tab-nav', setTitle);
-        $('#pageContent').on('click', '#runModel', function () {
-            $('a[href="#tab-summary"]').tab('show');
-
-        });
-
-        appComets.models.integrityResults = new appComets.IntegrityResultsModel();
-        appComets.models.correlationResults = new appComets.CorrelationResultsModel();
-        
-        appComets.models.cohortsList = new appComets.CohortsModel();
-        appComets.models.cohortsList.fetch().done(function(resp) {
-            appComets.HarmonizationFormModel.prototype.defaults.cohortList = appComets.models.cohortsList.get('cohorts');
-            appComets.models.harmonizationForm = new appComets.HarmonizationFormModel();
-            appComets.views.formView = new appComets.FormView({
-                model: appComets.models.harmonizationForm
-            });
-        });
-        appComets.models.base = new appComets.BaseModel({
-            'harmonizationForm': appComets.models.harmonizationForm,
-            'integrityResults': appComets.models.integrityResults,
-            'correlationResults': appComets.models.correlationResults,
-        });
-        
-        appComets.views.header = new appComets.HeaderView({
-            model: appComets.models.base
-        });
-        appComets.views.integrity = new appComets.IntegrityView({
-            model: appComets.models.integrityResults
-        });
-        appComets.views.summary = new appComets.SummaryView({
-            model: appComets.models.correlationResults
-        });
-        appComets.views.heatmap = new appComets.HeatmapView({
-            model: appComets.models.correlationResults
-        });
-    });
+    }).done(after3);
+    appComets.models.cohortsList.fetch().done(after3);
+    appComets.models.templatesList.fetch().done(after3);
 });
