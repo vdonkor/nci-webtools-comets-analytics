@@ -26,7 +26,7 @@ services:
       - activemq
     links:
       - activemq
-    entrypoint: "bash -c 'sleep 4 && python /deploy/app/process/Consumer.py'"
+    entrypoint: "bash -c 'sleep 10 && python /deploy/app/process/Consumer.py'"
   activemq:
     image: "webcenter/activemq:latest"
     volumes:
