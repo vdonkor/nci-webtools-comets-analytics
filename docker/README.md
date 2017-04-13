@@ -27,7 +27,7 @@ cp -r /tmp/comets_package/* $APP_DIR/restricted/rcode/
 cp -r /tmp/comets_app/docker/* $COMPOSE_DIR
 ```
 
-Use ```docker-compose up run ``` to start the application:
+Use ```docker-compose up ``` to start the application:
 
 ```bash
 
