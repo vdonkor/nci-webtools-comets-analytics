@@ -62,7 +62,7 @@ class Consumer(object):
         print('Received frame: %s' % parameters)
         print('')
         result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
-        filepath = os.path.join('..','tmp',str(result['timestamp'])+'.zip')
+        filepath = os.path.join('tmp',str(result['timestamp'])+'.zip')
         zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
         content = ""
         if (result['integrityCheck'] is dict):
@@ -109,7 +109,7 @@ if __name__ == '__main__':
                 flatten(yaml[param],param)
             else:
                 config[(parent+"." if parent else "")+param] = yaml[param]
-    with open("../restricted/settings.yml", 'r') as f:
+    with open("restricted/settings.yml", 'r') as f:
         flatten(yaml.safe_load(f))
     wrapper.source('./cometsWrapper.R')
     logging.basicConfig(level = logging.DEBUG)

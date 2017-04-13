@@ -150,7 +150,7 @@ def correlate():
             if (len(parameters['strata']) == 0):
                 parameters['strata'] = None
         if (parameters['modelName'] == "All models"):
-            parameters['filename'] = os.path.join('..',parameters['filename'])
+            parameters['filename'] = parameters['filename']
             queueFile(parameters)
             response = buildFailure({'status': False, 'statusMessage': "The results will be emailed to you."})
         else:
