@@ -173,7 +173,7 @@
             margin: {
                 t: 32,
                 b: Math.min(50,7*xLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); })),
-                l: options.clustered ? 0 : 150
+                l: options.clustered ? 0 : Math.min(250,Math.max(50,7*yLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); })))
             },
             width: options.width,
             shapes: shapes,
