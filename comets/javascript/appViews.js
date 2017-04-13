@@ -14,7 +14,7 @@ var appComets = {
             });
         },
         reauthenticate: function (e) {
-            e.preventDefault();
+            if (e !== undefined) e.preventDefault();
             window.location = "public/timeout.html";
             /*
             var newWindow = window.open("reauth.html");

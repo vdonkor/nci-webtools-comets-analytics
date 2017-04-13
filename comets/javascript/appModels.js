@@ -23,7 +23,7 @@ Backbone.Model.prototype.fetch = function(options) {
     var $that = this;
     return parentFetch.call(this,options).fail(function (data, statusText, errorThrown) {
         if (data.status === 401) {
-            appComets.events.reauthenticate(e);
+            appComets.events.reauthenticate();
         }
     });
 }
