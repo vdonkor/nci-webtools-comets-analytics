@@ -69,6 +69,7 @@ appComets.BaseView = Backbone.View.extend({
     el: 'body',
     initialize: function() {
         var url = document.location.toString();
+        this.render();
         if (url.match('#')) {
             var tab = $('.navbar a[data-toggle="tab"][data-target="#' + url.split('#')[1] + '"]');
             if (tab.length > 0) {
@@ -78,7 +79,6 @@ appComets.BaseView = Backbone.View.extend({
                 }, 1);
             }
         }
-        this.render();
     },
     render: function() {
         appComets.views.home = new appComets.HomeView();
@@ -149,6 +149,7 @@ appComets.HeaderView = Backbone.View.extend({
     },
     onTab: function(e) {
         var target = $(e.target).attr('data-target').substring(1);
+        $(e.target).parent().parent().siblings().find('li.active').removeClass('active')
         var old = $('#'+target).removeAttr('id');
         var anchor = $('<a id="'+target+'"/>').prependTo($('body'));
         window.location.hash = target;
@@ -168,10 +169,8 @@ appComets.CombineView = Backbone.View.extend({
     initialize: function() {
         this.model.on({
             'change:downloadLink': this.renderDownload,
-            'change:templateSelection': this.renderFiles,
-            'change:abundances': this.renderSubmit,
-            'change:metadata': this.renderSubmit,
-            'change:sample': this.renderSubmit
+            'change:templateSelection': this.renderSubmit,
+            'change:abundances change:metadata change:sample': this.renderTemplate
         }, this);
         this.optionsTemplate = _.template(appComets.templatesList['harmonizationForm.options']);
         this.template = _.template(appComets.templatesList['combineDropdown']);
@@ -243,25 +242,6 @@ appComets.CombineView = Backbone.View.extend({
             .toggleClass('show',downloadLink)
             .find('a').attr('href',downloadLink);
     },
-    renderFiles: function() {
-        var templateSelection = this.model.get('templateSelection');
-        if (templateSelection.length > 0) {
-            var varmap = {};
-            this.model.get('templateList')
-                .filter(function(entry) { return entry.value == templateSelection; })[0]
-                .data.split(',')
-                .map(function(entry) {
-                    varmap[entry] = "";
-                });
-            this.model.set('varmap',varmap);
-            this.$el.find('fieldset').eq(1).addClass('show');
-        } else {
-            this.model.set('varmap',{});
-            this.$el.find('fieldset').eq(1).removeClass('show');
-            this.$el.find('form')[0].reset();
-            this.$el.find('[type="file"]').trigger('change');
-        }
-    },
     renderMatch: function() {
         this.$el.find('fieldset').eq(2).html(this.template({
             'options': this.model.get('sample').slice().concat(this.model.get('metadata')).map(function(entry) {
@@ -272,16 +252,38 @@ appComets.CombineView = Backbone.View.extend({
         }));
     },
     renderSubmit: function() {
-        var file1 = Object.keys(this.model.get('metadata')).length > 0,
-            file2 = Object.keys(this.model.get('abundances')).length > 0,
-            file3 = Object.keys(this.model.get('sample')).length > 0;
-        if (file1 && file2 && file3) {
+        var templateSelection = this.model.get('templateSelection');
+        if (templateSelection.length > 0) {
+            var varmap = {};
+            this.model.get('templateList')
+                .filter(function(entry) { return entry.value == templateSelection; })[0]
+                .data.split(',')
+                .map(function(entry) {
+                    varmap[entry] = "";
+                });
+            this.model.set('varmap',varmap);
+            console.log(varmap);
             this.$el.find('#combineFiles').removeAttr('disabled');
             this.$el.find('fieldset').eq(2).addClass('show');
             this.renderMatch.apply(this);
         } else {
+            this.model.set('varmap',{});
             this.$el.find('#combineFiles').attr('disabled',true);
             this.$el.find('fieldset').eq(2).removeClass('show');
+        }
+    },
+    renderTemplate: function() {
+        var file1 = Object.keys(this.model.get('metadata')).length > 0,
+            file2 = Object.keys(this.model.get('abundances')).length > 0,
+            file3 = Object.keys(this.model.get('sample')).length > 0;
+        if (file1 && file2 && file3) {
+            this.$el.find('fieldset').eq(1).addClass('show');
+        } else {
+            var fieldsets = this.$el.find('fieldset'),
+                select = fieldsets.eq(1).find('select');
+            fieldsets.eq(1).removeClass('show');
+            select[0].selectedIndex = 0;
+            select.trigger('change');
         }
     }
 });
