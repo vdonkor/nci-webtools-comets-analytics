@@ -446,7 +446,8 @@ appComets.FormView = Backbone.View.extend({
             'exposure': JSON.stringify(exposure),
             'covariates': JSON.stringify(covariates),
             'strata': JSON.stringify(strata),
-            'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription')
+            'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription'),
+            'email': this.model.get('email')
         };
         for (var key in toAppend) {
             formData.append(key, toAppend[key]);

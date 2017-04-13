@@ -1,6 +1,8 @@
 import json, linecache, os, requests, smtplib, sys, time, yaml
 import pyper as pr
 from flask import Flask, json, jsonify, request, Response, send_from_directory
+from stompest.config import StompConfig
+from stompest.sync import Stomp
 
 app = Flask(__name__)
 
@@ -80,7 +82,10 @@ def composeMail(sender,recipients,subject,content):
 
 def queueFile(parameters):
     forQueue = json.dumps(parameters)
-    return True
+    client = Stomp(StompConfig('tcp://activemq:61613'))
+    client.connect()
+    client.send('/queue/test',forQueue)
+    client.disconnect()
 
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])
@@ -101,6 +106,7 @@ def integrityCheck():
         r('checkIntegrity = checkIntegrity(filename,cohort)')
         with open(r['checkIntegrity']) as file:
             result = json.loads(file.read())
+        os.remove(r['checkIntegrity'])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -144,6 +150,7 @@ def correlate():
             if (len(parameters['strata']) == 0):
                 parameters['strata'] = None
         if (parameters['modelName'] == "All models"):
+            parameters['filename'] = os.path.join('..',parameters['filename'])
             queueFile(parameters)
             response = buildFailure({'status': False, 'statusMessage': "The results will be emailed to you."})
         else:
@@ -153,6 +160,7 @@ def correlate():
             r('correlate = runModel(parameters)')
             with open(r['correlate']) as file:
                 result = json.loads(file.read())
+            os.remove(r['correlate'])
             if ("error" in result):
                 response = buildFailure(result['error'])
             else:
@@ -208,6 +216,7 @@ def combine():
         r('combine = combineInputs(parameters)')
         with open(r['combine']) as file:
             result = json.loads(file.read())
+        os.remove(r['combine'])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
