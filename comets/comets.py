@@ -38,22 +38,21 @@ def loadCohortList(app):
         'cohorts': json.loads(r['cohorts'])
     }
 
-
 def buildFailure(message,statusCode = 500):
   response = jsonify(message)
   response.status_code = statusCode
   return response
 
 def buildSuccess(message):
-  def generate():
-    forOutput = ""
-    for chunk in json.JSONEncoder().iterencode(message):
-        forOutput += chunk
-        if (len(forOutput) > 10000):
-            yield forOutput
-            forOutput = ""
-    yield forOutput
-  return Response(generate(),status=200)
+    def generate():
+        forOutput = ""
+        for chunk in json.JSONEncoder().iterencode(message):
+            forOutput += chunk
+            if (len(forOutput) > 10000):
+                yield forOutput
+                forOutput = ""
+        yield forOutput
+    return Response(generate(),status=200)
 
 def composeMail(sender,recipients,subject,content):
     try:
@@ -78,6 +77,10 @@ def composeMail(sender,recipients,subject,content):
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
         pass
     return False
+
+def queueFile(parameters):
+    forQueue = json.dumps(parameters)
+    return True
 
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])
@@ -140,16 +143,20 @@ def correlate():
             parameters['strata'] = json.loads(parameters['strata'])
             if (len(parameters['strata']) == 0):
                 parameters['strata'] = None
-        r = pr.R()
-        r('source("./cometsWrapper.R")')
-        r.assign('parameters',json.dumps(parameters))
-        r('correlate = runModel(parameters)')
-        with open(r['correlate']) as file:
-            result = json.loads(file.read())
-        if ("error" in result):
-            response = buildFailure(result['error'])
+        if (parameters['modelName'] == "All models"):
+            queueFile(parameters)
+            response = buildFailure({'status': False, 'statusMessage': "The results will be emailed to you."})
         else:
-            response = buildSuccess(result['saveValue'])
+            r = pr.R()
+            r('source("./cometsWrapper.R")')
+            r.assign('parameters',json.dumps(parameters))
+            r('correlate = runModel(parameters)')
+            with open(r['correlate']) as file:
+                result = json.loads(file.read())
+            if ("error" in result):
+                response = buildFailure(result['error'])
+            else:
+                response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame

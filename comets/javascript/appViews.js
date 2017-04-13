@@ -294,6 +294,7 @@ appComets.FormView = Backbone.View.extend({
             "change:cohortList": this.renderCohortList,
             "change:cohortSelection": this.renderCohortSelection,
             "change:csvFile": this.renderCheckIntegrityButton,
+            "change:email": this.renderRunModelButton,
             "change:status": this.renderIntegrityChecked,
             "change:methodSelection": this.renderMethodSelection,
             "change:modelList": this.renderModelList,
@@ -480,6 +481,14 @@ appComets.FormView = Backbone.View.extend({
             this.$el.find("#load").attr('disabled', true);
         }
     },
+    renderEmailOption: function() {
+        if (this.model.get('methodSelection') == 'Batch' && this.model.get('modelSelection') == "All models") {
+            this.$el.find('#emailOption').addClass('show');
+        } else {
+            this.$el.find('#emailOption').removeClass('show');
+            this.model.set('email','');
+        }
+    },
     renderIntegrityChecked: function() {
         if (this.model.get('status')) {
             this.$el.find('#cohortSelection').attr('disabled', true);
@@ -504,6 +513,8 @@ appComets.FormView = Backbone.View.extend({
             $(el).toggleClass('show', state);
             $that.$el.find('input[name="methodSelection"][value="' + id + '"]').prop('checked', state);
         });
+        this.renderEmailOption.apply(this);
+        this.renderRunModelButton.apply(this);
     },
     renderModelList: function() {
         this.$el.find('#modelSelection').html(this.template({
@@ -511,6 +522,7 @@ appComets.FormView = Backbone.View.extend({
             optionList: this.model.get('modelList'),
             selectedOption: this.model.get('modelSelection')
         }));
+        this.renderEmailOption.apply(this);
         this.renderRunModelButton.apply(this);
     },
     renderModelDescription: function() {
@@ -552,8 +564,10 @@ appComets.FormView = Backbone.View.extend({
         this.renderModelOptions.apply(this);
     },
     renderRunModelButton: function() {
-        var methodSelection = this.model.get('methodSelection');
-        if ((methodSelection == 'Batch' && this.model.get('modelSelection')) ||
+        var email = this.model.get('email'),
+            methodSelection = this.model.get('methodSelection'),
+            modelSelection = this.model.get('modelSelection');
+        if ((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
             (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0)
         ) {
             this.$el.find('#runModel').removeAttr('disabled');

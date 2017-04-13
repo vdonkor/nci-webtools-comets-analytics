@@ -104,8 +104,9 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         cohortSelection: null,
         covariates: [],
         csvFile: null,
-        filename: null,
+        email: "",
         exposure: [],
+        filename: null,
         metaboliteIds: [],
         methodSelection: "Batch",
         modelDescription: "Unadjusted",
@@ -129,13 +130,11 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         metab: [],
         metabId: null,
         metaboliteSummary: {},
+        modelOptions: [],
         models: [],
         "num.min": null,
         status: null,
         statusMessage: null,
-//        subjectdata: [],
-//        subjectmeta: [],
-        modelOptions: [],
         subjectID: null,
         varmap: []
     },
@@ -167,7 +166,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
                     return obj['num.min'] > response.subjdata.length * .25;
                 }).reduce(sum)
             },
-            models: response.mods,
+            models: [{'model': 'All models'}].concat(response.mods),
             'num.min': response.metab.map(function (obj) {
                 return obj['num.min'];
             }),
@@ -233,7 +232,6 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         return response;
     },
     parse: function (response, xhr) {
-        console.log(response);
         var lookup = {};
         var excorrdata = response.excorrdata.map(function (biochemical) {
             lookup[biochemical.outcome] = biochemical.outcome_label;
