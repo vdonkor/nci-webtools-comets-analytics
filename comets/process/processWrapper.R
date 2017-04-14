@@ -52,7 +52,7 @@ runModel <- function(input,model) {
           } else {
             excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
           }
-          csv <- OutputCSVResults(paste0('../tmp/',model,input$timestamp),excorrdata,input$cohortSelection)
+          csv <- OutputCSVResults(paste0('tmp/',model,input$timestamp),excorrdata,input$cohortSelection)
         },
         message=function(m) {
             print(m$message)
