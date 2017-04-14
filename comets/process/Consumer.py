@@ -111,7 +111,7 @@ if __name__ == '__main__':
                 config[(parent+"." if parent else "")+param] = yaml[param]
     with open("restricted/settings.yml", 'r') as f:
         flatten(yaml.safe_load(f))
-    wrapper.source('./cometsWrapper.R')
+    wrapper.source('./process/processWrapper.R')
     logging.basicConfig(level = logging.DEBUG)
     Consumer().run()
     reactor.run()
