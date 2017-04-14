@@ -66,6 +66,4 @@ COPY "./install_comets_package.sh" "/usr/bin/install_comets_package.sh"
 RUN chmod 755 /usr/bin/install_comets_package.sh \
  && ln -s /usr/bin/install_comets_package.sh /install_comets_package.sh
 
-USER ncianalysis
-
 ENTRYPOINT ["entrypoint.sh", "/deploy/app/RequestProcessor.py"]
