@@ -51,11 +51,10 @@ RUN mkdir -p /deploy/app /deploy/logs
 
 WORKDIR /deploy/app
 
-COPY "./entrypoint.sh" "/usr/bin/entrypoint.sh"
+COPY "./entrypoint.processor.sh" "/usr/bin/entrypoint.sh"
 
 RUN chmod 755 /usr/bin/entrypoint.sh \
  && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
-
 
 COPY "./install_comets_package.sh" "/usr/bin/install_comets_package.sh"
 

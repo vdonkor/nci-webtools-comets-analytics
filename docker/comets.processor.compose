@@ -1,6 +1,6 @@
 version: '3'
 services:
-  processor:
+  comets_processor:
     image: cbiitss/comets:processor
       volumes:
         - ./run/app:/deploy/app

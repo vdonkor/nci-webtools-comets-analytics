@@ -11,10 +11,10 @@ services:
     links:
       - activemq
     ports:
-      - '8000:8000'
+      - '8100:8000'
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost']
-  processor:
+  comets_processor:
     image: "cbiitss/comets:processor.devel"
     volumes:
       - ./run/app:/deploy/app
@@ -24,7 +24,7 @@ services:
       - activemq
     links:
       - activemq
-    entrypoint: "bash -c 'sleep 10 && python /deploy/app/process/Consumer.py'"
+    entrypoint: "bash -c 'sleep 10 && entrypoint.sh /deploy/app/process/Consumer.py'"
   activemq:
     image: "webcenter/activemq:latest"
     container_name: activemq

@@ -6,6 +6,7 @@
 # change ownership of deployment directory
 chown -R ncianalysis:ncianalysis /deploy
 
-# start python development server
+# start python development server with specified filename
+# if not specified, use default RequestProcessor.py
 pushd /deploy/app
-python RequestProcessor.py
+python ${1:RequestProcessor.py}
