@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # remove lock
-rm -f /usr/lib64/R/library/00LOCK-rcode
+rm -rf /usr/lib64/R/library/00LOCK-rcode
 
 COMETS_DIR=/deploy/app/restricted/rcode
 COMETS_INSTALL_LOG=/deploy/logs/update_comets_package.log
