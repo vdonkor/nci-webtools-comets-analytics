@@ -14,7 +14,7 @@ var appComets = {
             });
         },
         reauthenticate: function (e) {
-            e.preventDefault();
+            if (e !== undefined) e.preventDefault();
             window.location = "public/timeout.html";
             /*
             var newWindow = window.open("reauth.html");
@@ -69,6 +69,7 @@ appComets.BaseView = Backbone.View.extend({
     el: 'body',
     initialize: function() {
         var url = document.location.toString();
+        this.render();
         if (url.match('#')) {
             var tab = $('.navbar a[data-toggle="tab"][data-target="#' + url.split('#')[1] + '"]');
             if (tab.length > 0) {
@@ -78,7 +79,6 @@ appComets.BaseView = Backbone.View.extend({
                 }, 1);
             }
         }
-        this.render();
     },
     render: function() {
         appComets.views.home = new appComets.HomeView();
@@ -149,6 +149,7 @@ appComets.HeaderView = Backbone.View.extend({
     },
     onTab: function(e) {
         var target = $(e.target).attr('data-target').substring(1);
+        $(e.target).parent().parent().siblings().find('li.active').removeClass('active')
         var old = $('#'+target).removeAttr('id');
         var anchor = $('<a id="'+target+'"/>').prependTo($('body'));
         window.location.hash = target;
@@ -168,10 +169,8 @@ appComets.CombineView = Backbone.View.extend({
     initialize: function() {
         this.model.on({
             'change:downloadLink': this.renderDownload,
-            'change:templateSelection': this.renderFiles,
-            'change:abundances': this.renderSubmit,
-            'change:metadata': this.renderSubmit,
-            'change:sample': this.renderSubmit
+            'change:templateSelection': this.renderSubmit,
+            'change:abundances change:metadata change:sample': this.renderTemplate
         }, this);
         this.optionsTemplate = _.template(appComets.templatesList['harmonizationForm.options']);
         this.template = _.template(appComets.templatesList['combineDropdown']);
@@ -243,25 +242,6 @@ appComets.CombineView = Backbone.View.extend({
             .toggleClass('show',downloadLink)
             .find('a').attr('href',downloadLink);
     },
-    renderFiles: function() {
-        var templateSelection = this.model.get('templateSelection');
-        if (templateSelection.length > 0) {
-            var varmap = {};
-            this.model.get('templateList')
-                .filter(function(entry) { return entry.value == templateSelection; })[0]
-                .data.split(',')
-                .map(function(entry) {
-                    varmap[entry] = "";
-                });
-            this.model.set('varmap',varmap);
-            this.$el.find('fieldset').eq(1).addClass('show');
-        } else {
-            this.model.set('varmap',{});
-            this.$el.find('fieldset').eq(1).removeClass('show');
-            this.$el.find('form')[0].reset();
-            this.$el.find('[type="file"]').trigger('change');
-        }
-    },
     renderMatch: function() {
         this.$el.find('fieldset').eq(2).html(this.template({
             'options': this.model.get('sample').slice().concat(this.model.get('metadata')).map(function(entry) {
@@ -272,16 +252,38 @@ appComets.CombineView = Backbone.View.extend({
         }));
     },
     renderSubmit: function() {
-        var file1 = Object.keys(this.model.get('metadata')).length > 0,
-            file2 = Object.keys(this.model.get('abundances')).length > 0,
-            file3 = Object.keys(this.model.get('sample')).length > 0;
-        if (file1 && file2 && file3) {
+        var templateSelection = this.model.get('templateSelection');
+        if (templateSelection.length > 0) {
+            var varmap = {};
+            this.model.get('templateList')
+                .filter(function(entry) { return entry.value == templateSelection; })[0]
+                .data.split(',')
+                .map(function(entry) {
+                    varmap[entry] = "";
+                });
+            this.model.set('varmap',varmap);
+            console.log(varmap);
             this.$el.find('#combineFiles').removeAttr('disabled');
             this.$el.find('fieldset').eq(2).addClass('show');
             this.renderMatch.apply(this);
         } else {
+            this.model.set('varmap',{});
             this.$el.find('#combineFiles').attr('disabled',true);
             this.$el.find('fieldset').eq(2).removeClass('show');
+        }
+    },
+    renderTemplate: function() {
+        var file1 = Object.keys(this.model.get('metadata')).length > 0,
+            file2 = Object.keys(this.model.get('abundances')).length > 0,
+            file3 = Object.keys(this.model.get('sample')).length > 0;
+        if (file1 && file2 && file3) {
+            this.$el.find('fieldset').eq(1).addClass('show');
+        } else {
+            var fieldsets = this.$el.find('fieldset'),
+                select = fieldsets.eq(1).find('select');
+            fieldsets.eq(1).removeClass('show');
+            select[0].selectedIndex = 0;
+            select.trigger('change');
         }
     }
 });
@@ -294,6 +296,7 @@ appComets.FormView = Backbone.View.extend({
             "change:cohortList": this.renderCohortList,
             "change:cohortSelection": this.renderCohortSelection,
             "change:csvFile": this.renderCheckIntegrityButton,
+            "change:email": this.renderRunModelButton,
             "change:status": this.renderIntegrityChecked,
             "change:methodSelection": this.renderMethodSelection,
             "change:modelList": this.renderModelList,
@@ -443,7 +446,8 @@ appComets.FormView = Backbone.View.extend({
             'exposure': JSON.stringify(exposure),
             'covariates': JSON.stringify(covariates),
             'strata': JSON.stringify(strata),
-            'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription')
+            'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription'),
+            'email': this.model.get('email')
         };
         for (var key in toAppend) {
             formData.append(key, toAppend[key]);
@@ -480,6 +484,14 @@ appComets.FormView = Backbone.View.extend({
             this.$el.find("#load").attr('disabled', true);
         }
     },
+    renderEmailOption: function() {
+        if (this.model.get('methodSelection') == 'Batch' && this.model.get('modelSelection') == "All models") {
+            this.$el.find('#emailOption').addClass('show');
+        } else {
+            this.$el.find('#emailOption').removeClass('show');
+            this.model.set('email','');
+        }
+    },
     renderIntegrityChecked: function() {
         if (this.model.get('status')) {
             this.$el.find('#cohortSelection').attr('disabled', true);
@@ -504,6 +516,8 @@ appComets.FormView = Backbone.View.extend({
             $(el).toggleClass('show', state);
             $that.$el.find('input[name="methodSelection"][value="' + id + '"]').prop('checked', state);
         });
+        this.renderEmailOption.apply(this);
+        this.renderRunModelButton.apply(this);
     },
     renderModelList: function() {
         this.$el.find('#modelSelection').html(this.template({
@@ -511,6 +525,7 @@ appComets.FormView = Backbone.View.extend({
             optionList: this.model.get('modelList'),
             selectedOption: this.model.get('modelSelection')
         }));
+        this.renderEmailOption.apply(this);
         this.renderRunModelButton.apply(this);
     },
     renderModelDescription: function() {
@@ -552,8 +567,10 @@ appComets.FormView = Backbone.View.extend({
         this.renderModelOptions.apply(this);
     },
     renderRunModelButton: function() {
-        var methodSelection = this.model.get('methodSelection');
-        if ((methodSelection == 'Batch' && this.model.get('modelSelection')) ||
+        var email = this.model.get('email'),
+            methodSelection = this.model.get('methodSelection'),
+            modelSelection = this.model.get('modelSelection');
+        if ((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
             (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0)
         ) {
             this.$el.find('#runModel').removeAttr('disabled');

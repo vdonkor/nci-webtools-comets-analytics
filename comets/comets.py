@@ -1,6 +1,8 @@
 import json, linecache, os, requests, smtplib, sys, time, yaml
 import pyper as pr
 from flask import Flask, json, jsonify, request, Response, send_from_directory
+from stompest.config import StompConfig
+from stompest.sync import Stomp
 
 app = Flask(__name__)
 
@@ -38,22 +40,21 @@ def loadCohortList(app):
         'cohorts': json.loads(r['cohorts'])
     }
 
-
 def buildFailure(message,statusCode = 500):
   response = jsonify(message)
   response.status_code = statusCode
   return response
 
 def buildSuccess(message):
-  def generate():
-    forOutput = ""
-    for chunk in json.JSONEncoder().iterencode(message):
-        forOutput += chunk
-        if (len(forOutput) > 10000):
-            yield forOutput
-            forOutput = ""
-    yield forOutput
-  return Response(generate(),status=200)
+    def generate():
+        forOutput = ""
+        for chunk in json.JSONEncoder().iterencode(message):
+            forOutput += chunk
+            if (len(forOutput) > 10000):
+                yield forOutput
+                forOutput = ""
+        yield forOutput
+    return Response(generate(),status=200)
 
 def composeMail(sender,recipients,subject,content):
     try:
@@ -79,6 +80,13 @@ def composeMail(sender,recipients,subject,content):
         pass
     return False
 
+def queueFile(parameters):
+    forQueue = json.dumps(parameters)
+    client = Stomp(StompConfig('tcp://activemq:61613'))
+    client.connect()
+    client.send('/queue/test',forQueue)
+    client.disconnect()
+
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])
 def integrityCheck():
@@ -98,6 +106,7 @@ def integrityCheck():
         r('checkIntegrity = checkIntegrity(filename,cohort)')
         with open(r['checkIntegrity']) as file:
             result = json.loads(file.read())
+        os.remove(r['checkIntegrity'])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -140,16 +149,22 @@ def correlate():
             parameters['strata'] = json.loads(parameters['strata'])
             if (len(parameters['strata']) == 0):
                 parameters['strata'] = None
-        r = pr.R()
-        r('source("./cometsWrapper.R")')
-        r.assign('parameters',json.dumps(parameters))
-        r('correlate = runModel(parameters)')
-        with open(r['correlate']) as file:
-            result = json.loads(file.read())
-        if ("error" in result):
-            response = buildFailure(result['error'])
+        if (parameters['modelName'] == "All models"):
+            parameters['filename'] = parameters['filename']
+            queueFile(parameters)
+            response = buildFailure({'status': False, 'statusMessage': "The results will be emailed to you."})
         else:
-            response = buildSuccess(result['saveValue'])
+            r = pr.R()
+            r('source("./cometsWrapper.R")')
+            r.assign('parameters',json.dumps(parameters))
+            r('correlate = runModel(parameters)')
+            with open(r['correlate']) as file:
+                result = json.loads(file.read())
+            os.remove(r['correlate'])
+            if ("error" in result):
+                response = buildFailure(result['error'])
+            else:
+                response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame
@@ -201,6 +216,7 @@ def combine():
         r('combine = combineInputs(parameters)')
         with open(r['combine']) as file:
             result = json.loads(file.read())
+        os.remove(r['combine'])
         if ("error" in result):
             response = buildFailure(result['error'])
         else:

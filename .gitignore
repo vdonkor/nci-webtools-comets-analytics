@@ -1,4 +1,14 @@
 .Rproj.user/
-*.yml
+*.csv
 *.pyc
+*.sh
+*.wsgi
+*.xlsx
+*.yml
+comets/.Rhistory
+comets/app/
+comets/common/
 comets/examples/*
+comets/restricted/token.txt
+comets/tmp/
+docker/run/

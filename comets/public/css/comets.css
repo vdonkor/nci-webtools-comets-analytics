@@ -363,6 +363,9 @@ fieldset.well {
     color: #777;
     cursor: not-allowed;
 }
+#correlateHeatmap {
+    margin-left: 50px;
+}
 .modal-dialog .fixed-right {
     position: relative;
     margin-right:10em;

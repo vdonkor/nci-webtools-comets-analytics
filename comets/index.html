@@ -49,12 +49,14 @@
                 <div class="row">
                     <nav class="navbar navbar-default">
                         <div id="comets-tab-nav">
-                            <ul class="nav nav-pills">
+                            <ul class="nav nav-pills pull-left">
                                 <li role="presentation" class="active"><a data-toggle="tab" data-target="#tab-home">Home</a></li>
-                                <li role="presentation"><a data-toggle="tab" data-target="#tab-combine">Create Input</a></li>
                                 <li role="presentation"><a data-toggle="tab" data-target="#tab-correlate">Correlate</a></li>
                                 <li role="presentation"><a data-toggle="tab" data-target="#tab-help">Help</a></li>
-                                <li id="adminBtn" role="presentation" class="pull-right"><a href="admin/index.html">Admin</a></li>
+                            </ul>
+                            <ul class="nav nav-pills pull-right">
+                                <li role="presentation"><a data-toggle="tab" data-target="#tab-combine">Create Input</a></li>
+                                <li id="adminBtn" role="presentation"><a href="admin/index.html">Admin</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -72,8 +74,25 @@
                 </div>
                 <div class="tab-pane" id="tab-combine">
                     <div class="row">
-                        <div class="col-xs-12 col-md-4 col-lg-3">
+                        <div class="col-xs-12 col-md-4">
                             <form enctype="form/multi-part" action="/cometsRest/combine" method="POST" id="combineForm" class="well clearfix">
+                                <fieldset class="well">
+                                    <div class="form-group">
+                                        <label for="metadata">Select Metabolite Meta-Data CSV File <span class="required">*</span></label>
+                                        <a href="examples/testmetab.csv" class="pull-right">Example</a>
+                                        <input type="file" name="metadata" accept=".csv,text/csv"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="abundances">Select Metabolite Abundances CSV File <span class="required">*</span></label>
+                                        <a href="examples/testabundances.csv" class="pull-right">Example</a>
+                                        <input type="file" name="abundances" accept=".csv,text/csv"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sample">Select Subject Data CSV File <span class="required">*</span></label>
+                                        <a href="examples/testsubject.csv" class="pull-right">Example</a>
+                                        <input type="file" name="sample" accept=".csv,text/csv"/>
+                                    </div>
+                                </fieldset>
                                 <fieldset class="well">
                                     <div class="form-group">
                                         <label for="template">Select Template <span class="required">*</span></label>
@@ -87,41 +106,22 @@
                                     </div>
                                 </fieldset>
                                 <fieldset class="well">
-                                    <div class="form-group">
-                                        <label for="metadata">Select Metabolite Meta-Data CSV File <span class="required">*</span></label>
-                                        <input type="file" name="metadata" accept=".csv,text/csv"/>
-                                        <a href="examples/testmetab.csv">Example Metabolite Meta-Data</a>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="abundances">Select Metabolite Abundances CSV File <span class="required">*</span></label>
-                                        <input type="file" name="abundances" accept=".csv,text/csv"/>
-                                        <a href="examples/testabundances.csv">Example Metabolite Abundances</a>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="sample">Select Sample Meta-Data CSV File <span class="required">*</span></label>
-                                        <input type="file" name="sample" accept=".csv,text/csv"/>
-                                        <a href="examples/testsubject.csv">Example Sample Meta-Data</a>
-                                    </div>
                                 </fieldset>
-                                <fieldset class="well">
-                                </fieldset>
+                                <div id="combineDownload" class="downloadIcon pull-left">
+                                    <a href=""><span class="glyphicon glyphicon-download"></span> Download Input File</a>
+                                </div>
                                 <div class="pull-right">
                                     <button id="resetCombine" class="btn btn-default">Reset</button>
-                                    <button id="combineFiles" class="btn btn-default" disabled="true">Combine</button>
+                                    <button id="combineFiles" class="btn btn-default" disabled="true">Create Input File</button>
                                 </div>
                             </form>
-                        </div>
-                        <div class="col-xs-12 col-md-8 col-lg-9">
-                            <div id="combineDownload" class="downloadIcon">
-                                <a href=""><span class="glyphicon glyphicon-download"></span> Download Combined File</a>
-                            </div>
                         </div>
                     </div>
                 </div>
                 <!-- start correlate Tab -->
                 <div class="tab-pane" id="tab-correlate">
                     <div class="row">
-                        <div class="col-xs-12 col-md-4 col-lg-3">
+                        <div class="col-xs-12 col-md-4">
                             <h3>Conduct cohort-specific correlation analyses</h3>
                             <form id="cometsForm" class="well clearfix" name="cometsForm" enctype="multipart/form-data">
                                 <fieldset class="well">
@@ -201,6 +201,12 @@
                                         </div>
                                     </div>
                                 </fieldset>
+                                <fieldset id="emailOption" class="well">
+                                    <div class="form-group">
+                                        <label for="email">E-Mail Address <span class="required">*</span></label>
+                                        <input type="text" name="email" id="email" class="form-control" required />
+                                    </div>
+                                </fieldset>
                                 <div class="pull-right">
                                     <button id="reset" class="btn btn-default">Reset</button>
                                     <button id="runModel" class="btn btn-default" disabled="true">Run Model</button>
@@ -234,7 +240,7 @@
                         </div>
                         <!-- end of well -->
 
-                        <div class="col-xs-12 col-md-8 col-lg-9">
+                        <div class="col-xs-12 col-md-8">
                             <div class="row">
                                 <div class="col-md-12">
                                     <!-- Collect the nav links, forms, and other content for toggling -->
