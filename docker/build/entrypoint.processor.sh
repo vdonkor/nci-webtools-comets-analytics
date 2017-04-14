@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # remove lock
-rm -f /usr/lib64/R/library/00LOCK-rcode
+rm -rf /usr/lib64/R/library/00LOCK-rcode
 
 
 # install comets package if directory does not exist
