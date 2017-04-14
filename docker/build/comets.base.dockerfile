@@ -49,21 +49,23 @@ RUN R -e "devtools::install_version('jsonlite',   version = '0.9.22'  ); \
 
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
-RUN adduser -u 4004 ncianalysis
-
-RUN mkdir -p /deploy/app /deploy/logs \
- && chown -R ncianalysis:ncianalysis /deploy
-
-WORKDIR /deploy
-
+# Copy entrypoint and make it executable
 COPY "./entrypoint.sh" "/usr/bin/entrypoint.sh"
 
 RUN chmod 755 /usr/bin/entrypoint.sh \
  && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
 
+# Copy comets package installation script and make it executable
 COPY "./install_comets_package.sh" "/usr/bin/install_comets_package.sh"
 
 RUN chmod 755 /usr/bin/install_comets_package.sh \
  && ln -s /usr/bin/install_comets_package.sh /install_comets_package.sh
+
+RUN adduser -u 4004 ncianalysis
+
+RUN mkdir -p /deploy/app /deploy/logs \
+ && chown -R ncianalysis:ncianalysis /deploy
+
+WORKDIR /deploy/app
 
 ENTRYPOINT ["entrypoint.sh"]
