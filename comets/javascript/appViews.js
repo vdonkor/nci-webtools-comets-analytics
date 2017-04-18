@@ -169,6 +169,7 @@ appComets.CombineView = Backbone.View.extend({
     initialize: function() {
         this.model.on({
             'change:downloadLink': this.renderDownload,
+            'change:statusMessage': this.renderMessage,
             'change:templateSelection': this.renderSubmit,
             'change:abundances change:metadata change:sample': this.renderTemplate
         }, this);
@@ -189,8 +190,10 @@ appComets.CombineView = Backbone.View.extend({
     },
     combineFiles: function(e) {
         e.preventDefault();
-        var formData = new FormData(this.$el.find('form')[0]);
-        this.$el.find('input,select,#combineFiles').attr('disabled',true);
+        var $that = this,
+            formData = new FormData(this.$el.find('form')[0]),
+            disables = this.$el.find('input,select,#combineFiles');
+        disables.attr('disabled',true);
         this.model.fetch({
             type: "POST",
             data: formData,
@@ -201,15 +204,22 @@ appComets.CombineView = Backbone.View.extend({
             beforeSend: function () {
                 appComets.showLoader();
             }
+        }).fail(function(xhr) {
+            var response = (xhr.responseJSON || {'statusMessage': 'An unknown error has occurred.'});
+            disables.removeAttr('disabled');
+            $that.model.set('statusMessage',response.statusMessage);
         }).always(function() {
             appComets.hideLoader();
         });
     },
     reset: function(e) {
         e.preventDefault();
-        this.model.set('downloadLink',null);
+        this.model.set({
+            'downloadLink': null,
+            'statusMessage': ""
+        });
         this.$el.find('input,select').removeAttr('disabled');
-        this.$el.find('#templateSelection').prop('selectedIndex',0).trigger('change');
+        this.$el.find('[type="file"]').val('').trigger('change');
     },
     uploadFile: function(e) {
         e.preventDefault();
@@ -250,6 +260,9 @@ appComets.CombineView = Backbone.View.extend({
             'template': this.optionsTemplate,
             'varmap': this.model.get('varmap')
         }));
+    },
+    renderMessage: function() {
+        this.$el.find('#combineMessage').html(this.model.get('statusMessage'));
     },
     renderSubmit: function() {
         var templateSelection = this.model.get('templateSelection');
@@ -304,10 +317,10 @@ appComets.FormView = Backbone.View.extend({
             "change:showMetabolites": this.renderShowMetabolites,
             "change:subjectIds change:metaboliteIds change:defaultOptions": this.renderModelOptions,
             "change:modelSelection": this.renderModelList,
-            "change:outcome change:exposure": this.renderRunModelButton
+            "change:outcome change:exposure change:strata": this.renderRunModelButton
         }, this);
         this.template = _.template(appComets.templatesList['harmonizationForm.options']);
-        this.$el.find('#outcome, #exposure, #covariates, #strata').each(function (i, el) {
+        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
             $(el).selectize({
                 plugins: ['remove_button'],
                 sortField: 'order'
@@ -427,7 +440,6 @@ appComets.FormView = Backbone.View.extend({
             outcome = _.flatten(this.model.get('outcome').map(makeList)),
             exposure = _.flatten(this.model.get('exposure').map(makeList)),
             covariates = _.flatten(this.model.get('covariates').map(makeList)),
-            strata = _.flatten(this.model.get('strata').map(makeList)),
             metaboliteIds = this.model.get('metaboliteIds');
         var outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
             exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
@@ -445,7 +457,7 @@ appComets.FormView = Backbone.View.extend({
             'outcome': JSON.stringify(outcome),
             'exposure': JSON.stringify(exposure),
             'covariates': JSON.stringify(covariates),
-            'strata': JSON.stringify(strata),
+            'strata': this.model.get('strata'),
             'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription'),
             'email': this.model.get('email')
         };
@@ -544,11 +556,10 @@ appComets.FormView = Backbone.View.extend({
                 order: key
             };
         });
-        this.$el.find('#outcome, #exposure, #covariates, #strata').each(function (i, el) {
+        this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
             var sEl = el.selectize;
             var oldOptions = $.extend({}, sEl.options);
             _.each(modelOptions, function (option, key, list) {
-                if (option.value == 'All metabolites' && $(el).prop('id') == 'strata') return;
                 if (sEl.options[option.value] === undefined) {
                     sEl.addOption(option);
                 } else {
@@ -561,6 +572,13 @@ appComets.FormView = Backbone.View.extend({
             }
             sEl.setValue($that.model.get(el.id), true);
         });
+        modelOptions.shift();
+        this.$el.find('#strata').html(this.template({
+            optionType: "Strata",
+            optionList: modelOptions,
+            selectedOption: this.model.get("strata")
+        }));
+
     },
     renderShowMetabolites: function() {
         this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
@@ -569,9 +587,10 @@ appComets.FormView = Backbone.View.extend({
     renderRunModelButton: function() {
         var email = this.model.get('email'),
             methodSelection = this.model.get('methodSelection'),
-            modelSelection = this.model.get('modelSelection');
+            modelSelection = this.model.get('modelSelection'),
+            exposure = this.model.get('exposure');
         if ((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
-            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && this.model.get('exposure').length > 0)
+            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0)
         ) {
             this.$el.find('#runModel').removeAttr('disabled');
         } else {
