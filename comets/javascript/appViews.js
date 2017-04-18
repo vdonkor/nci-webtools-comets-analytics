@@ -435,48 +435,68 @@ appComets.FormView = Backbone.View.extend({
     },
     runModel: function (e) {
         e.preventDefault();
-        var makeList = function(entry) { return entry.split(';'); };
-        var methodSelection = this.model.get('methodSelection'),
-            outcome = _.flatten(this.model.get('outcome').map(makeList)),
-            exposure = _.flatten(this.model.get('exposure').map(makeList)),
-            covariates = _.flatten(this.model.get('covariates').map(makeList)),
-            metaboliteIds = this.model.get('metaboliteIds');
-        var outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
-            exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
-        if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in displaying the results.")) {
-            return;
+        var $that = this,
+            runModelHelper = function() {
+                var makeList = function(entry) { return entry.split(';'); };
+                var methodSelection = this.model.get('methodSelection'),
+                    outcome = _.flatten(this.model.get('outcome').map(makeList)),
+                    exposure = _.flatten(this.model.get('exposure').map(makeList)),
+                    covariates = _.flatten(this.model.get('covariates').map(makeList)),
+                    metaboliteIds = this.model.get('metaboliteIds');
+                var outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
+                    exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
+                if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in displaying the results.")) {
+                    return;
+                }
+                var $that = this;
+                var formData = new FormData();
+                var toAppend = {
+                    'filename': this.model.get('filename'),
+                    'cohortSelection': this.model.get('cohortSelection'),
+                    'methodSelection': methodSelection,
+                    'modelSelection': this.model.get('modelSelection'),
+                    'modelDescription': this.model.get('modelDescription'),
+                    'outcome': JSON.stringify(outcome),
+                    'exposure': JSON.stringify(exposure),
+                    'covariates': JSON.stringify(covariates),
+                    'strata': this.model.get('strata'),
+                    'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription'),
+                    'email': this.model.get('email')
+                };
+                for (var key in toAppend) {
+                    formData.append(key, toAppend[key]);
+                }
+                return appComets.models.correlationResults.fetch({
+                    type: "POST",
+                    data: formData,
+                    dataType: "json",
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    beforeSend: appComets.showLoader,
+                    reset: true
+                }).always(function () {
+                    appComets.hideLoader();
+                });
+            };
+        if (this.model.get('methodSelection') == 'Batch' && this.model.get('modelSelection') == "All models") {
+            BootstrapDialog.confirm({
+                btnOKClass: 'btn-primary',
+                closable: false,
+                message: "Your job will be sent to the queuing system for processing. "+
+                         "Results will be sent to you via email when all model runs are completed.\n\n"+
+                         "Please note: Depending on model complexity and queue length it could be up to a day before you receive your results",
+                title: "Results Will Be Emailed",
+                callback: function(result) {
+                    if (!result) return;
+                    runModelHelper.apply($that);
+                }
+            });
+        } else {
+            runModelHelper.apply($that).always(function () {
+                $that.$el.find('a[href="#tab-summary"]').tab('show');
+            });
         }
-        var $that = this;
-        var formData = new FormData();
-        var toAppend = {
-            'filename': this.model.get('filename'),
-            'cohortSelection': this.model.get('cohortSelection'),
-            'methodSelection': methodSelection,
-            'modelSelection': this.model.get('modelSelection'),
-            'modelDescription': this.model.get('modelDescription'),
-            'outcome': JSON.stringify(outcome),
-            'exposure': JSON.stringify(exposure),
-            'covariates': JSON.stringify(covariates),
-            'strata': this.model.get('strata'),
-            'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription'),
-            'email': this.model.get('email')
-        };
-        for (var key in toAppend) {
-            formData.append(key, toAppend[key]);
-        }
-        appComets.models.correlationResults.fetch({
-            type: "POST",
-            data: formData,
-            dataType: "json",
-            cache: false,
-            processData: false,
-            contentType: false,
-            beforeSend: appComets.showLoader,
-            reset: true
-        }).always(function () {
-            appComets.hideLoader();
-            $('a[href="#tab-summary"]').tab('show');
-        });
     },
     renderCohortList: function() {
         this.$el.find('#cohortSelection').html(this.template({
@@ -1109,9 +1129,6 @@ $(function () {
     };
     $('#pageContent').on('show.bs.tab', '#comets-tab-nav', setTitle);
     $('#pageContent').on('show.bs.tab', '#correlate-tab-nav', setTitle);
-    $('#pageContent').on('click', '#runModel', function () {
-        $('a[href="#tab-summary"]').tab('show');
-    });
     templates = $.ajax({
         type: "GET",
         url: "/cometsRest/templates",
