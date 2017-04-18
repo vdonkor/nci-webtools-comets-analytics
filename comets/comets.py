@@ -146,9 +146,10 @@ def correlate():
             if (len(parameters['covariates']) == 0):
                 parameters['covariates'] = None
         if ('strata' in parameters):
-            parameters['strata'] = json.loads(parameters['strata'])
             if (len(parameters['strata']) == 0):
                 parameters['strata'] = None
+            else:
+                parameters['strata'] = [parameters['strata']]
         if (parameters['modelName'] == "All models"):
             parameters['filename'] = parameters['filename']
             queueFile(parameters)
@@ -229,7 +230,7 @@ def combine():
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred."})
     finally:
         return response
 

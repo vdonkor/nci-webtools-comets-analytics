@@ -89,10 +89,16 @@ appComets.CombineFormModel = Backbone.Model.extend({
         sample: {},
         varmap: {},
         templateSelection: "",
-        downloadLink: null
+        downloadLink: null,
+        statusMessage: ""
     },
     url: "/cometsRest/combine",
     parse: function(response, xhr) {
+        if (!response.statusMessage) {
+            response.statusMessage = "The comets input file has been successfully created by combining "+
+                                     "Metabolite Meta-Data, Abundance and Subject Data files. "+
+                                     "Click Download Input File to download the file.";
+        }
         console.log(response);
         return response;
     }
@@ -116,7 +122,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         outcome:[ "All metabolites" ],
         showMetabolites: false,
         status: false,
-        strata: [],
+        strata: "",
         subjectIds: []
     }
 });
