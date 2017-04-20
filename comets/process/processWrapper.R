@@ -31,18 +31,17 @@ runAllModels <- function(jsonData) {
     }
     returnValue <- list()
     for (model in exmetabdata$mods$model) {
-      returnValue[[model]] = runModel(input,model)
+      returnValue[[model]] = runModel(input,exmetabdata,model)
     }
     toJSON(list(integrityCheck=integrityCheck,models=returnValue,timestamp=input$timestamp), auto_unbox = T)
 }
 
-runModel <- function(input,model) {
+runModel <- function(input,exmetabdata,model) {
   returnValue <- list()
   suppressWarnings(suppressMessages({
     returnValue$saveValue <- tryCatch(
       withCallingHandlers(
         {
-          exmetabdata <- readCOMETSinput(input$filename)
           exmodeldata <- getModelData(exmetabdata,
             modelspec="Batch",
             modbatch=model
