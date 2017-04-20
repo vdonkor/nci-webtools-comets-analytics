@@ -5,6 +5,7 @@ services:
     volumes:
       - ../app:/deploy/app
       - ../logs:/deploy/logs
+      - ../../comets_results:/deploy/app/tmp
       - /etc/localtime:/etc/localtime:ro
     container_name: comets
     depends_on:
@@ -20,6 +21,7 @@ services:
     volumes:
       - ../app:/deploy/app
       - ../logs:/deploy/logs
+      - ../../comets_results:/deploy/app/tmp
       - /etc/localtime:/etc/localtime:ro
     container_name: comets_processor
     depends_on:
