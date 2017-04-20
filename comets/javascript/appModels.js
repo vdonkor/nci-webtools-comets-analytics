@@ -97,7 +97,7 @@ appComets.CombineFormModel = Backbone.Model.extend({
         if (!response.statusMessage) {
             response.statusMessage = "The comets input file has been successfully created by combining "+
                                      "Metabolite Meta-Data, Abundance and Subject Data files. "+
-                                     "Click Download Input File to download the file.";
+                                     'Click <a href="'+response.downloadLink+'">Download Input File</a> to download the file.';
         }
         console.log(response);
         return response;
