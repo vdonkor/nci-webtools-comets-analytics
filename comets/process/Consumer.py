@@ -12,6 +12,7 @@ from stompest.protocol import StompSpec
 from twisted.internet import defer, reactor
 
 config = {}
+logger = logging.getLogger("comets_processor")
 
 class Consumer(object):
     def composeMail(self,sender,recipients,subject,message,files=[]):
@@ -58,16 +59,14 @@ class Consumer(object):
 
     def consume(self, client, frame):
         parameters = json.loads(frame.body)
-        print('')
-        print('')
-        print('Received frame: %s' % parameters)
-        print('')
-        
+        logger.info('Received frame: %s' % parameters)
         filename = parameters['filename']
         parameters['filename'] = os.path.join('tmp',filename)
         s3conn = S3Connection(config['s3.username'],config['s3.password']).get_bucket(config['s3.bucket'])
         s3conn.get_key('/input/'+filename).get_contents_to_filename(parameters['filename'])
         result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
+        logger.debug('result contents')
+        logger.debug(result)
         content = ""
         if (type(result['integrityCheck']) is dict):
             ic = result['integrityCheck']
@@ -80,9 +79,9 @@ class Consumer(object):
             if ('error' in ic):
                 content += "  Error: "+ic['error']+"\n"
                 if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+filename[4:],content)):
-                    print("Email sent")
+                    logger.info("Email sent")
                 else:
-                    print("Email not sent")
+                    logger.info("Email not sent")
                 return
         filenameZ = str(result['timestamp'])+'.zip'
         filepath = os.path.join('tmp',filenameZ)
@@ -111,11 +110,9 @@ class Consumer(object):
         s3key.set_contents_from_filename(filepath)
         content = s3key.generate_url(expires_in=604800)+'\n\n' + content #604800 = 7d*24h*60m*60s
         if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+parameters['filename'][4:],content)):
-            print("Email sent")
+            logger.info("Email sent")
         else:
-            print("Email not sent")
-        print('')
-        print('')
+            logger.info("Email not sent")
         os.remove(filepath)
 
 if __name__ == '__main__':

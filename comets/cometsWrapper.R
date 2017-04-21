@@ -109,7 +109,7 @@ runModel <- function(jsonData) {
                     exmetabdata <- readCOMETSinput(input$filename)
                     exmodeldata <- getModelData(exmetabdata,
                       modelspec=input$methodSelection,
-                      modbatch=input$modelSelection,
+                      modlabel=input$modelSelection,
                       rowvars=input$outcome,
                       colvars=input$exposure,
                       adjvars=input$covariates,

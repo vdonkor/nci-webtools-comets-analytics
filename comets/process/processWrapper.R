@@ -44,7 +44,7 @@ runModel <- function(input,exmetabdata,model) {
         {
           exmodeldata <- getModelData(exmetabdata,
             modelspec="Batch",
-            modbatch=model
+            modlabel=model
           )
           if (length(exmodeldata$scovs) > 0) {
             excorrdata <- stratCorr(exmodeldata,exmetabdata,input$cohortSelection)
