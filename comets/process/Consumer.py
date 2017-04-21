@@ -63,7 +63,7 @@ class Consumer(object):
         filename = parameters['filename']
         parameters['filename'] = os.path.join('tmp',filename)
         s3conn = S3Connection(config['s3.username'],config['s3.password']).get_bucket(config['s3.bucket'])
-        s3conn.get_key('/input/'+filename).get_contents_to_filename(parameters['filename'])
+        s3conn.get_key('/comets/input/'+filename).get_contents_to_filename(parameters['filename'])
         result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
         logger.debug('result contents')
         logger.debug(result)
@@ -106,7 +106,7 @@ class Consumer(object):
                 if ('error' in mod):
                     content += "  Error: "+mod['error']+"\n"
         zipf.close()
-        s3key = s3conn.new_key('/output/'+filenameZ);
+        s3key = s3conn.new_key('/comets/results/'+filenameZ);
         s3key.set_contents_from_filename(filepath)
         content = s3key.generate_url(expires_in=604800)+'\n\n' + content #604800 = 7d*24h*60m*60s
         if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+parameters['filename'][4:],content)):
