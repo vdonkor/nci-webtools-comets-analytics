@@ -1,5 +1,6 @@
 import json, linecache, logging, os, smtplib, sys, yaml, zipfile
 
+from boto.s3.connection import S3Connection
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -11,6 +12,7 @@ from stompest.protocol import StompSpec
 from twisted.internet import defer, reactor
 
 config = {}
+logger = logging.getLogger("comets_processor")
 
 class Consumer(object):
     def composeMail(self,sender,recipients,subject,message,files=[]):
@@ -50,22 +52,23 @@ class Consumer(object):
   
     @defer.inlineCallbacks
     def run(self):
-        client = Stomp(StompConfig('tcp://activemq:61613'))
+        client = Stomp(StompConfig('tcp://'+config['queue.host']+':'+str(config['queue.port'])))
         yield client.connect()
         headers = { StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL }
         client.subscribe('/queue/test', headers, listener = SubscriptionListener(self.consume, errorDestination = '/queue/error'))
 
     def consume(self, client, frame):
         parameters = json.loads(frame.body)
-        print('')
-        print('')
-        print('Received frame: %s' % parameters)
-        print('')
+        logger.info('Received frame: %s' % parameters)
+        filename = parameters['filename']
+        parameters['filename'] = os.path.join('tmp',filename)
+        s3conn = S3Connection(config['s3.username'],config['s3.password']).get_bucket(config['s3.bucket'])
+        s3conn.get_key('/comets/input/'+filename).get_contents_to_filename(parameters['filename'])
         result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
-        filepath = os.path.join('tmp',str(result['timestamp'])+'.zip')
-        zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
+        logger.debug('result contents')
+        logger.debug(result)
         content = ""
-        if (result['integrityCheck'] is dict):
+        if (type(result['integrityCheck']) is dict):
             ic = result['integrityCheck']
             content += "Integrity Check\n"
             if ('warnings' in ic):
@@ -73,8 +76,16 @@ class Consumer(object):
                 warnings = ic['warnings'] if type(ic['warnings']) is list else [ic['warnings']]
                 for index in warnings:
                     content += "    * "+warnings[index]+"\n"
-            if ('error' in mod):
+            if ('error' in ic):
                 content += "  Error: "+ic['error']+"\n"
+                if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+filename[4:],content)):
+                    logger.info("Email sent")
+                else:
+                    logger.info("Email not sent")
+                return
+        filenameZ = str(result['timestamp'])+'.zip'
+        filepath = os.path.join('tmp',filenameZ)
+        zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
         for model in result['models']:
             mod = result['models'][model]
             if (len(content) > 0):
@@ -95,12 +106,14 @@ class Consumer(object):
                 if ('error' in mod):
                     content += "  Error: "+mod['error']+"\n"
         zipf.close()
-        if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+parameters['filename'][4:],content,[filepath])):
-            print("Email sent")
+        s3key = s3conn.new_key('/comets/results/'+filenameZ);
+        s3key.set_contents_from_filename(filepath)
+        content = s3key.generate_url(expires_in=604800)+'\n\n' + content #604800 = 7d*24h*60m*60s
+        if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+parameters['filename'][4:],content)):
+            logger.info("Email sent")
         else:
-            print("Email not sent")
-        print('')
-        print('')
+            logger.info("Email not sent")
+        os.remove(filepath)
 
 if __name__ == '__main__':
     def flatten(yaml,parent=None):
@@ -112,7 +125,7 @@ if __name__ == '__main__':
     with open("restricted/settings.yml", 'r') as f:
         flatten(yaml.safe_load(f))
     wrapper.source('./process/processWrapper.R')
-    logging.basicConfig(level = logging.DEBUG)
+    logging.basicConfig(level = logging.INFO)
     Consumer().run()
     reactor.run()
 

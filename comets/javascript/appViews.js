@@ -401,7 +401,7 @@ appComets.FormView = Backbone.View.extend({
                     correlationResults.set($.extend({},correlationResults.attributes, {
                         correlationRun: false
                     }));
-                    $('[href="#tab-integrity"]').trigger('click');
+                    $('a[href="#tab-integrity"]').trigger('click');
                 }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
@@ -489,12 +489,17 @@ appComets.FormView = Backbone.View.extend({
                 title: "Results Will Be Emailed",
                 callback: function(result) {
                     if (!result) return;
-                    runModelHelper.apply($that);
+                    runModelHelper.apply($that).fail(function(xhr) {
+                        var response = xhr.responseJSON||{'status': false, 'statusMessage': 'An unknown error has occurred.'};
+                        if (!response.status) {
+                            $('a[href="#tab-summary"]').tab('show');
+                        }
+                    });
                 }
             });
         } else {
             runModelHelper.apply($that).always(function () {
-                $that.$el.find('a[href="#tab-summary"]').tab('show');
+                $('a[href="#tab-summary"]').tab('show');
             });
         }
     },
@@ -846,7 +851,7 @@ appComets.SummaryView = Backbone.View.extend({
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
-            if (this.model.get('status') == true) {
+            if (this.model.get('status') === true) {
                 this.renderTable.apply(this);
             }
         } else {
@@ -1002,7 +1007,7 @@ appComets.HeatmapView = Backbone.View.extend({
             var focusId = $(':focus').attr('id');
             this.$el.html(this.template(this.model.attributes));
             if (focusId) $('#'+focusId).trigger('focus');
-            if (this.model.get('status')) {
+            if (this.model.get('status') === true) {
                 var sortRow = this.model.get('sortRow'),
                     sortStratum = this.model.get('sortStratum'),
                     exposures = this.model.get('exposures'),

@@ -1,5 +1,6 @@
 import json, linecache, os, requests, smtplib, sys, time, yaml
 import pyper as pr
+from boto.s3.connection import S3Connection
 from flask import Flask, json, jsonify, request, Response, send_from_directory
 from stompest.config import StompConfig
 from stompest.sync import Stomp
@@ -81,8 +82,10 @@ def composeMail(sender,recipients,subject,content):
     return False
 
 def queueFile(parameters):
+    s3conn = S3Connection(app.config['s3.username'],app.config['s3.password']).get_bucket(app.config['s3.bucket']).new_key('/comets/input/'+parameters['filename'])
+    s3conn.set_contents_from_filename(os.path.join('tmp',parameters['filename']))
     forQueue = json.dumps(parameters)
-    client = Stomp(StompConfig('tcp://activemq:61613'))
+    client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])))
     client.connect()
     client.send('/queue/test',forQueue)
     client.disconnect()
@@ -132,7 +135,7 @@ def correlate():
         for field in parameters:
             parameters[field] = parameters[field][0]
         if ('filename' in parameters):
-            parameters['filename'] = os.path.join('tmp', parameters['filename']+".xlsx")
+            parameters['filename'] = parameters['filename']+".xlsx"
         if ('outcome' in parameters):
             parameters['outcome'] = json.loads(parameters['outcome'])
             if (len(parameters['outcome']) == 0):
@@ -151,10 +154,11 @@ def correlate():
             else:
                 parameters['strata'] = [parameters['strata']]
         if (parameters['modelName'] == "All models"):
-            parameters['filename'] = parameters['filename']
             queueFile(parameters)
-            response = buildFailure({'status': False, 'statusMessage': "The results will be emailed to you."})
+            response = buildFailure({'status': 'info', 'statusMessage': "The results will be emailed to you."})
         else:
+            if ('filename' in parameters):
+                parameters['filename'] = os.path.join('tmp', parameters['filename'])
             r = pr.R()
             r('source("./cometsWrapper.R")')
             r.assign('parameters',json.dumps(parameters))
@@ -174,7 +178,7 @@ def correlate():
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+        response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
     finally:
         return response
 
@@ -190,26 +194,26 @@ def combine():
         # abundences
         abundances = request.files['abundances']
         name, ext = os.path.splitext(abundances.filename)
-        filename = os.path.join('tmp',"abundances_" + timestamp + ext)
-        saveFile = abundances.save(filename)
-        parameters['abundances'] = filename
-        if os.path.isfile(filename):
+        filenameA = os.path.join('tmp',"abundances_" + timestamp + ext)
+        saveFile = abundances.save(filenameA)
+        parameters['abundances'] = filenameA
+        if os.path.isfile(filenameA):
             print("Successfully Uploaded Abundances")
         # metadata
         metadata = request.files['metadata']
         name, ext = os.path.splitext(metadata.filename)
-        filename = os.path.join('tmp',"metadata_" + timestamp + ext)
-        saveFile = metadata.save(filename)
-        parameters['metadata'] = filename
-        if os.path.isfile(filename):
+        filenameM = os.path.join('tmp',"metadata_" + timestamp + ext)
+        saveFile = metadata.save(filenameM)
+        parameters['metadata'] = filenameM
+        if os.path.isfile(filenameM):
             print("Successfully Uploaded Metadata")
         #samples
         sample = request.files['sample']
         name, ext = os.path.splitext(sample.filename)
-        filename = os.path.join('tmp',"sample_" + timestamp + ext)
-        saveFile = sample.save(filename)
-        parameters['sample'] = filename
-        if os.path.isfile(filename):
+        filenameS = os.path.join('tmp',"sample_" + timestamp + ext)
+        saveFile = sample.save(filenameS)
+        parameters['sample'] = filenameS
+        if os.path.isfile(filenameS):
             print("Successfully Uploaded Sample")
         r = pr.R()
         r('source("./cometsWrapper.R")')
@@ -218,6 +222,9 @@ def combine():
         with open(r['combine']) as file:
             result = json.loads(file.read())
         os.remove(r['combine'])
+        os.remove(filenameA)
+        os.remove(filenameM)
+        os.remove(filenameS)
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -230,7 +237,7 @@ def combine():
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred."})
+        response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
     finally:
         return response
 
@@ -293,7 +300,7 @@ def user_metadata():
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
         print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+        response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
     finally:
         return response
 
