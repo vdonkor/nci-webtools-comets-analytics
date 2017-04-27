@@ -6,7 +6,7 @@
             <select id="sortStratum" class="form-control"<%= clusterResults ? " disabled" : "" %>>
                 <option value="All participants (no stratification)"<%= sortRow == "All participants (no stratification)" ? " selected" : "" %>>All participants (no stratification)</option>
                 <% _.each(strata,function(stratum,key,list) { %>
-                    <option value="<%= stratum %>"<%= sortStratum == stratum ? "selected" : "" %>><%= stratum %></option>
+                    <option value="<%= stratum.value %>"<%= sortStratum == stratum.value ? "selected" : "" %>><%= stratum.text %></option>
                 <% }); %>
             </select>
         </div>

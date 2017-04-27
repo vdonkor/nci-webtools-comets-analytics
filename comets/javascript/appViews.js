@@ -613,9 +613,10 @@ appComets.FormView = Backbone.View.extend({
         var email = this.model.get('email'),
             methodSelection = this.model.get('methodSelection'),
             modelSelection = this.model.get('modelSelection'),
-            exposure = this.model.get('exposure');
+            exposure = this.model.get('exposure'),
+            covariates = this.model.get('covariates');
         if ((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
-            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0)
+            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0 && covariates.indexOf(this.model.get('strata')) < 0)
         ) {
             this.$el.find('#runModel').removeAttr('disabled');
         } else {

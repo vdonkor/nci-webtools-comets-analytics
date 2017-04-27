@@ -178,7 +178,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
             }),
             status: response.integritymessage.toLowerCase().indexOf("error") < 0,
             statusMessage: response.integritymessage,
-            subjectIds: response.allSubjectMetaData.map(function(subject) { return { text: subject, value: subject }; })
+            subjectIds: response.allSubjectMetaData
         });
         delete response.allMetabolites;
         delete response.allSubjectMetaData;

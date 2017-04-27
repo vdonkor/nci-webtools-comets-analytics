@@ -67,7 +67,7 @@ class Consumer(object):
         result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
         logger.debug('result contents')
         logger.debug(result)
-        content = ""
+        content = ""                  
         if (type(result['integrityCheck']) is dict):
             ic = result['integrityCheck']
             content += "Integrity Check\n"
@@ -90,6 +90,7 @@ class Consumer(object):
             mod = result['models'][model]
             if (len(content) > 0):
                 content += "\n"
+            content += model+(" - Error" if 'error' in mod else " - Complete")+"\n"
             if ('saveValue' in mod):
                 filename = mod['saveValue']
                 if (os.path.isfile(filename)):
@@ -97,7 +98,6 @@ class Consumer(object):
                 os.remove(filename)
                 del mod['saveValue']
             if (len(mod) > 0):
-                content += model+"\n"
                 if ('warnings' in mod):
                     content += "  Warnings:\n"
                     warnings = mod['warnings'] if type(mod['warnings']) is list else [mod['warnings']]
@@ -108,7 +108,13 @@ class Consumer(object):
         zipf.close()
         s3key = s3conn.new_key('/comets/results/'+filenameZ);
         s3key.set_contents_from_filename(filepath)
-        content = s3key.generate_url(expires_in=604800)+'\n\n' + content #604800 = 7d*24h*60m*60s
+        content = "Dear COMETS user,\n"+
+                  "The results of your batch data run are available through the following link. Any additional information (warnings, errors, etc.) are included below.\n\n"+
+                  s3key.generate_url(expires_in=604800)+"\n\n"+ #604800 = 7d*24h*60m*60s
+                  "The search results will be available for the next 7 days.\n\n"+
+                  content+"\n\n"+
+                  "Respectfully,\n"+
+                  "COMETS Web Tool"
         if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+parameters['filename'][4:],content)):
             logger.info("Email sent")
         else:

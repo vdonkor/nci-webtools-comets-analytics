@@ -72,6 +72,10 @@ checkIntegrity <- function(filename,cohort) {
                 {
                   exmetabdata = readCOMETSinput(filename)
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
+                  subjectMetadata <- as.data.frame(exmetabdata$allSubjectMetaData)
+                  subjectMetadata[,2] <- as.character(lapply(exmetabdata$allSubjectMetaData,function(value) { return(exmetabdata$vmap$varreference[value==exmetabdata$vmap$cohortvariable]) }))
+                  names(subjectMetadata) <- c('value','text')
+                  exmetabdata$allSubjectMetaData <- subjectMetadata
                   exmetabdata
                 },
                 message=function(m) {
@@ -147,6 +151,14 @@ runModel <- function(jsonData) {
                       )
                     }
                     excorrdata[,'pvalue'] <- with(excorrdata,format(pvalue, scientific=TRUE,digits=I(3)))
+                    if(any(names(excorrdata) == "stratavar")) {
+                      strataVector <- excorrdata[!duplicated(excorrdata[,'stratavar']),'stratavar']
+                      strataFrame <- as.data.frame(strataVector)
+                      strataFrame[,2] <- as.character(lapply(strataVector,function(value) { return(exmetabdata$vmap$varreference[value==exmetabdata$vmap$cohortvariable]) }))
+                      names(strataFrame) <- c('value','text')
+                    } else {
+                      strataFrame <- list()
+                    }
                     list(
                       clustersort = clustersort,
                       csv = csv,
@@ -156,7 +168,7 @@ runModel <- function(jsonData) {
                       ptime = attr(excorrdata,"ptime"),
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
-                      strata = if(any(names(excorrdata) == "stratavar")) excorrdata[!duplicated(excorrdata[,'stratavar']),'stratavar'] else list(),
+                      strata = strataFrame,
                       tableOrder = exmetabdata$dispvars
                     )
                 },
