@@ -309,7 +309,7 @@ appComets.FormView = Backbone.View.extend({
             "change:cohortList": this.renderCohortList,
             "change:cohortSelection": this.renderCohortSelection,
             "change:csvFile": this.renderCheckIntegrityButton,
-            "change:email": this.renderRunModelButton,
+            "change:email": this.renderEmail,
             "change:status": this.renderIntegrityChecked,
             "change:methodSelection": this.renderMethodSelection,
             "change:modelList": this.renderModelList,
@@ -332,7 +332,7 @@ appComets.FormView = Backbone.View.extend({
         "change #inputDataFile": "uploadInputDataFile",
         "change select": "updateModel",
         "change input:not([type='button'])": "updateModel",
-        "keypress input:not([type='button'])": "noSubmit",
+        "keyup input:not([type='button'])": "noSubmit",
         "click #load": "checkIntegrity",
         "click #reset": "reset",
         "click #runModel": "runModel",
@@ -351,6 +351,8 @@ appComets.FormView = Backbone.View.extend({
         if (e.keyCode == 13) {
             e.preventDefault();
             return false;
+        } else {
+            $(e.target).trigger('change');
         }
     },
     uploadInputDataFile: function (e) {
@@ -520,6 +522,10 @@ appComets.FormView = Backbone.View.extend({
         } else {
             this.$el.find("#load").attr('disabled', true);
         }
+    },
+    renderEmail: function() {
+        this.$el.find('[name="email"]').val(this.model.get('email'));
+        this.renderRunModelButton.apply(this);
     },
     renderEmailOption: function() {
         if (this.model.get('methodSelection') == 'Batch' && this.model.get('modelSelection') == "All models") {
