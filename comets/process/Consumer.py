@@ -70,14 +70,14 @@ class Consumer(object):
         content = ""                  
         if (type(result['integrityCheck']) is dict):
             ic = result['integrityCheck']
-            content += "Integrity Check\n"
+            content += "  Integrity Check\n"
             if ('warnings' in ic):
-                content += "  Warnings:\n"
+                content += "    Warnings:\n"
                 warnings = ic['warnings'] if type(ic['warnings']) is list else [ic['warnings']]
                 for index in warnings:
-                    content += "    * "+warnings[index]+"\n"
+                    content += "      * "+warnings[index]+"\n"
             if ('error' in ic):
-                content += "  Error: "+ic['error']+"\n"
+                content += "    Error: "+ic['error']+"\n"
                 if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+filename[4:],content)):
                     logger.info("Email sent")
                 else:
@@ -90,7 +90,7 @@ class Consumer(object):
             mod = result['models'][model]
             if (len(content) > 0):
                 content += "\n"
-            content += model+(" - Error" if 'error' in mod else " - Complete")+"\n"
+            content += "  "+model+(" - Error" if 'error' in mod else " - Complete")+"\n"
             if ('saveValue' in mod):
                 filename = mod['saveValue']
                 if (os.path.isfile(filename)):
@@ -99,12 +99,12 @@ class Consumer(object):
                 del mod['saveValue']
             if (len(mod) > 0):
                 if ('warnings' in mod):
-                    content += "  Warnings:\n"
+                    content += "    Warnings:\n"
                     warnings = mod['warnings'] if type(mod['warnings']) is list else [mod['warnings']]
                     for warning in warnings:
-                        content += "    * "+warning+"\n"
+                        content += "      * "+warning+"\n"
                 if ('error' in mod):
-                    content += "  Error: "+mod['error']+"\n"
+                    content += "    Error: "+mod['error']+"\n"
         if (len(zipf.infolist()) > 0):
             s3key = s3conn.new_key('/comets/results/'+filenameZ);
             s3key.set_contents_from_filename(filepath)
@@ -117,11 +117,12 @@ class Consumer(object):
         if (self.composeMail(
                 config['email.sender'],
                 parameters['email'],
-                "Model data for "+parameters['filename'][4:],
-                "Dear COMETS user,\n"+
+                "Comets Model Results – "+parameters['filename'][4:-5],
+                "Dear COMETS user,\n\n"+
                 header+
+                "The following models were run.\n\n"+
                 content+"\n\n"+
-                "Respectfully,\n"+
+                "Respectfully,\n\n"+
                 "COMETS Web Tool"
             )):
             logger.info("Email sent")
