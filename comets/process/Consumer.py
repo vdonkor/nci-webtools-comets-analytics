@@ -117,7 +117,7 @@ class Consumer(object):
         if (self.composeMail(
                 config['email.sender'],
                 parameters['email'],
-                "Comets Model Results – "+parameters['filename'][4:-5],
+                "Comets Model Results - "+parameters['filename'][4:-5],
                 "Dear COMETS user,\n\n"+
                 header+
                 "The following models were run.\n\n"+
