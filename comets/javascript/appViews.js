@@ -413,6 +413,7 @@ appComets.FormView = Backbone.View.extend({
                     modelList: data.models.map(function (model) {
                         return { 'text': model.model, 'value': model.model };
                     }),
+                    originalFilename: data.originalFilename,
                     status: data.status,
                     subjectIds: data.subjectIds
                 }));
@@ -453,6 +454,7 @@ appComets.FormView = Backbone.View.extend({
                 var $that = this;
                 var formData = new FormData();
                 var toAppend = {
+                    'originalFilename': this.model.get('originalFilename'),
                     'filename': this.model.get('filename'),
                     'cohortSelection': this.model.get('cohortSelection'),
                     'methodSelection': methodSelection,

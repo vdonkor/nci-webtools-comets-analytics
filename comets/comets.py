@@ -114,6 +114,7 @@ def integrityCheck():
             response = buildFailure(result['error'])
         else:
             result['saveValue']['filename'] = os.path.splitext(filename)[0]
+            result['saveValue']['originalFilename'] = name+ext
             response = buildSuccess(result['saveValue'])
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()

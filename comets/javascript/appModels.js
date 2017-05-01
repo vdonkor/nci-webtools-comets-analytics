@@ -119,6 +119,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         modelList: [],
         defaultOptions: [{ 'text': "All Metabolites", 'value': "All metabolites" }],
         modelSelection: null,
+        originalFilename: null,
         outcome:[ "All metabolites" ],
         showMetabolites: false,
         status: false,

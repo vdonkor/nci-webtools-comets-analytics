@@ -106,10 +106,11 @@ class Consumer(object):
                 if ('error' in mod):
                     content += "    Error: "+mod['error']+"\n"
         zipf.close()
+        header = "We've finished running your file: "+parameters['originalFilename']+"\n\n"
         if (len(zipf.infolist()) > 0):
             s3key = s3conn.new_key('/comets/results/'+filenameZ);
             s3key.set_contents_from_filename(filepath)
-            header = "The results of your batch data run are available through the following link. Any additional information (warnings, errors, etc.) are included below.\n\n"
+            header += "The results of your batch data run are available through the following link. Any additional information (warnings, errors, etc.) are included below.\n\n"
             header += s3key.generate_url(expires_in=604800)+"\n\n" #604800 = 7d*24h*60m*60s
             header += "The search results will be available for the next 7 days.\n\n"
         else:
@@ -117,7 +118,7 @@ class Consumer(object):
         if (self.composeMail(
                 config['email.sender'],
                 parameters['email'],
-                "Comets Model Results - "+parameters['filename'][4:-5],
+                "Comets Batch Mode Model Results - "+filenameZ,
                 "Dear COMETS user,\n\n"+
                 header+
                 "The following models were run.\n\n"+
