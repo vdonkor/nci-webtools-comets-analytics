@@ -105,6 +105,7 @@ class Consumer(object):
                         content += "      * "+warning+"\n"
                 if ('error' in mod):
                     content += "    Error: "+mod['error']+"\n"
+        zipf.close()
         if (len(zipf.infolist()) > 0):
             s3key = s3conn.new_key('/comets/results/'+filenameZ);
             s3key.set_contents_from_filename(filepath)
@@ -113,7 +114,6 @@ class Consumer(object):
             header += "The search results will be available for the next 7 days.\n\n"
         else:
             header = "There were no models or all the models resulted in errors, so no data is available. Any additional information (warnings, errors, etc.) are included below.\n\n"
-        zipf.close()
         if (self.composeMail(
                 config['email.sender'],
                 parameters['email'],
