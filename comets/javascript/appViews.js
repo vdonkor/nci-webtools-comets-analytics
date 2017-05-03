@@ -708,26 +708,26 @@ appComets.SummaryView = Backbone.View.extend({
             minmax = "min";
             value = parseFloat(value);
             oldValue = this.model.get(name+minmax);
-            if (Number.isNaN(value)) { value = Number.NEGATIVE_INFINITY; }
+            if (isNaN(value)) { value = Number.NEGATIVE_INFINITY; }
             if (oldValue === undefined) { oldValue = Number.NEGATIVE_INFINITY; }
             if (value >= oldValue) {
                 subset = true;
                 filterdata = filterdata.filter(function(entry) {
                     var source = parseFloat(entry[name]);
-                    return (Number.isNaN(source)?Number.NEGATIVE_INFINITY:source) >= value;
+                    return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= value;
                 });
             }
         } else if (max) {
             minmax = "max";
             value = parseFloat(value);
             oldValue = this.model.get(name+minmax);
-            if (Number.isNaN(value)) { value = Number.POSITIVE_INFINITY; }
+            if (isNaN(value)) { value = Number.POSITIVE_INFINITY; }
             if (oldValue === undefined) { oldValue = Number.POSITIVE_INFINITY; }
             if (value <= oldValue) {
                 subset = true;
                 filterdata = filterdata.filter(function(entry) {
                     var source = parseFloat(entry[name]);
-                    return (Number.isNaN(source)?Number.POSITIVE_INFINITY:source) <= value;
+                    return (isNaN(source)?Number.POSITIVE_INFINITY:source) <= value;
                 });
             }
         } else {
@@ -748,22 +748,22 @@ appComets.SummaryView = Backbone.View.extend({
                 var val = this.model.get(tableOrder[index]),
                     min = parseFloat(this.model.get(tableOrder[index]+"min")),
                     max = parseFloat(this.model.get(tableOrder[index]+"max"));
-                if (!Number.isNaN(min)) {
-                    if (!Number.isNaN(max)) {
+                if (!isNaN(min)) {
+                    if (!isNaN(max)) {
                         filterdata = filterdata.filter(function(entry) {
                             source = parseFloat(entry[tableOrder[index]]);
-                            return (Number.isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min && (Number.isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
+                            return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min && (isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
                         });
                     } else {
                         filterdata = filterdata.filter(function(entry) {
                             source = parseFloat(entry[tableOrder[index]]);
-                            return (Number.isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min;
+                            return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min;
                         });
                     }
-                } else if (!Number.isNaN(max)) {
+                } else if (!isNaN(max)) {
                     filterdata = filterdata.filter(function(entry) {
                         source = parseFloat(entry[tableOrder[index]]);
-                        return (Number.isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
+                        return (isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
                     });
                 } else if (val !== undefined && val !== null) {
                     filterdata = filterdata.filter(function(entry) {
