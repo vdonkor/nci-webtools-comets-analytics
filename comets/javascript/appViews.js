@@ -751,23 +751,23 @@ appComets.SummaryView = Backbone.View.extend({
                 if (!isNaN(min)) {
                     if (!isNaN(max)) {
                         filterdata = filterdata.filter(function(entry) {
-                            source = parseFloat(entry[tableOrder[index]]);
+                            var source = parseFloat(entry[tableOrder[index]]);
                             return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min && (isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
                         });
                     } else {
                         filterdata = filterdata.filter(function(entry) {
-                            source = parseFloat(entry[tableOrder[index]]);
+                            var source = parseFloat(entry[tableOrder[index]]);
                             return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min;
                         });
                     }
                 } else if (!isNaN(max)) {
                     filterdata = filterdata.filter(function(entry) {
-                        source = parseFloat(entry[tableOrder[index]]);
+                        var source = parseFloat(entry[tableOrder[index]]);
                         return (isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
                     });
                 } else if (val !== undefined && val !== null) {
                     filterdata = filterdata.filter(function(entry) {
-                        source = String(entry[tableOrder[index]]);
+                        var source = String(entry[tableOrder[index]]).toLowerCase();
                         return source.indexOf(String(val)) > -1;
                     });
                 }

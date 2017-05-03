@@ -132,8 +132,8 @@
                     min: e2,
                     max: e2
                 };
-            }).reduce(minmax,{min: Number.NEGATIVE_INFINITY, max: Number.POSITIVE_INFINITY});
-        }).reduce(minmax,{min: Number.NEGATIVE_INFINITY, max: Number.POSITIVE_INFINITY});
+            }).reduce(minmax,{min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY});
+        }).reduce(minmax,{min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY});
         avg = (avg.min+avg.max)/2;
         return Plotly.newPlot(el, [{
             z: data,
