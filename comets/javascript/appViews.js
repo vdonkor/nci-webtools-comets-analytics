@@ -446,8 +446,8 @@ appComets.FormView = Backbone.View.extend({
                     exposure = _.flatten(this.model.get('exposure').map(makeList)),
                     covariates = _.flatten(this.model.get('covariates').map(makeList)),
                     metaboliteIds = this.model.get('metaboliteIds');
-                var outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
-                    exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
+                var outcomeCount = outcome.length + ((outcome.indexOf('All metabolites') > -1) ? metaboliteIds.length-1 : 0),
+                    exposureCount = exposure.length + ((exposure.indexOf('All metabolites') > -1) ? metaboliteIds.length-1 : 0);
                 if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in displaying the results.")) {
                     return;
                 }
@@ -733,10 +733,10 @@ appComets.SummaryView = Backbone.View.extend({
         } else {
             value = (value||'').toLowerCase();
             oldValue = this.model.get(name)||'';
-            if (value.includes(oldValue)) {
+            if (value.indexOf(oldValue) > -1) {
                 subset = true;
                 filterdata = filterdata.filter(function(entry) {
-                    return String(entry[name]).toLowerCase().includes(value);
+                    return String(entry[name]).toLowerCase().indexOf(value) > -1;
                 });
             }
         }
@@ -768,7 +768,7 @@ appComets.SummaryView = Backbone.View.extend({
                 } else if (val !== undefined && val !== null) {
                     filterdata = filterdata.filter(function(entry) {
                         source = String(entry[tableOrder[index]]);
-                        return source.includes(String(val));
+                        return source.indexOf(String(val)) > -1;
                     });
                 }
             }
