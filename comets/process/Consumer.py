@@ -114,7 +114,7 @@ class Consumer(object):
             header += s3key.generate_url(expires_in=604800)+"\n\n" #604800 = 7d*24h*60m*60s
             header += "The search results will be available for the next 7 days.\n\n"
         else:
-            header = "There were no models or all the models resulted in errors, so no data is available. Any additional information (warnings, errors, etc.) are included below.\n\n"
+            header += "There were no models or all the models resulted in errors, so no data is available. Any additional information (warnings, errors, etc.) are included below.\n\n"
         if (self.composeMail(
                 config['email.sender'],
                 parameters['email'],
