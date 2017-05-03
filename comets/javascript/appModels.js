@@ -162,16 +162,16 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
                 'N Metabolites': response.metab.length,
                 'N Harmonized': response.metab.map(function (obj) {
                     return 'uid_01' in obj ? 1 : 0;
-                }).reduce(sum),
+                }).reduce(sum,0),
                 'N Non-Harmonized': response.metab.map(function (obj) {
                     return 'uid_01' in obj ? 0 : 1;
-                }).reduce(sum),
+                }).reduce(sum,0),
                 'N with zero variance': response.metab.map(function (obj) {
                     return obj.log2var == 0 ? 1 : 0;
-                }).reduce(sum),
+                }).reduce(sum,0),
                 'N with >25% at min': response.metab.map(function (obj) {
                     return obj['num.min'] > response.subjdata.length * .25;
-                }).reduce(sum)
+                }).reduce(sum,0)
             },
             models: [{'model': 'All models'}].concat(response.mods),
             'num.min': response.metab.map(function (obj) {

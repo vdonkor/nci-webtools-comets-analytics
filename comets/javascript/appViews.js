@@ -657,11 +657,11 @@ appComets.IntegrityView = Backbone.View.extend({
         if (this.model.get('integrityChecked')) {
             if (this.model.get('status')) {
                 var log2var = this.model.get('log2var');
-                if (log2var.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; })) {
+                if (log2var.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; },true)) {
                     appComets.generateHistogram('varianceDist', 'Distribution of Variance', "Frequency", 'Variance of transformed metabolite abundances', log2var);
                 }
                 var nummin = this.model.get('num.min');
-                if (nummin.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; })) {
+                if (nummin.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; },true)) {
                     appComets.generateHistogram('subjectDist', 'Number of minimum/missing values', "Frequency", 'Distribution of the Number/Missing Values', nummin);
                 }
             }
@@ -875,7 +875,7 @@ appComets.SummaryView = Backbone.View.extend({
             entryCount = this.model.get('entryCount');
         this.$el.find('#correlationSummary tbody').empty();
         var tr = '';
-        if (map.map(function(row) { return row.selected; }).reduce(function(prev,curr) { return prev&&curr; })) {
+        if (map.length > 0 && map.map(function(row) { return row.selected; }).reduce(function(prev,curr) { return prev&&curr; },true)) {
             this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked',true);
         } else {
             this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked',false);
@@ -963,7 +963,7 @@ appComets.CustomListView = Backbone.View.extend({
     checkName: function() {
         var listName = this.model.get('listName'),
             defaultOptions = this.model.get('formModel').get('defaultOptions');
-        if (listName === "" || defaultOptions.map(function(entry) { return listName === entry.text; }).reduce(function(prev,curr) { return prev||curr; })) {
+        if (listName === "" || defaultOptions.map(function(entry) { return listName === entry.text; }).reduce(function(prev,curr) { return prev||curr; },false)) {
             this.$el.find('button.create').attr('disabled',true);
         } else {
             this.$el.find('button.create').removeAttr('disabled');
