@@ -169,7 +169,7 @@ runModel <- function(jsonData) {
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
                       strata = strataFrame,
-                      tableOrder = exmetabdata$dispvars
+                      tableOrder = intersect(exmetabdata$dispvars,names(excorrdata))
                     )
                 },
                 message=function(m) {
