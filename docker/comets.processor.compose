@@ -1,8 +1,11 @@
 version: '3'
 services:
   comets_processor:
-    image: cbiitss/comets:processor
-      volumes:
-        - ./run/app:/deploy/app
-        - ./run/logs:/deploy/logs
-      container_name: comets_processor
+    image: "cbiitss/comets:processor"
+    volumes:
+      - ../app:/deploy/app
+      - ../logs:/deploy/logs
+      - ../../comets_results:/deploy/app/tmp
+      - /etc/localtime:/etc/localtime:ro
+    container_name: comets_processor
+    entrypoint: "bash -c 'sleep 10 && entrypoint.sh /deploy/app/process/Consumer.py'"
