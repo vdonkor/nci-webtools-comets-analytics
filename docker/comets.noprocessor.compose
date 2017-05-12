@@ -3,8 +3,10 @@ services:
   comets:
     image: "cbiitss/comets:base0"
     volumes:
-      - ./run/app:/deploy/app
-      - ./run/logs:/deploy/logs
+      - ../app:/deploy/app
+      - ../logs:/deploy/logs
+      - ../../comets_results:/deploy/app/tmp
+      - /etc/localtime:/etc/localtime:ro
     container_name: comets
     depends_on:
       - activemq
@@ -13,9 +15,11 @@ services:
     ports:
       - '8100:8000'
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost']
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000']
   activemq:
     image: "webcenter/activemq:latest"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     container_name: activemq
     expose:
       - '61613'
