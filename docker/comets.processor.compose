@@ -8,4 +8,4 @@ services:
       - ../../comets_results:/deploy/app/tmp
       - /etc/localtime:/etc/localtime:ro
     container_name: comets_processor
-    entrypoint: "bash -c 'sleep 10 && entrypoint.sh /deploy/app/process/Consumer.py'"
+    entrypoint: "bash -c 'sleep 5 && entrypoint.sh /deploy/app/process/Consumer.py'"
