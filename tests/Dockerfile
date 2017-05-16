@@ -1,4 +1,4 @@
-FROM centos
+FROM cbiit/centos7_base
 
 RUN yum makecache fast \
  && yum -y update \

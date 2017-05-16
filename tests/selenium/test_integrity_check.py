@@ -27,7 +27,7 @@ class 1(unittest.TestCase):
         else: self.fail("time out")
         Select(driver.find_element_by_id("cohortSelection")).select_by_visible_text("ARIC")
         driver.find_element_by_id("inputDataFile").clear()
-        driver.find_element_by_id("inputDataFile").send_keys("/tests/uploads/cometsInput.xlsx")
+        driver.find_element_by_id("inputDataFile").send_keys("/tests/inputs/cometsInput.xlsx")
         driver.find_element_by_id("load").click()
         for i in range(60):
             try:
