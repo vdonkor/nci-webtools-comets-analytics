@@ -3,7 +3,6 @@
 *.pyc
 *.sh
 *.wsgi
-*.xlsx
 *.yml
 comets/.Rhistory
 comets/app/
