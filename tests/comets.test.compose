@@ -5,3 +5,4 @@ services:
       context: ./
     volumes:
       .:/tests
+    command: entrypoint.sh /tests/cases/test_integrity_check.py
