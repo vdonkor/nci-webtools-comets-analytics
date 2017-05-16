@@ -7,7 +7,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, re
 
-class 1(unittest.TestCase):
+class TestIntegrityCheck(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.PhantomJS()
         self.driver.implicitly_wait(30)
@@ -17,32 +17,54 @@ class 1(unittest.TestCase):
     
     def test_1(self):
         driver = self.driver
+
+        print('driver.get("http://localhost:8100/")')
         driver.get("http://localhost:8100/")
+
+        print('driver.find_element_by_link_text("Correlate").click()')
         driver.find_element_by_link_text("Correlate").click()
+
+        print('if driver.find_element_by_id("cohortSelection").is_displayed(): break')
         for i in range(60):
             try:
                 if driver.find_element_by_id("cohortSelection").is_displayed(): break
             except: pass
             time.sleep(1)
         else: self.fail("time out")
+
+        print('Select(driver.find_element_by_id("cohortSelection")).select_by_visible_text("ARIC")')
         Select(driver.find_element_by_id("cohortSelection")).select_by_visible_text("ARIC")
-        driver.find_element_by_id("inputDataFile").clear()
+##      driver.find_element_by_id("inputDataFile").clear()
+
+        print('driver.find_element_by_id("inputDataFile").send_keys(Keys.Delete)')
+        driver.find_element_by_id("inputDataFile").send_keys(Keys.Delete)
+
+        print('driver.find_element_by_id("inputDataFile").send_keys("/tests/upload/cometsInput.xlsx")')
         driver.find_element_by_id("inputDataFile").send_keys("/tests/upload/cometsInput.xlsx")
+        
+        print('driver.find_element_by_id("load").click()')
         driver.find_element_by_id("load").click()
+
+        print('if driver.find_element_by_id("resultStatus").is_displayed(): break')
         for i in range(60):
             try:
                 if driver.find_element_by_id("resultStatus").is_displayed(): break
             except: pass
             time.sleep(1)
         else: self.fail("time out")
-        # ERROR: Caught exception [ERROR: Unsupported command [getTable | id=resultStatus | ]]
+
+        print('if driver.find_element_by_id("modelSelection").is_displayed(): break')
         for i in range(60):
             try:
                 if driver.find_element_by_id("modelSelection").is_displayed(): break
             except: pass
             time.sleep(1)
         else: self.fail("time out")
+
+        print('Select(driver.find_element_by_id("modelSelection")).select_by_visible_text("1 Gender adjusted")')
         Select(driver.find_element_by_id("modelSelection")).select_by_visible_text("1 Gender adjusted")
+
+        print('driver.find_element_by_id("runModel").click()')
         driver.find_element_by_id("runModel").click()
     
     def is_element_present(self, how, what):

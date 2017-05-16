@@ -3,7 +3,7 @@ FROM centos
 RUN yum makecache fast \
  && yum -y update \
  && yum -y install epel-release \
- && yum -y install bzip2 python-devel python2-pip \
+ && yum -y install bzip2 fontconfig python-devel python2-pip \
  && yum clean all
 
 # install selnium
@@ -18,13 +18,14 @@ RUN cd /usr/bin \
 # create entrypoint
 RUN { \
     echo "#!/bin/bash" ; \
-    echo "python ${1}" ; \
+    echo "python \${1}" ; \
 } | tee "/usr/bin/entrypoint.sh"
 
 RUN chmod 755 /usr/bin/entrypoint.sh \
  && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
 
 # create tests directory
-RUN mkdir -p /tests
+RUN mkdir -p /tests \
+ && chmod -R 777 /tests
 
-ENTRYPOINT ["entrypoint.sh"] 
+CMD ["entrypoint.sh"] 
