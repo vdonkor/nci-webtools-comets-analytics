@@ -7,7 +7,8 @@ RUN yum makecache fast \
  && yum clean all
 
 # install selnium
-RUN pip install selenium
+RUN pip install --upgrade pip \
+ && pip install selenium
 
 # install phantomjs webdriver
 RUN cd /usr/bin \
