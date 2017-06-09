@@ -254,7 +254,11 @@ appComets.CombineView = Backbone.View.extend({
     },
     renderMatch: function() {
         this.$el.find('fieldset').eq(2).html(this.template({
-            'options': this.model.get('sample').slice().concat(this.model.get('metadata')).map(function(entry) {
+            'data': this.model.get('templateData'),
+            'metadata': this.model.get('metadata').map(function(entry) {
+                return {'text': entry, 'value': entry};
+            }),
+            'sample': this.model.get('sample').map(function(entry) {
                 return {'text': entry, 'value': entry};
             }),
             'template': this.optionsTemplate,
@@ -268,14 +272,13 @@ appComets.CombineView = Backbone.View.extend({
         var templateSelection = this.model.get('templateSelection');
         if (templateSelection.length > 0) {
             var varmap = {};
-            this.model.get('templateList')
-                .filter(function(entry) { return entry.value == templateSelection; })[0]
-                .data.split(',')
-                .map(function(entry) {
-                    varmap[entry] = "";
-                });
+            var template = this.model.get('templateList')
+                .filter(function(entry) { return entry.value == templateSelection; })[0];
+            template.varlist.map(function(entry) {
+                varmap[entry] = "";
+            });
+            this.model.set('templateData',template.data)
             this.model.set('varmap',varmap);
-            console.log(varmap);
             this.$el.find('#combineFiles').removeAttr('disabled');
             this.$el.find('fieldset').eq(2).addClass('show');
             this.renderMatch.apply(this);

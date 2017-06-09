@@ -12,10 +12,29 @@ getCohorts <- function() {
 
 getTemplates <- function() {
     dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
-    ageData = paste0(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4)$VARREFERENCE,collapse=",")
-    basicData = paste0(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4)$VARREFERENCE,collapse=",")
-    templateData = data.frame(text=c("Age","Basic"),value=c('age','basic'),data=c(ageData,basicData))
-    toJSON(templateData)
+    ageData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4))
+    index = match("metabolite_id",ageData$VARREFERENCE)
+    if (!is.na(index)) {
+      ageData <- rbind(ageData[index,],ageData[-index,])
+    }
+    ageMap = toJSON(ageData$VARREFERENCE, auto_unbox = T)
+    rownames(ageData) <- ageData$VARREFERENCE
+    ageData = as.data.frame(t(ageData['VARDEFINITION']))
+    rownames(ageData) <- NULL
+    ageData = toJSON(ageData,auto_unbox=T)
+    ageData = substr(ageData,2,nchar(ageData)-1)
+    basicData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4))
+    index = match("metabolite_id",basicData$VARREFERENCE)
+    if (!is.na(index)) {
+      basicData <- rbind(basicData[index,],basicData[-index,])
+    }
+    basicMap = toJSON(basicData$VARREFERENCE, auto_unbox = T)
+    rownames(basicData) <- basicData$VARREFERENCE
+    basicData = as.data.frame(t(basicData['VARDEFINITION']))
+    rownames(basicData) <- NULL
+    basicData = toJSON(basicData,auto_unbox=T)
+    basicData = substr(basicData,2,nchar(basicData)-1)
+    paste0('[{"text":"Age","value":"age","data":',ageData,',"varlist":',ageMap,'},{"text":"Basic","value":"basic","data":',basicData,',"varlist":',basicMap,'}]')
 }
 
 combineInputs <- function(jsonData) {
