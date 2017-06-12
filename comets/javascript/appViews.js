@@ -320,7 +320,8 @@ appComets.FormView = Backbone.View.extend({
             "change:showMetabolites": this.renderShowMetabolites,
             "change:subjectIds change:metaboliteIds change:defaultOptions": this.renderModelOptions,
             "change:modelSelection": this.renderModelList,
-            "change:outcome change:exposure change:strata": this.renderRunModelButton
+            "change:outcome change:exposure": this.renderRunModelButton,
+            "change:strata": this.renderStrataAlert
         }, this);
         this.template = _.template(appComets.templatesList['harmonizationForm.options']);
         this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
@@ -418,6 +419,7 @@ appComets.FormView = Backbone.View.extend({
                     }),
                     originalFilename: data.originalFilename,
                     status: data.status,
+                    stratifiable: data.stratifiable,
                     subjectIds: data.subjectIds
                 }));
                 $('[href="#tab-integrity"]').trigger('click');
@@ -616,10 +618,6 @@ appComets.FormView = Backbone.View.extend({
         }));
 
     },
-    renderShowMetabolites: function() {
-        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
-        this.renderModelOptions.apply(this);
-    },
     renderRunModelButton: function() {
         var email = this.model.get('email'),
             methodSelection = this.model.get('methodSelection'),
@@ -632,6 +630,35 @@ appComets.FormView = Backbone.View.extend({
             this.$el.find('#runModel').removeAttr('disabled');
         } else {
             this.$el.find('#runModel').attr('disabled', true);
+        }
+    },
+    renderShowMetabolites: function() {
+        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
+        this.renderModelOptions.apply(this);
+    },
+    renderStrataAlert: function() {
+        var $that = this,
+            strataValue = this.model.get('strata');
+        if (strataValue == '') {
+            this.renderModelOptions.apply(this);
+            return;
+        }
+        var stratifiable = this.model.get('stratifiable')[strataValue],
+            subjectIds = this.model.get('subjectIds'),
+            strataText = subjectIds.filter(function(entry) { return entry.value == strataValue })[0].text;
+        if (stratifiable) {
+            this.renderModelOptions.apply(this);
+        } else {
+            BootstrapDialog.confirm({
+                'message': strataText+" has at least one value with less than 15 entries, which will not be evaluated.",
+                'closable': false,
+                'callback': function(result) {
+                    if (!result) {
+                        $that.model.set('strata','',{'silent':true});
+                    }
+                    $that.renderModelOptions.apply($that);
+                }
+            });
         }
     }
 });
