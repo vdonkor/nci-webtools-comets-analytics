@@ -38,6 +38,7 @@ RUN R -e "devtools::install_version('jsonlite',   version = '0.9.22'  ); \
 RUN pip install --upgrade pip \
  && pip install \
         boto \
+        boto3 \
         flask \
         mod_wsgi \
         pyper \
