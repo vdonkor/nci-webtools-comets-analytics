@@ -12,10 +12,21 @@ getCohorts <- function() {
 
 getTemplates <- function() {
     dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
-    ageData = paste0(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4)$VARREFERENCE,collapse=",")
-    basicData = paste0(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4)$VARREFERENCE,collapse=",")
-    templateData = data.frame(text=c("Age","Basic"),value=c('age','basic'),data=c(ageData,basicData))
-    toJSON(templateData)
+    ageData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4))
+    ageMap = toJSON(ageData$VARREFERENCE, auto_unbox = T)
+    rownames(ageData) <- ageData$VARREFERENCE
+    ageData = as.data.frame(t(ageData['VARDEFINITION']))
+    rownames(ageData) <- NULL
+    ageData = toJSON(ageData,auto_unbox=T)
+    ageData = substr(ageData,2,nchar(ageData)-1)
+    basicData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4))
+    basicMap = toJSON(basicData$VARREFERENCE, auto_unbox = T)
+    rownames(basicData) <- basicData$VARREFERENCE
+    basicData = as.data.frame(t(basicData['VARDEFINITION']))
+    rownames(basicData) <- NULL
+    basicData = toJSON(basicData,auto_unbox=T)
+    basicData = substr(basicData,2,nchar(basicData)-1)
+    paste0('[{"text":"Age","value":"age","data":',ageData,',"varlist":',ageMap,'},{"text":"Basic","value":"basic","data":',basicData,',"varlist":',basicMap,'}]')
 }
 
 combineInputs <- function(jsonData) {
@@ -71,9 +82,20 @@ checkIntegrity <- function(filename,cohort) {
             withCallingHandlers(
                 {
                   exmetabdata = readCOMETSinput(filename)
+                  exmetabdata$stratifiable <- as.list(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...){ !any(table(...) < 15) }))
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
                   subjectMetadata <- as.data.frame(exmetabdata$allSubjectMetaData)
-                  subjectMetadata[,2] <- as.character(lapply(exmetabdata$allSubjectMetaData,function(value) { return(exmetabdata$vmap$varreference[value==exmetabdata$vmap$cohortvariable]) }))
+                  subjectMetadata[,2] <- as.character(lapply(
+                      exmetabdata$allSubjectMetaData,
+                      function(value) {
+                          match = value==exmetabdata$vmap$cohortvariable
+                          if (any(match)) {
+                              return(exmetabdata$vmap$varreference[match])
+                          } else {
+                              return(value)
+                          }
+                      }
+                  ))
                   names(subjectMetadata) <- c('value','text')
                   exmetabdata$allSubjectMetaData <- subjectMetadata
                   exmetabdata

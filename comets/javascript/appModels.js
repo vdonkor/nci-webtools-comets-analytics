@@ -142,6 +142,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         "num.min": null,
         status: null,
         statusMessage: null,
+        stratifiable: {},
         subjectID: null,
         varmap: []
     },

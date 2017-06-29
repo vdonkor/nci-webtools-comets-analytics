@@ -15,18 +15,6 @@ RUN yum -y upgrade \
         subversion \
  && yum clean all
 
-RUN pip install --upgrade pip \
- && pip install \
-        flask \
-        mod_wsgi \
-        pyper \
-        pyyaml \
-        requests \
-        rpy2  \
-        stompest \
-        stompest.async \
-        twisted
-
 RUN R -e "install.packages(c('devtools', 'roxygen2'), \
           INSTALL_opts = c('--no-html')); "
 
@@ -46,6 +34,20 @@ RUN R -e "devtools::install_version('jsonlite',   version = '0.9.22'  ); \
           devtools::install_github('Bioconductor-mirror/BiocInstaller', ref = 'release-3.3'); \
           devtools::install_bioc('Biobase'); \
           devtools::install_version('ClassComparison', repos = 'http://silicovore.com/OOMPA/' ); "
+
+RUN pip install --upgrade pip \
+ && pip install \
+        boto \
+        boto3 \
+        flask \
+        mod_wsgi \
+        pyper \
+        pyyaml \
+        requests \
+        rpy2  \
+        stompest \
+        stompest.async \
+        twisted
 
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
