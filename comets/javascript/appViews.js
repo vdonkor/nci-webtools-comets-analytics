@@ -254,7 +254,11 @@ appComets.CombineView = Backbone.View.extend({
     },
     renderMatch: function() {
         this.$el.find('fieldset').eq(2).html(this.template({
-            'options': this.model.get('sample').slice().concat(this.model.get('metadata')).map(function(entry) {
+            'data': this.model.get('templateData'),
+            'metadata': this.model.get('metadata').map(function(entry) {
+                return {'text': entry, 'value': entry};
+            }),
+            'sample': this.model.get('sample').map(function(entry) {
                 return {'text': entry, 'value': entry};
             }),
             'template': this.optionsTemplate,
@@ -268,14 +272,13 @@ appComets.CombineView = Backbone.View.extend({
         var templateSelection = this.model.get('templateSelection');
         if (templateSelection.length > 0) {
             var varmap = {};
-            this.model.get('templateList')
-                .filter(function(entry) { return entry.value == templateSelection; })[0]
-                .data.split(',')
-                .map(function(entry) {
-                    varmap[entry] = "";
-                });
+            var template = this.model.get('templateList')
+                .filter(function(entry) { return entry.value == templateSelection; })[0];
+            template.varlist.map(function(entry) {
+                varmap[entry] = "";
+            });
+            this.model.set('templateData',template.data)
             this.model.set('varmap',varmap);
-            console.log(varmap);
             this.$el.find('#combineFiles').removeAttr('disabled');
             this.$el.find('fieldset').eq(2).addClass('show');
             this.renderMatch.apply(this);
@@ -309,7 +312,7 @@ appComets.FormView = Backbone.View.extend({
             "change:cohortList": this.renderCohortList,
             "change:cohortSelection": this.renderCohortSelection,
             "change:csvFile": this.renderCheckIntegrityButton,
-            "change:email": this.renderRunModelButton,
+            "change:email": this.renderEmail,
             "change:status": this.renderIntegrityChecked,
             "change:methodSelection": this.renderMethodSelection,
             "change:modelList": this.renderModelList,
@@ -317,7 +320,8 @@ appComets.FormView = Backbone.View.extend({
             "change:showMetabolites": this.renderShowMetabolites,
             "change:subjectIds change:metaboliteIds change:defaultOptions": this.renderModelOptions,
             "change:modelSelection": this.renderModelList,
-            "change:outcome change:exposure change:strata": this.renderRunModelButton
+            "change:outcome change:exposure": this.renderRunModelButton,
+            "change:strata": this.renderStrataAlert
         }, this);
         this.template = _.template(appComets.templatesList['harmonizationForm.options']);
         this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
@@ -332,7 +336,7 @@ appComets.FormView = Backbone.View.extend({
         "change #inputDataFile": "uploadInputDataFile",
         "change select": "updateModel",
         "change input:not([type='button'])": "updateModel",
-        "keypress input:not([type='button'])": "noSubmit",
+        "keyup input:not([type='button'])": "noSubmit",
         "click #load": "checkIntegrity",
         "click #reset": "reset",
         "click #runModel": "runModel",
@@ -351,6 +355,8 @@ appComets.FormView = Backbone.View.extend({
         if (e.keyCode == 13) {
             e.preventDefault();
             return false;
+        } else {
+            $(e.target).trigger('change');
         }
     },
     uploadInputDataFile: function (e) {
@@ -401,7 +407,7 @@ appComets.FormView = Backbone.View.extend({
                     correlationResults.set($.extend({},correlationResults.attributes, {
                         correlationRun: false
                     }));
-                    $('[href="#tab-integrity"]').trigger('click');
+                    $('a[href="#tab-integrity"]').trigger('click');
                 }
             }).then(function (data, statusText, xhr) {
                 $that.$el.find("#calcProgressbar [role='progressbar']").removeClass("progress-bar-danger").addClass("progress-bar-success").text("Upload of '" + $that.model.get("csvFile").name + "' Complete");
@@ -411,7 +417,9 @@ appComets.FormView = Backbone.View.extend({
                     modelList: data.models.map(function (model) {
                         return { 'text': model.model, 'value': model.model };
                     }),
+                    originalFilename: data.originalFilename,
                     status: data.status,
+                    stratifiable: data.stratifiable,
                     subjectIds: data.subjectIds
                 }));
                 $('[href="#tab-integrity"]').trigger('click');
@@ -443,14 +451,15 @@ appComets.FormView = Backbone.View.extend({
                     exposure = _.flatten(this.model.get('exposure').map(makeList)),
                     covariates = _.flatten(this.model.get('covariates').map(makeList)),
                     metaboliteIds = this.model.get('metaboliteIds');
-                var outcomeCount = outcome.length + (outcome.includes('All metabolites') ? metaboliteIds.length-1 : 0),
-                    exposureCount = exposure.length + (exposure.includes('All metabolites') ? metaboliteIds.length-1 : 0);
+                var outcomeCount = outcome.length + ((outcome.indexOf('All metabolites') > -1) ? metaboliteIds.length-1 : 0),
+                    exposureCount = exposure.length + ((exposure.indexOf('All metabolites') > -1) ? metaboliteIds.length-1 : 0);
                 if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in displaying the results.")) {
                     return;
                 }
                 var $that = this;
                 var formData = new FormData();
                 var toAppend = {
+                    'originalFilename': this.model.get('originalFilename'),
                     'filename': this.model.get('filename'),
                     'cohortSelection': this.model.get('cohortSelection'),
                     'methodSelection': methodSelection,
@@ -489,12 +498,17 @@ appComets.FormView = Backbone.View.extend({
                 title: "Results Will Be Emailed",
                 callback: function(result) {
                     if (!result) return;
-                    runModelHelper.apply($that);
+                    runModelHelper.apply($that).fail(function(xhr) {
+                        var response = xhr.responseJSON||{'status': false, 'statusMessage': 'An unknown error has occurred.'};
+                        if (!response.status) {
+                            $('a[href="#tab-summary"]').tab('show');
+                        }
+                    });
                 }
             });
         } else {
             runModelHelper.apply($that).always(function () {
-                $that.$el.find('a[href="#tab-summary"]').tab('show');
+                $('a[href="#tab-summary"]').tab('show');
             });
         }
     },
@@ -515,6 +529,10 @@ appComets.FormView = Backbone.View.extend({
         } else {
             this.$el.find("#load").attr('disabled', true);
         }
+    },
+    renderEmail: function() {
+        this.$el.find('[name="email"]').val(this.model.get('email'));
+        this.renderRunModelButton.apply(this);
     },
     renderEmailOption: function() {
         if (this.model.get('methodSelection') == 'Batch' && this.model.get('modelSelection') == "All models") {
@@ -600,21 +618,47 @@ appComets.FormView = Backbone.View.extend({
         }));
 
     },
-    renderShowMetabolites: function() {
-        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
-        this.renderModelOptions.apply(this);
-    },
     renderRunModelButton: function() {
         var email = this.model.get('email'),
             methodSelection = this.model.get('methodSelection'),
             modelSelection = this.model.get('modelSelection'),
-            exposure = this.model.get('exposure');
+            exposure = this.model.get('exposure'),
+            covariates = this.model.get('covariates');
         if ((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
-            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0)
+            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0 && covariates.indexOf(this.model.get('strata')) < 0)
         ) {
             this.$el.find('#runModel').removeAttr('disabled');
         } else {
             this.$el.find('#runModel').attr('disabled', true);
+        }
+    },
+    renderShowMetabolites: function() {
+        this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
+        this.renderModelOptions.apply(this);
+    },
+    renderStrataAlert: function() {
+        var $that = this,
+            strataValue = this.model.get('strata');
+        if (strataValue == '') {
+            this.renderModelOptions.apply(this);
+            return;
+        }
+        var stratifiable = this.model.get('stratifiable')[strataValue],
+            subjectIds = this.model.get('subjectIds'),
+            strataText = subjectIds.filter(function(entry) { return entry.value == strataValue })[0].text;
+        if (stratifiable) {
+            this.renderModelOptions.apply(this);
+        } else {
+            BootstrapDialog.confirm({
+                'message': strataText+" has at least one value with less than 15 entries, which will not be evaluated.",
+                'closable': false,
+                'callback': function(result) {
+                    if (!result) {
+                        $that.model.set('strata','',{'silent':true});
+                    }
+                    $that.renderModelOptions.apply($that);
+                }
+            });
         }
     }
 });
@@ -643,11 +687,11 @@ appComets.IntegrityView = Backbone.View.extend({
         if (this.model.get('integrityChecked')) {
             if (this.model.get('status')) {
                 var log2var = this.model.get('log2var');
-                if (log2var.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; })) {
+                if (log2var.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; },true)) {
                     appComets.generateHistogram('varianceDist', 'Distribution of Variance', "Frequency", 'Variance of transformed metabolite abundances', log2var);
                 }
                 var nummin = this.model.get('num.min');
-                if (nummin.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; })) {
+                if (nummin.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; },true)) {
                     appComets.generateHistogram('subjectDist', 'Number of minimum/missing values', "Frequency", 'Distribution of the Number/Missing Values', nummin);
                 }
             }
@@ -694,35 +738,35 @@ appComets.SummaryView = Backbone.View.extend({
             minmax = "min";
             value = parseFloat(value);
             oldValue = this.model.get(name+minmax);
-            if (Number.isNaN(value)) { value = Number.NEGATIVE_INFINITY; }
+            if (isNaN(value)) { value = Number.NEGATIVE_INFINITY; }
             if (oldValue === undefined) { oldValue = Number.NEGATIVE_INFINITY; }
             if (value >= oldValue) {
                 subset = true;
                 filterdata = filterdata.filter(function(entry) {
                     var source = parseFloat(entry[name]);
-                    return (Number.isNaN(source)?Number.NEGATIVE_INFINITY:source) >= value;
+                    return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= value;
                 });
             }
         } else if (max) {
             minmax = "max";
             value = parseFloat(value);
             oldValue = this.model.get(name+minmax);
-            if (Number.isNaN(value)) { value = Number.POSITIVE_INFINITY; }
+            if (isNaN(value)) { value = Number.POSITIVE_INFINITY; }
             if (oldValue === undefined) { oldValue = Number.POSITIVE_INFINITY; }
             if (value <= oldValue) {
                 subset = true;
                 filterdata = filterdata.filter(function(entry) {
                     var source = parseFloat(entry[name]);
-                    return (Number.isNaN(source)?Number.POSITIVE_INFINITY:source) <= value;
+                    return (isNaN(source)?Number.POSITIVE_INFINITY:source) <= value;
                 });
             }
         } else {
             value = (value||'').toLowerCase();
             oldValue = this.model.get(name)||'';
-            if (value.includes(oldValue)) {
+            if (value.indexOf(oldValue) > -1) {
                 subset = true;
                 filterdata = filterdata.filter(function(entry) {
-                    return String(entry[name]).toLowerCase().includes(value);
+                    return String(entry[name]).toLowerCase().indexOf(value) > -1;
                 });
             }
         }
@@ -732,29 +776,29 @@ appComets.SummaryView = Backbone.View.extend({
             var tableOrder = this.model.get('tableOrder');
             for (var index in tableOrder) {
                 var val = this.model.get(tableOrder[index]),
-                    min = Number.parseFloat(this.model.get(tableOrder[index]+"min")),
-                    max = Number.parseFloat(this.model.get(tableOrder[index]+"max"));
-                if (!Number.isNaN(min)) {
-                    if (!Number.isNaN(max)) {
+                    min = parseFloat(this.model.get(tableOrder[index]+"min")),
+                    max = parseFloat(this.model.get(tableOrder[index]+"max"));
+                if (!isNaN(min)) {
+                    if (!isNaN(max)) {
                         filterdata = filterdata.filter(function(entry) {
-                            source = Number.parseFloat(entry[tableOrder[index]]);
-                            return (Number.isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min && (Number.isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
+                            var source = parseFloat(entry[tableOrder[index]]);
+                            return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min && (isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
                         });
                     } else {
                         filterdata = filterdata.filter(function(entry) {
-                            source = Number.parseFloat(entry[tableOrder[index]]);
-                            return (Number.isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min;
+                            var source = parseFloat(entry[tableOrder[index]]);
+                            return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min;
                         });
                     }
-                } else if (!Number.isNaN(max)) {
+                } else if (!isNaN(max)) {
                     filterdata = filterdata.filter(function(entry) {
-                        source = Number.parseFloat(entry[tableOrder[index]]);
-                        return (Number.isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
+                        var source = parseFloat(entry[tableOrder[index]]);
+                        return (isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
                     });
                 } else if (val !== undefined && val !== null) {
                     filterdata = filterdata.filter(function(entry) {
-                        source = String(entry[tableOrder[index]]);
-                        return source.includes(String(val));
+                        var source = String(entry[tableOrder[index]]).toLowerCase();
+                        return source.indexOf(String(val)) > -1;
                     });
                 }
             }
@@ -846,7 +890,7 @@ appComets.SummaryView = Backbone.View.extend({
     render: function () {
         if (this.model.get('correlationRun')) {
             this.$el.html(this.template(this.model.attributes));
-            if (this.model.get('status') == true) {
+            if (this.model.get('status') === true) {
                 this.renderTable.apply(this);
             }
         } else {
@@ -861,7 +905,7 @@ appComets.SummaryView = Backbone.View.extend({
             entryCount = this.model.get('entryCount');
         this.$el.find('#correlationSummary tbody').empty();
         var tr = '';
-        if (map.map(function(row) { return row.selected; }).reduce(function(prev,curr) { return prev&&curr; })) {
+        if (map.length > 0 && map.map(function(row) { return row.selected; }).reduce(function(prev,curr) { return prev&&curr; },true)) {
             this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked',true);
         } else {
             this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked',false);
@@ -949,7 +993,7 @@ appComets.CustomListView = Backbone.View.extend({
     checkName: function() {
         var listName = this.model.get('listName'),
             defaultOptions = this.model.get('formModel').get('defaultOptions');
-        if (listName === "" || defaultOptions.map(function(entry) { return listName === entry.text; }).reduce(function(prev,curr) { return prev||curr; })) {
+        if (listName === "" || defaultOptions.map(function(entry) { return listName === entry.text; }).reduce(function(prev,curr) { return prev||curr; },false)) {
             this.$el.find('button.create').attr('disabled',true);
         } else {
             this.$el.find('button.create').removeAttr('disabled');
@@ -1002,7 +1046,7 @@ appComets.HeatmapView = Backbone.View.extend({
             var focusId = $(':focus').attr('id');
             this.$el.html(this.template(this.model.attributes));
             if (focusId) $('#'+focusId).trigger('focus');
-            if (this.model.get('status')) {
+            if (this.model.get('status') === true) {
                 var sortRow = this.model.get('sortRow'),
                     sortStratum = this.model.get('sortStratum'),
                     exposures = this.model.get('exposures'),

@@ -11,7 +11,7 @@ runAllModels <- function(jsonData) {
           {
             input = fromJSON(jsonData)
             input$timestamp = as.integer(Sys.time())
-            exmetabdata <- readCOMETSinput(input$filename)
+            exmetabdata <- readCOMETSinput(paste0(input$filename))
           },
           message=function(m) {
             print(m$message)
@@ -26,26 +26,25 @@ runAllModels <- function(jsonData) {
         }
       )
     }))
-    if ('error' %in% integrityCheck) {
+    if ('error' %in% names(integrityCheck)) {
       return(toJSON(list(integrityCheck=integrityCheck,models=list(),timestamp=input$timestamp), auto_unbox = T))
     }
     returnValue <- list()
     for (model in exmetabdata$mods$model) {
-      returnValue[[model]] = runModel(input,model)
+      returnValue[[model]] = runModel(input,exmetabdata,model)
     }
     toJSON(list(integrityCheck=integrityCheck,models=returnValue,timestamp=input$timestamp), auto_unbox = T)
 }
 
-runModel <- function(input,model) {
+runModel <- function(input,exmetabdata,model) {
   returnValue <- list()
   suppressWarnings(suppressMessages({
     returnValue$saveValue <- tryCatch(
       withCallingHandlers(
         {
-          exmetabdata <- readCOMETSinput(input$filename)
           exmodeldata <- getModelData(exmetabdata,
             modelspec="Batch",
-            modbatch=model
+            modlabel=model
           )
           if (length(exmodeldata$scovs) > 0) {
             excorrdata <- stratCorr(exmodeldata,exmetabdata,input$cohortSelection)

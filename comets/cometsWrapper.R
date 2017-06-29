@@ -12,10 +12,21 @@ getCohorts <- function() {
 
 getTemplates <- function() {
     dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
-    ageData = paste0(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4)$VARREFERENCE,collapse=",")
-    basicData = paste0(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4)$VARREFERENCE,collapse=",")
-    templateData = data.frame(text=c("Age","Basic"),value=c('age','basic'),data=c(ageData,basicData))
-    toJSON(templateData)
+    ageData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4))
+    ageMap = toJSON(ageData$VARREFERENCE, auto_unbox = T)
+    rownames(ageData) <- ageData$VARREFERENCE
+    ageData = as.data.frame(t(ageData['VARDEFINITION']))
+    rownames(ageData) <- NULL
+    ageData = toJSON(ageData,auto_unbox=T)
+    ageData = substr(ageData,2,nchar(ageData)-1)
+    basicData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4))
+    basicMap = toJSON(basicData$VARREFERENCE, auto_unbox = T)
+    rownames(basicData) <- basicData$VARREFERENCE
+    basicData = as.data.frame(t(basicData['VARDEFINITION']))
+    rownames(basicData) <- NULL
+    basicData = toJSON(basicData,auto_unbox=T)
+    basicData = substr(basicData,2,nchar(basicData)-1)
+    paste0('[{"text":"Age","value":"age","data":',ageData,',"varlist":',ageMap,'},{"text":"Basic","value":"basic","data":',basicData,',"varlist":',basicMap,'}]')
 }
 
 combineInputs <- function(jsonData) {
@@ -71,7 +82,22 @@ checkIntegrity <- function(filename,cohort) {
             withCallingHandlers(
                 {
                   exmetabdata = readCOMETSinput(filename)
+                  exmetabdata$stratifiable <- as.list(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...){ !any(table(...) < 15) }))
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
+                  subjectMetadata <- as.data.frame(exmetabdata$allSubjectMetaData)
+                  subjectMetadata[,2] <- as.character(lapply(
+                      exmetabdata$allSubjectMetaData,
+                      function(value) {
+                          match = value==exmetabdata$vmap$cohortvariable
+                          if (any(match)) {
+                              return(exmetabdata$vmap$varreference[match])
+                          } else {
+                              return(value)
+                          }
+                      }
+                  ))
+                  names(subjectMetadata) <- c('value','text')
+                  exmetabdata$allSubjectMetaData <- subjectMetadata
                   exmetabdata
                 },
                 message=function(m) {
@@ -109,7 +135,7 @@ runModel <- function(jsonData) {
                     exmetabdata <- readCOMETSinput(input$filename)
                     exmodeldata <- getModelData(exmetabdata,
                       modelspec=input$methodSelection,
-                      modbatch=input$modelSelection,
+                      modlabel=input$modelSelection,
                       rowvars=input$outcome,
                       colvars=input$exposure,
                       adjvars=input$covariates,
@@ -147,6 +173,14 @@ runModel <- function(jsonData) {
                       )
                     }
                     excorrdata[,'pvalue'] <- with(excorrdata,format(pvalue, scientific=TRUE,digits=I(3)))
+                    if(any(names(excorrdata) == "stratavar")) {
+                      strataVector <- excorrdata[!duplicated(excorrdata[,'stratavar']),'stratavar']
+                      strataFrame <- as.data.frame(strataVector)
+                      strataFrame[,2] <- as.character(lapply(strataVector,function(value) { return(exmetabdata$vmap$varreference[value==exmetabdata$vmap$cohortvariable]) }))
+                      names(strataFrame) <- c('value','text')
+                    } else {
+                      strataFrame <- list()
+                    }
                     list(
                       clustersort = clustersort,
                       csv = csv,
@@ -156,8 +190,8 @@ runModel <- function(jsonData) {
                       ptime = attr(excorrdata,"ptime"),
                       status = TRUE,
                       statusMessage = "Correlation analyses successful. Please download the file below to the COMETS harmonization group for meta-analysis.",
-                      strata = if(any(names(excorrdata) == "stratavar")) excorrdata[!duplicated(excorrdata[,'stratavar']),'stratavar'] else list(),
-                      tableOrder = exmetabdata$dispvars
+                      strata = strataFrame,
+                      tableOrder = intersect(exmetabdata$dispvars,names(excorrdata))
                     )
                 },
                 message=function(m) {

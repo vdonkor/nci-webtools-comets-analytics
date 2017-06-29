@@ -132,8 +132,8 @@
                     min: e2,
                     max: e2
                 };
-            }).reduce(minmax);
-        }).reduce(minmax);
+            }).reduce(minmax,{min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY});
+        }).reduce(minmax,{min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY});
         avg = (avg.min+avg.max)/2;
         return Plotly.newPlot(el, [{
             z: data,
@@ -164,7 +164,7 @@
                     });
                 }).reduce(function(prev,curr) {
                     return prev.concat(curr);
-                }) : null,
+                },[]) : null,
             autosize: true,
             height: options.height,
             legend: {
@@ -172,8 +172,8 @@
             },
             margin: {
                 t: 32,
-                b: Math.min(50,7*xLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); })),
-                l: options.clustered ? 0 : Math.min(250,Math.max(50,7*yLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); })))
+                b: Math.min(175,Math.max(50,7*xLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); },0))),
+                l: options.clustered ? 0 : Math.min(175,Math.max(50,7*yLabels.map(function(e) { return e.length; }).reduce(function(prev,curr) { return Math.max(prev,curr); },0)))
             },
             width: options.width,
             shapes: shapes,

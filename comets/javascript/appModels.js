@@ -97,7 +97,7 @@ appComets.CombineFormModel = Backbone.Model.extend({
         if (!response.statusMessage) {
             response.statusMessage = "The comets input file has been successfully created by combining "+
                                      "Metabolite Meta-Data, Abundance and Subject Data files. "+
-                                     "Click Download Input File to download the file.";
+                                     'Click <a href="'+response.downloadLink+'">Download Input File</a> to download the file.';
         }
         console.log(response);
         return response;
@@ -119,6 +119,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         modelList: [],
         defaultOptions: [{ 'text': "All Metabolites", 'value': "All metabolites" }],
         modelSelection: null,
+        originalFilename: null,
         outcome:[ "All metabolites" ],
         showMetabolites: false,
         status: false,
@@ -141,6 +142,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
         "num.min": null,
         status: null,
         statusMessage: null,
+        stratifiable: {},
         subjectID: null,
         varmap: []
     },
@@ -161,16 +163,16 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
                 'N Metabolites': response.metab.length,
                 'N Harmonized': response.metab.map(function (obj) {
                     return 'uid_01' in obj ? 1 : 0;
-                }).reduce(sum),
+                }).reduce(sum,0),
                 'N Non-Harmonized': response.metab.map(function (obj) {
                     return 'uid_01' in obj ? 0 : 1;
-                }).reduce(sum),
+                }).reduce(sum,0),
                 'N with zero variance': response.metab.map(function (obj) {
                     return obj.log2var == 0 ? 1 : 0;
-                }).reduce(sum),
+                }).reduce(sum,0),
                 'N with >25% at min': response.metab.map(function (obj) {
                     return obj['num.min'] > response.subjdata.length * .25;
-                }).reduce(sum)
+                }).reduce(sum,0)
             },
             models: [{'model': 'All models'}].concat(response.mods),
             'num.min': response.metab.map(function (obj) {
@@ -178,7 +180,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
             }),
             status: response.integritymessage.toLowerCase().indexOf("error") < 0,
             statusMessage: response.integritymessage,
-            subjectIds: response.allSubjectMetaData.map(function(subject) { return { text: subject, value: subject }; })
+            subjectIds: response.allSubjectMetaData
         });
         delete response.allMetabolites;
         delete response.allSubjectMetaData;
