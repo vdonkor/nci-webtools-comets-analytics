@@ -85,7 +85,17 @@ checkIntegrity <- function(filename,cohort) {
                   exmetabdata$stratifiable <- as.list(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...){ !any(table(...) < 15) }))
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
                   subjectMetadata <- as.data.frame(exmetabdata$allSubjectMetaData)
-                  subjectMetadata[,2] <- as.character(lapply(exmetabdata$allSubjectMetaData,function(value) { return(exmetabdata$vmap$varreference[value==exmetabdata$vmap$cohortvariable]) }))
+                  subjectMetadata[,2] <- as.character(lapply(
+                      exmetabdata$allSubjectMetaData,
+                      function(value) {
+                          match = value==exmetabdata$vmap$cohortvariable
+                          if (any(match)) {
+                              return(exmetabdata$vmap$varreference[match])
+                          } else {
+                              return(value)
+                          }
+                      }
+                  ))
                   names(subjectMetadata) <- c('value','text')
                   exmetabdata$allSubjectMetaData <- subjectMetadata
                   exmetabdata

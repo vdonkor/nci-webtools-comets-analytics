@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# remove wsgi directory
+rm -rf /deploy/wsgi
+
 # remove lock
 rm -rf /usr/lib64/R/library/00LOCK-rcode
 
@@ -27,6 +30,7 @@ mod_wsgi-express start-server /deploy/app/deploy.wsgi \
   --connect-timeout 900 \
   --request-timeout 900 \
   --reload-on-changes \
+  --limit-request-body 2147483647 \
   --processes 3 \
   --threads 1 \
   --rotate-logs

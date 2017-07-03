@@ -1,0 +1,8 @@
+version '2'
+services:
+  test:
+    build:
+      context: ./
+    volumes:
+      .:/tests
+    command: entrypoint.sh /tests/cases/test_integrity_check.py

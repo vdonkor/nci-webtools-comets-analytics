@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://www.seleniumhq.org/" />
+<title>1</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">1</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>http://ncias-d1700-v.nci.nih.gov:8100</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Correlate</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForVisible</td>
+	<td>id=cohortSelection</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=cohortSelection</td>
+	<td>label=ARIC</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=inputDataFile</td>
+	<td>C:\Users\parkbw\Downloads\cometsInput.xlsx</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=load</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForVisible</td>
+	<td>id=resultStatus</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTable</td>
+	<td>id=resultStatus</td>
+	<td>Passed all integrity checks, analyses can proceed. If you are part of COMETS, please download metabolite list below and submit to the COMETS harmonization group.</td>
+</tr>
+<tr>
+	<td>waitForVisible</td>
+	<td>id=modelSelection</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=modelSelection</td>
+	<td>label=1 Gender adjusted</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=runModel</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>
