@@ -108,6 +108,7 @@ def integrityCheck():
         r.assign('cohort',request.form['cohortSelection'])
         r('checkIntegrity = checkIntegrity(filename,cohort)')
         returnFile = r['checkIntegrity']
+        del r
         with open(returnFile) as file:
             result = json.loads(file.read())
         os.remove(returnFile)
@@ -165,9 +166,11 @@ def correlate():
             r('source("./cometsWrapper.R")')
             r.assign('parameters',json.dumps(parameters))
             r('correlate = runModel(parameters)')
-            with open(r['correlate']) as file:
+            returnFile = r['correlate']
+            del r
+            with open(returnFile) as file:
                 result = json.loads(file.read())
-            os.remove(r['correlate'])
+            os.remove(returnFile)
             if ("error" in result):
                 response = buildFailure(result['error'])
             else:
@@ -221,9 +224,11 @@ def combine():
         r('source("./cometsWrapper.R")')
         r.assign('parameters',json.dumps(parameters))
         r('combine = combineInputs(parameters)')
-        with open(r['combine']) as file:
+        returnFile = r['combine']
+        del r
+        with open(returnFile) as file:
             result = json.loads(file.read())
-        os.remove(r['combine'])
+        os.remove(returnFile)
         os.remove(filenameA)
         os.remove(filenameM)
         os.remove(filenameS)
