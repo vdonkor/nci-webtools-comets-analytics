@@ -107,9 +107,10 @@ def integrityCheck():
         r.assign('filename',os.path.join('tmp',filename))
         r.assign('cohort',request.form['cohortSelection'])
         r('checkIntegrity = checkIntegrity(filename,cohort)')
-        with open(r['checkIntegrity']) as file:
+        returnFile = r['checkIntegrity']
+        with open(returnFile) as file:
             result = json.loads(file.read())
-        os.remove(r['checkIntegrity'])
+        os.remove(returnFile)
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
