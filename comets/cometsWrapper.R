@@ -141,11 +141,7 @@ runModel <- function(jsonData) {
                       adjvars=input$covariates,
                       strvars=input$strata
                     )
-                    if (length(exmodeldata$scovs) > 0) {
-                      excorrdata <- stratCorr(exmodeldata,exmetabdata,input$cohortSelection)
-                    } else {
-                      excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
-                    }
+                    excorrdata <- runCorr(exmodeldata,exmetabdata,input$cohortSelection)
                     csv <- OutputCSVResults(paste0('tmp/corr',timestamp),excorrdata,input$cohortSelection)
                     heatmapdata = excorrdata[!is.na(excorrdata$pvalue),]
                     clustersort = NULL
