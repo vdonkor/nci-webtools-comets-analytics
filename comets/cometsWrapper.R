@@ -145,7 +145,7 @@ runModel <- function(jsonData) {
                     csv <- OutputCSVResults(paste0('tmp/corr',timestamp),excorrdata,input$cohortSelection)
                     heatmapdata = excorrdata[!is.na(excorrdata$pvalue),]
                     clustersort = NULL
-                    if (length(unique(heatmapdata$outcomespec)) > 1 && length(unique(heatmapdata$exposurespec)) > 1) {
+                    if (length(unique(heatmapdata$outcomespec)) > 1 && length(unique(heatmapdata$exposurespec)) > 1 && length(unique(excorrdata$stratavar)) < 1) {
                       heatmapdata <- tidyr::spread(dplyr::select(heatmapdata,outcomespec,exposurespec,corr),exposurespec,corr)
                       rownames(heatmapdata) <- heatmapdata[,1]
                       heatmapdata <- heatmapdata[,2:ncol(heatmapdata)]
