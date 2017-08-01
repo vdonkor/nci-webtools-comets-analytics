@@ -320,7 +320,7 @@ appComets.FormView = Backbone.View.extend({
             "change:showMetabolites": this.renderShowMetabolites,
             "change:subjectIds change:metaboliteIds change:defaultOptions": this.renderModelOptions,
             "change:modelSelection": this.renderModelList,
-            "change:outcome change:exposure": this.renderRunModelButton,
+            "change:outcome change:exposure change:whereCategory change:whereComparator change:whereFilter": this.renderRunModelButton,
             "change:strata": this.renderStrataAlert
         }, this);
         this.template = _.template(appComets.templatesList['harmonizationForm.options']);
@@ -616,16 +616,42 @@ appComets.FormView = Backbone.View.extend({
             optionList: modelOptions,
             selectedOption: this.model.get("strata")
         }));
-
+        this.$el.find('[name="whereCategory"]').html(this.template({
+            optionType: "Category",
+            optionList: modelOptions,
+            selectedOption: this.model.get("whereCategory")
+        }));
+        this.$el.find('[name="whereComparator"]').html(this.template({
+            optionType: "Operator",
+            optionList: [ {
+              "text": "&lt;",
+              "value": "<"
+            }, {
+              "text": "&lt;=",
+              "value": "<="
+            }, {
+              "text": "=",
+              "value": "="
+            }, {
+              "text": "&gt;",
+              "value": ">"
+            }, {
+              "text": "&gt;=",
+              "value": ">="
+            } ],
+            selectedOption: this.model.get("whereComparator")
+        }));
     },
     renderRunModelButton: function() {
         var email = this.model.get('email'),
             methodSelection = this.model.get('methodSelection'),
             modelSelection = this.model.get('modelSelection'),
             exposure = this.model.get('exposure'),
-            covariates = this.model.get('covariates');
+            covariates = this.model.get('covariates'),
+            whereQuery = ((this.model.get('whereCategory')==''?1:0)+(this.model.get('whereComparator')==''?1:0)+(this.model.get('whereFilter')==''?1:0))%3!=0;
         if ((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
-            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0 && covariates.indexOf(this.model.get('strata')) < 0)
+            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0 && covariates.indexOf(this.model.get('strata')) < 0) ||
+             whereQuery
         ) {
             this.$el.find('#runModel').removeAttr('disabled');
         } else {
