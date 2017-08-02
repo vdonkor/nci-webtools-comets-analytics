@@ -124,7 +124,10 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         showMetabolites: false,
         status: false,
         strata: "",
-        subjectIds: []
+        subjectIds: [],
+        whereCategory: "",
+        whereComparator: "",
+        whereFilter: ""
     }
 });
 

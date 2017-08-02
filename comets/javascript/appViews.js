@@ -450,11 +450,18 @@ appComets.FormView = Backbone.View.extend({
                     outcome = _.flatten(this.model.get('outcome').map(makeList)),
                     exposure = _.flatten(this.model.get('exposure').map(makeList)),
                     covariates = _.flatten(this.model.get('covariates').map(makeList)),
-                    metaboliteIds = this.model.get('metaboliteIds');
+                    metaboliteIds = this.model.get('metaboliteIds'),
+                    whereCategory = this.model.get('whereCategory'),
+                    whereComparator = this.model.get('whereComparator'),
+                    whereFilter = this.model.get('whereFilter'),
+                    whereQuery = [];
                 var outcomeCount = outcome.length + ((outcome.indexOf('All metabolites') > -1) ? metaboliteIds.length-1 : 0),
                     exposureCount = exposure.length + ((exposure.indexOf('All metabolites') > -1) ? metaboliteIds.length-1 : 0);
                 if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in displaying the results.")) {
                     return;
+                }
+                if (whereCategory != '' && whereComparator != '' && whereFilter != '') {
+                    whereQuery.push([this.model.get('whereCategory'),this.model.get('whereComparator'),this.model.get('whereFilter')]);
                 }
                 var $that = this;
                 var formData = new FormData();
@@ -470,7 +477,8 @@ appComets.FormView = Backbone.View.extend({
                     'covariates': JSON.stringify(covariates),
                     'strata': this.model.get('strata'),
                     'modelName': this.model.get('methodSelection') == 'Batch' ? this.model.get('modelSelection') : this.model.get('modelDescription'),
-                    'email': this.model.get('email')
+                    'email': this.model.get('email'),
+                    'whereQuery': JSON.stringify(whereQuery)
                 };
                 for (var key in toAppend) {
                     formData.append(key, toAppend[key]);
@@ -648,10 +656,10 @@ appComets.FormView = Backbone.View.extend({
             modelSelection = this.model.get('modelSelection'),
             exposure = this.model.get('exposure'),
             covariates = this.model.get('covariates'),
-            whereQuery = ((this.model.get('whereCategory')==''?1:0)+(this.model.get('whereComparator')==''?1:0)+(this.model.get('whereFilter')==''?1:0))%3!=0;
-        if ((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
-            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0 && covariates.indexOf(this.model.get('strata')) < 0) ||
-             whereQuery
+            whereQuery = ((this.model.get('whereCategory')==''?1:0)+(this.model.get('whereComparator')==''?1:0)+(this.model.get('whereFilter')==''?1:0))%3==0;
+        if (((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
+             (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0 && covariates.indexOf(this.model.get('strata')) < 0)) &&
+              whereQuery
         ) {
             this.$el.find('#runModel').removeAttr('disabled');
         } else {

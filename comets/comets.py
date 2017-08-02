@@ -156,6 +156,10 @@ def correlate():
                 parameters['strata'] = None
             else:
                 parameters['strata'] = [parameters['strata']]
+        if ('whereQuery' in parameters):
+            parameters['whereQuery'] = json.loads(parameters['whereQuery']);
+            if (len(parameters['whereQuery']) == 0):
+                parameters['whereQuery'] = None
         if (parameters['modelName'] == "All models"):
             queueFile(parameters)
             response = buildFailure({'status': 'info', 'statusMessage': "The results will be emailed to you."})
