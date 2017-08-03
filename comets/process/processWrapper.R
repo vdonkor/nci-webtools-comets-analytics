@@ -46,11 +46,7 @@ runModel <- function(input,exmetabdata,model) {
             modelspec="Batch",
             modlabel=model
           )
-          if (length(exmodeldata$scovs) > 0) {
-            excorrdata <- stratCorr(exmodeldata,exmetabdata,input$cohortSelection)
-          } else {
-            excorrdata <- getCorr(exmodeldata,exmetabdata,input$cohortSelection)
-          }
+          excorrdata <- runCorr(exmodeldata,exmetabdata,input$cohortSelection)
           csv <- OutputCSVResults(paste0('tmp/',model,input$timestamp),excorrdata,input$cohortSelection)
         },
         message=function(m) {
