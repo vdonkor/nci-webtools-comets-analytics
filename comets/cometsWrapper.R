@@ -133,18 +133,14 @@ runModel <- function(jsonData) {
                 {
                     input = fromJSON(jsonData)
                     exmetabdata <- readCOMETSinput(input$filename)
-                    if (!is.null(input$whereQuery)) {
-                      apply(input$whereQuery,1, function(x) {
-                        exmetabdata <- filterCOMETSinput(exmetabdata,where=x)
-                      })
-                    }
                     exmodeldata <- getModelData(exmetabdata,
                       modelspec=input$methodSelection,
                       modlabel=input$modelSelection,
                       rowvars=input$outcome,
                       colvars=input$exposure,
                       adjvars=input$covariates,
-                      strvars=input$strata
+                      strvars=input$strata,
+                      where=input$whereQuery
                     )
                     excorrdata <- runCorr(exmodeldata,exmetabdata,input$cohortSelection)
                     csv <- OutputCSVResults(paste0('tmp/corr',timestamp),excorrdata,input$cohortSelection)

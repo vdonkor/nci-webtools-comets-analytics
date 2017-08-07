@@ -461,7 +461,7 @@ appComets.FormView = Backbone.View.extend({
                     return;
                 }
                 if (whereCategory != '' && whereComparator != '' && whereFilter != '') {
-                    whereQuery.push([this.model.get('whereCategory'),this.model.get('whereComparator'),this.model.get('whereFilter')]);
+                    whereQuery.push([this.model.get('whereCategory'),this.model.get('whereComparator'),this.model.get('whereFilter')].join(""));
                 }
                 var $that = this;
                 var formData = new FormData();
