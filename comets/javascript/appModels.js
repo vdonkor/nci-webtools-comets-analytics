@@ -275,6 +275,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             response.statusMessage = "The results contain no correlation data.";
         }
         delete response.model;
+        response.page = 1;
         console.log(response);
         return response;
     }
