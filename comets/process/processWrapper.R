@@ -47,6 +47,7 @@ runModel <- function(input,exmetabdata,model) {
             modlabel=model
           )
           excorrdata <- runCorr(exmodeldata,exmetabdata,input$cohortSelection)
+          returnValue$ptime <<- attr(excorrdata,"ptime")
           csv <- OutputCSVResults(paste0('tmp/',model,input$timestamp),excorrdata,input$cohortSelection)
         },
         message=function(m) {

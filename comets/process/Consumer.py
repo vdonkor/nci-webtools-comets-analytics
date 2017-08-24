@@ -67,6 +67,8 @@ class Consumer(object):
         result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
         logger.debug('result contents')
         logger.debug(result)
+        print(result);
+        sys.stdout.flush();
         content = ""                  
         if (type(result['integrityCheck']) is dict):
             ic = result['integrityCheck']
