@@ -67,7 +67,6 @@ class Consumer(object):
         result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
         logger.debug('result contents')
         logger.debug(result)
-        print(result);
         sys.stdout.flush();
         content = ""                  
         if (type(result['integrityCheck']) is dict):
@@ -92,7 +91,15 @@ class Consumer(object):
             mod = result['models'][model]
             if (len(content) > 0):
                 content += "\n"
-            content += "  "+model+(" - Error" if 'error' in mod else " - Complete")+"\n"
+            content += "  "+model
+            if ('error' in mod):
+                content += " - Error"
+            else:
+                content += " - Complete"
+                if (len(mod['ptime']) > 0):
+                    content += " ( "+mod['ptime']+" )"
+                del mod['ptime']
+            content += "\n"
             if ('saveValue' in mod):
                 filename = mod['saveValue']
                 if (os.path.isfile(filename)):
