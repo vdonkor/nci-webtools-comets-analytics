@@ -143,6 +143,9 @@ runModel <- function(jsonData) {
                       where=input$whereQuery
                     )
                     excorrdata <- runCorr(exmodeldata,exmetabdata,input$cohortSelection)
+                    if (length(excorrdata) <= 0) {
+                      stop("ModelNotRunException")
+                    }
                     csv <- OutputCSVResults(paste0('tmp/corr',timestamp),excorrdata,input$cohortSelection)
                     heatmapdata = excorrdata[!is.na(excorrdata$pvalue),]
                     clustersort = NULL
@@ -169,7 +172,9 @@ runModel <- function(jsonData) {
                         rowTree=makeBranches(rowDendrogram,outcomeLookup)
                       )
                     }
-                    excorrdata[,'pvalue'] <- with(excorrdata,format(pvalue, scientific=TRUE,digits=I(3)))
+                    if (!is.null(excorrdata$pvalue)) {
+                      excorrdata[,'pvalue'] <- with(excorrdata,format(pvalue, scientific=TRUE,digits=I(3)))
+                    }
                     if(any(names(excorrdata) == "stratavar")) {
                       strataVector <- excorrdata[!duplicated(excorrdata[,'stratavar']),'stratavar']
                       strataFrame <- as.data.frame(strataVector)
@@ -199,9 +204,13 @@ runModel <- function(jsonData) {
                 }
             ),
             error=function(e) {
+                message <- e$message
+                if (message == "ModelNotRunException") {
+                  message <- "The results contain no correlation data."
+                }
                 returnValue$error <<- list(
                     status = FALSE,
-                    statusMessage = e$message
+                    statusMessage = message
                 )
                 return(NULL)
             }
