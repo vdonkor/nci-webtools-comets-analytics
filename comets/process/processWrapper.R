@@ -55,7 +55,7 @@ runModel <- function(input,exmetabdata,model) {
             print(m$message)
         },
         warning=function(w) {
-            warnings <<- append(returnValue$warnings, w$message)
+            warnings <<- append(warnings, w$message)
         }
       ),
       error=function(e) {
