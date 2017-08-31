@@ -33,7 +33,7 @@ RUN ln -s /usr/lib/jvm/jre/lib/amd64/server/libjvm.so /usr/lib64/libjvm.so \
  && install -Dv /dev/null /usr/share/doc/R-3.4.{0-9}/html/R.css
 
 RUN R -e "\
-  install.packages(
+  install.packages( \
     c('devtools', 'roxygen2'), \
     INSTALL_opts = c('--no-html') \
   );"
