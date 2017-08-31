@@ -38,8 +38,9 @@ runAllModels <- function(jsonData) {
 
 runModel <- function(input,exmetabdata,model) {
   returnValue <- list()
+  warnings <- c()
   suppressWarnings(suppressMessages({
-    returnValue$saveValue <- tryCatch(
+    returnValue <- tryCatch(
       withCallingHandlers(
         {
           exmodeldata <- getModelData(exmetabdata,
@@ -48,12 +49,13 @@ runModel <- function(input,exmetabdata,model) {
           )
           excorrdata <- runCorr(exmodeldata,exmetabdata,input$cohortSelection)
           csv <- OutputCSVResults(paste0('tmp/',model,input$timestamp),excorrdata,input$cohortSelection)
+          list(saveValue=csv,ptime=attr(excorrdata,"ptime"))
         },
         message=function(m) {
             print(m$message)
         },
         warning=function(w) {
-            returnValue$warnings <<- append(returnValue$warnings, w$message)
+            warnings <<- append(warnings, w$message)
         }
       ),
       error=function(e) {
@@ -62,5 +64,6 @@ runModel <- function(input,exmetabdata,model) {
       }
     )
   }))
-  returnValue
+  returnValue$warnings <- warnings
+  return(returnValue)
 }
