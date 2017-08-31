@@ -112,9 +112,6 @@ def integrityCheck():
         with open(returnFile) as file:
             result = json.loads(file.read())
         os.remove(returnFile)
-#        if ("warnings" in result):
-#          print(result['warnings'])
-#          sys.stdout.flush()
         if ("error" in result):
             response = buildFailure(result['error'])
         else:

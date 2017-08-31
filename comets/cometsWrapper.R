@@ -82,7 +82,7 @@ checkIntegrity <- function(filename,cohort) {
             withCallingHandlers(
                 {
                   exmetabdata = readCOMETSinput(filename)
-                  exmetabdata$stratifiable <- t(as.data.frame(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...){ !any(table(...) < 15) })))
+                  exmetabdata$stratifiable <- t(as.data.frame(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...) { mdCol = table(...); !any(mdCol < 15) })))# && length(as.vector(mdCol)) > 1
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
                   subjectMetadata <- as.data.frame(exmetabdata$allSubjectMetaData)
                   subjectMetadata[,1] <- as.character(lapply(
@@ -181,7 +181,7 @@ runModel <- function(jsonData) {
                     if(any(names(excorrdata) == "stratavar")) {
                       strataVector <- excorrdata[!duplicated(excorrdata[,'stratavar']),'stratavar']
                       strataFrame <- as.data.frame(strataVector)
-                      strataFrame[,2] <- as.character(lapply(strataVector,function(value) { return(exmetabdata$vmap$varreference[value==exmetabdata$vmap$cohortvariable]) }))
+                      strataFrame[,2] <- strataFrame[]
                       names(strataFrame) <- c('value','text')
                     } else {
                       strataFrame <- list()
