@@ -57,17 +57,17 @@ RUN R -e "\
 
 RUN pip install --upgrade pip \
  && pip install \
-    boto \
-    boto3 \
-    flask \
-    mod_wsgi \
-    pyper \
-    pyyaml \
-    requests \
-    rpy2==2.8.0  \
-    stompest \
-    stompest.async \
-    twisted
+    boto==2.48.0 \
+    boto3==1.4.7 \
+    flask==0.12.2 \
+    mod_wsgi==4.5.18 \
+    pyper==1.1.2 \
+    pyyaml==3.12 \
+    requests==2.18.4 \
+    rpy2==2.8.0 \
+    stompest==2.3.0 \
+    stompest.async==2.3.0 \
+    twisted==17.5.0
 
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
