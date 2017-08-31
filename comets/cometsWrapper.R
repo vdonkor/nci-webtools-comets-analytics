@@ -82,10 +82,10 @@ checkIntegrity <- function(filename,cohort) {
             withCallingHandlers(
                 {
                   exmetabdata = readCOMETSinput(filename)
-                  exmetabdata$stratifiable <- as.list(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...){ !any(table(...) < 15) }))
+                  exmetabdata$stratifiable <- t(as.data.frame(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...){ !any(table(...) < 15) })))
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
                   subjectMetadata <- as.data.frame(exmetabdata$allSubjectMetaData)
-                  subjectMetadata[,2] <- as.character(lapply(
+                  subjectMetadata[,1] <- as.character(lapply(
                       exmetabdata$allSubjectMetaData,
                       function(value) {
                           match = value==exmetabdata$vmap$cohortvariable
@@ -96,7 +96,10 @@ checkIntegrity <- function(filename,cohort) {
                           }
                       }
                   ))
+                  subjectMetadata[,2] <- subjectMetadata[,1]
                   names(subjectMetadata) <- c('value','text')
+                  colnames(exmetabdata$stratifiable) <- subjectMetadata[,1]
+                  exmetabdata$stratifiable <- as.list(as.data.frame(exmetabdata$stratifiable))
                   exmetabdata$allSubjectMetaData <- subjectMetadata
                   exmetabdata
                 },
