@@ -87,6 +87,7 @@ class Consumer(object):
         filenameZ = str(result['timestamp'])+'.zip'
         filepath = os.path.join('tmp',filenameZ)
         zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
+        ptime = 0
         for model in result['models']:
             mod = result['models'][model]
             if (len(content) > 0):
@@ -98,6 +99,7 @@ class Consumer(object):
                 content += " - Complete"
                 if (len(mod['ptime']) > 0):
                     content += " ( "+mod['ptime']+" )"
+                    ptime += float(mod['ptime'][17:-4])
                 del mod['ptime']
             content += "\n"
             if ('saveValue' in mod):
@@ -130,7 +132,7 @@ class Consumer(object):
                 "Comets Batch Mode Model Results - "+filenameZ,
                 "Dear COMETS user,\n\n"+
                 header+
-                "The following models were run.\n\n"+
+                "The following models were run and took a total processing time of "+format(ptime,".4g")+" sec.\n\n"+
                 content+"\n\n"+
                 "Respectfully,\n\n"+
                 "COMETS Web Tool"
