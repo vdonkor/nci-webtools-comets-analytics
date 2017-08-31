@@ -1,7 +1,6 @@
 FROM cbiitss/comets:base
 
-RUN rm -rf /usr/bin/entrypoint.sh \
- && rm -rf /entrypoint.sh
+RUN rm -rf /entrypoint.sh
 
 # Copy entrypoint and make it executable
 COPY "./entrypoint.processor.devel.sh" "/usr/bin/entrypoint.sh"
