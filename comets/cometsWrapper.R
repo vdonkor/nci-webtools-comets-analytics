@@ -82,10 +82,10 @@ checkIntegrity <- function(filename,cohort) {
             withCallingHandlers(
                 {
                   exmetabdata = readCOMETSinput(filename)
-                  exmetabdata$stratifiable <- as.list(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...){ !any(table(...) < 15) }))
+                  exmetabdata$stratifiable <- t(as.data.frame(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...) { mdCol = table(...); !any(mdCol < 15) })))# && length(as.vector(mdCol)) > 1
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
                   subjectMetadata <- as.data.frame(exmetabdata$allSubjectMetaData)
-                  subjectMetadata[,2] <- as.character(lapply(
+                  subjectMetadata[,1] <- as.character(lapply(
                       exmetabdata$allSubjectMetaData,
                       function(value) {
                           match = value==exmetabdata$vmap$cohortvariable
@@ -96,7 +96,10 @@ checkIntegrity <- function(filename,cohort) {
                           }
                       }
                   ))
+                  subjectMetadata[,2] <- subjectMetadata[,1]
                   names(subjectMetadata) <- c('value','text')
+                  colnames(exmetabdata$stratifiable) <- subjectMetadata[,1]
+                  exmetabdata$stratifiable <- as.list(as.data.frame(exmetabdata$stratifiable))
                   exmetabdata$allSubjectMetaData <- subjectMetadata
                   exmetabdata
                 },
@@ -143,6 +146,9 @@ runModel <- function(jsonData) {
                       where=input$whereQuery
                     )
                     excorrdata <- runCorr(exmodeldata,exmetabdata,input$cohortSelection)
+                    if (length(excorrdata) <= 0) {
+                      stop("ModelNotRunException")
+                    }
                     csv <- OutputCSVResults(paste0('tmp/corr',timestamp),excorrdata,input$cohortSelection)
                     heatmapdata = excorrdata[!is.na(excorrdata$pvalue),]
                     clustersort = NULL
@@ -169,11 +175,13 @@ runModel <- function(jsonData) {
                         rowTree=makeBranches(rowDendrogram,outcomeLookup)
                       )
                     }
-                    excorrdata[,'pvalue'] <- with(excorrdata,format(pvalue, scientific=TRUE,digits=I(3)))
+                    if (!is.null(excorrdata$pvalue)) {
+                      excorrdata[,'pvalue'] <- with(excorrdata,format(pvalue, scientific=TRUE,digits=I(3)))
+                    }
                     if(any(names(excorrdata) == "stratavar")) {
                       strataVector <- excorrdata[!duplicated(excorrdata[,'stratavar']),'stratavar']
                       strataFrame <- as.data.frame(strataVector)
-                      strataFrame[,2] <- as.character(lapply(strataVector,function(value) { return(exmetabdata$vmap$varreference[value==exmetabdata$vmap$cohortvariable]) }))
+                      strataFrame[,2] <- strataFrame[]
                       names(strataFrame) <- c('value','text')
                     } else {
                       strataFrame <- list()
@@ -199,9 +207,13 @@ runModel <- function(jsonData) {
                 }
             ),
             error=function(e) {
+                message <- e$message
+                if (message == "ModelNotRunException") {
+                  message <- "The results contain no correlation data."
+                }
                 returnValue$error <<- list(
                     status = FALSE,
-                    statusMessage = e$message
+                    statusMessage = message
                 )
                 return(NULL)
             }

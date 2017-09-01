@@ -67,30 +67,48 @@ class Consumer(object):
         result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
         logger.debug('result contents')
         logger.debug(result)
-        content = ""                  
-        if (type(result['integrityCheck']) is dict):
-            ic = result['integrityCheck']
-            content += "  Integrity Check\n"
-            if ('warnings' in ic):
-                content += "    Warnings:\n"
-                warnings = ic['warnings'] if type(ic['warnings']) is list else [ic['warnings']]
-                for index in warnings:
-                    content += "      * "+warnings[index]+"\n"
-            if ('error' in ic):
-                content += "    Error: "+ic['error']+"\n"
-                if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+filename[4:],content)):
-                    logger.info("Email sent")
-                else:
-                    logger.info("Email not sent")
-                return
+        sys.stdout.flush();
+        content = ""
+        try:
+          if (type(result['integrityCheck']) is dict):
+              ic = result['integrityCheck']
+              content += "  Integrity Check\n"
+              if ('warnings' in ic):
+                  content += "    Warnings:\n"
+                  warnings = ic['warnings'] if type(ic['warnings']) is list else [ic['warnings']]
+                  for warning in warnings:
+                      content += "      * "+warning+"\n"
+              if ('error' in ic):
+                  content += "    Error: "+ic['error']+"\n"
+                  if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+filename[4:],content)):
+                      logger.info("Email sent")
+                  else:
+                      logger.info("Email not sent")
+                  return
+        except Exception as e:
+            exc_type, exc_obj, tb = sys.exc_info()
+            f = tb.tb_frame
+            lineno = tb.tb_lineno
+            filename = f.f_code.co_filename
+            linecache.checkcache(filename)
+            line = linecache.getline(filename, lineno, f.f_globals)
+            print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
         filenameZ = str(result['timestamp'])+'.zip'
         filepath = os.path.join('tmp',filenameZ)
         zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
+        ptime = 0
         for model in result['models']:
             mod = result['models'][model]
-            if (len(content) > 0):
-                content += "\n"
-            content += "  "+model+(" - Error" if 'error' in mod else " - Complete")+"\n"
+            content += "\n  "+model
+            if ('error' in mod):
+                content += " - Error"
+            else:
+                content += " - Complete"
+                if (len(mod['ptime']) > 0):
+                    content += " ( "+mod['ptime']+" )"
+                    ptime += float(mod['ptime'][17:-4])
+                del mod['ptime']
+            content += "\n"
             if ('saveValue' in mod):
                 filename = mod['saveValue']
                 if (os.path.isfile(filename)):
@@ -121,7 +139,7 @@ class Consumer(object):
                 "Comets Batch Mode Model Results - "+filenameZ,
                 "Dear COMETS user,\n\n"+
                 header+
-                "The following models were run.\n\n"+
+                "The following models were run and took a total processing time of "+format(ptime,".4g")+" sec.\n"+
                 content+"\n\n"+
                 "Respectfully,\n\n"+
                 "COMETS Web Tool"
