@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# build base image first
-docker build -t cbiitss/comets:base -f comets.base.dockerfile .
-
 # web application container image
 docker build -t cbiitss/comets:base0 -f comets.base.dockerfile .
 

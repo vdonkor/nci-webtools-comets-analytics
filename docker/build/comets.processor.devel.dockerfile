@@ -1,4 +1,4 @@
-FROM cbiitss/comets:base
+FROM cbiitss/comets:base0
 
 RUN rm -rf /entrypoint.sh
 
