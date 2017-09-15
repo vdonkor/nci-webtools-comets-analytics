@@ -31,7 +31,10 @@ runAllModels <- function(jsonData) {
     }
     returnValue <- list()
     for (model in exmetabdata$mods$model) {
-      returnValue[[model]] = runModel(input,exmetabdata,model)
+      returnModel <- runModel(input,exmetabdata,model)
+      returnModel$modelName <- model
+      returnModel$warnings <- unique(returnModel$warnings)
+      returnValue[[length(returnValue)+1]] <- returnModel
     }
     toJSON(list(integrityCheck=integrityCheck,models=returnValue,timestamp=input$timestamp), auto_unbox = T)
 }

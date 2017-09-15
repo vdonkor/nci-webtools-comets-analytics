@@ -97,8 +97,8 @@ class Consumer(object):
         filepath = os.path.join('tmp',filenameZ)
         zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
         ptime = 0
-        for model in result['models']:
-            mod = result['models'][model]
+        for mod in result['models']:
+            model = model['modelName']
             content += "\n  "+model
             if ('error' in mod):
                 content += " - Error"
