@@ -13,6 +13,7 @@ getCohorts <- function() {
 getTemplates <- function() {
     dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
     ageData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4))
+    ageData <- ageData[!is.na(ageData$VARREFERENCE),]
     ageMap = toJSON(ageData$VARREFERENCE, auto_unbox = T)
     rownames(ageData) <- ageData$VARREFERENCE
     ageData = as.data.frame(t(ageData['VARDEFINITION']))
@@ -20,6 +21,7 @@ getTemplates <- function() {
     ageData = toJSON(ageData,auto_unbox=T)
     ageData = substr(ageData,2,nchar(ageData)-1)
     basicData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4))
+    basicData <- basicData[!is.na(basicData$VARREFERENCE),]
     basicMap = toJSON(basicData$VARREFERENCE, auto_unbox = T)
     rownames(basicData) <- basicData$VARREFERENCE
     basicData = as.data.frame(t(basicData['VARDEFINITION']))
