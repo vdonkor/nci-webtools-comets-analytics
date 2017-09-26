@@ -214,6 +214,16 @@ fieldset.well {
     background-color: #F5F5F5;
     background-image: none;
 }
+fieldset label {
+  width: 100%;
+}
+fieldset label[for="whereCategory"] {
+  float: left;
+  margin-right: -5em;
+}
+#whereClear {
+  width: 5em;
+}
 @media (min-width: 992px) {
     .col-md-1.steps {
         margin-right: 0px;

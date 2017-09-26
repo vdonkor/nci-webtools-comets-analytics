@@ -338,6 +338,7 @@ appComets.FormView = Backbone.View.extend({
         "change input:not([type='button'])": "updateModel",
         "keyup input:not([type='button'])": "noSubmit",
         "click #load": "checkIntegrity",
+        "click #whereClear": "resetWhere",
         "click #reset": "reset",
         "click #runModel": "runModel",
         "click #toggleHelp": function () {
@@ -440,6 +441,19 @@ appComets.FormView = Backbone.View.extend({
         this.$el.find("#calcProgressbar").hide();
         this.$el.find('#inputDataFile').val('');
         $('[href="#tab-integrity"]').trigger('click');
+    },
+    resetWhere: function(e) {
+      e.preventDefault();
+      var elem = $(e.target).next();
+      elem[0].selectedIndex = 0;
+      elem = elem.next();
+      elem[0].selectedIndex = 0;
+      elem.next().val('');
+      this.model.set({
+        'whereCategory': '',
+        'whereComparator': '',
+        'whereFilter': ''
+      });
     },
     runModel: function (e) {
         e.preventDefault();
@@ -649,6 +663,7 @@ appComets.FormView = Backbone.View.extend({
             } ],
             selectedOption: this.model.get("whereComparator")
         }));
+        this.$el.find('[name="whereFilter"]').val('');
     },
     renderRunModelButton: function() {
         var email = this.model.get('email'),
