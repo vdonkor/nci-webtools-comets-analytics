@@ -318,7 +318,7 @@ def user_metadata():
 @app.route('/cometsRest/admin/users', methods=['GET'])
 def user_list_get():
     try:
-        url = "https://"+app.config['auth0.domain']+".auth0.com/api/v2/users?q=comets%A3*%20TO%20*%5D&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cidentities.connection%2Cuser_id%2Cuser_metadata&include_fields=true&per_page=100&page="
+        url = "https://"+app.config['auth0.domain']+".auth0.com/api/v2/users?q=comets%3A*%20TO%20*&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cidentities.connection%2Cuser_id%2Cuser_metadata&include_fields=true&per_page=100&page="
         headers = {
             "Authorization": "Bearer "+app.config['auth0.token'],
             "Content-Type": "application/json"
