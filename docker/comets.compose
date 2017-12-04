@@ -30,7 +30,7 @@ services:
       - activemq
     entrypoint: "bash -c 'sleep 10 && entrypoint.sh /deploy/app/process/Consumer.py'"
   activemq:
-    image: "webcenter/activemq:latest"
+    image: "cbiitss/activemq:latest"
     volumes:
       - /etc/localtime:/etc/localtime:ro
     container_name: activemq

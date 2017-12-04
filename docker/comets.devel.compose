@@ -26,7 +26,7 @@ services:
       - activemq
     entrypoint: "bash -c 'sleep 10 && entrypoint.sh /deploy/app/process/Consumer.py'"
   activemq:
-    image: "webcenter/activemq:latest"
+    image: "cbiitss/activemq:latest"
     container_name: activemq
     expose:
       - '61613'
