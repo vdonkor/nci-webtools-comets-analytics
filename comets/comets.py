@@ -91,7 +91,7 @@ def queueFile(parameters):
     client.disconnect()
 
 # heartbeat monitor
-@app.route('/cometsRest/ping', methods = ['GET'])
+@app.route('/cometsRest/public/ping', methods = ['GET'])
 def ping():
     return buildSuccess({'pong':1})
 
