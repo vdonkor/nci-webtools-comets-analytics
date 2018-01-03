@@ -90,6 +90,11 @@ def queueFile(parameters):
     client.send('/queue/test',forQueue)
     client.disconnect()
 
+# heartbeat monitor
+@app.route('/cometsRest/ping', methods = ['GET'])
+def ping():
+    return buildSuccess({'pong':1})
+
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])
 def integrityCheck():
