@@ -38,23 +38,23 @@ RUN R -e "install.packages( \
     );"
 
 RUN R -e "\
-    devtools::install_version('dplyr',      version = '0.5.0'   ); \
-    devtools::install_version('d3heatmap',  version = '0.6.1.1' ); \
-    devtools::install_version('Hmisc',      version = '4.0-2'   ); \
-    devtools::install_version('jsonlite',   version = '0.9.22'  ); \
-    devtools::install_version('plotly',     version = '3.4.13'  ); \
-    devtools::install_version('plyr',       version = '1.8.3'   ); \
-    devtools::install_version('psych',      version = '1.6.4'   ); \
-    devtools::install_version('readxl',     version = '0.1.0'   ); \
-    devtools::install_version('rio',        version = '0.5.5'   ); \
-    devtools::install_version('shiny',      version = '0.14.1'  ); \
-    devtools::install_version('shinyFiles', version = '0.6.2'   ); \
-    devtools::install_version('stringr',    version = '0.6'     ); \
-    devtools::install_version('tidyr',      version = '0.7.0'   ); \
-    devtools::install_version('xlsx',       version = '0.5.7'   ); \
-    devtools::install_github('Bioconductor-mirror/BiocInstaller', ref = 'release-3.4'); \
+    devtools::install_git('https://git.bioconductor.org/packages/BiocInstaller', branch = 'RELEASE_3_4'); \
     devtools::install_bioc('Biobase'); \
-    devtools::install_version('ClassComparison', repos = 'http://silicovore.com/OOMPA/'); "
+    devtools::install_version('ClassComparison',  version = '3.1.5'   ); \
+    devtools::install_version('dplyr',            version = '0.7.4'   ); \
+    devtools::install_version('d3heatmap',        version = '0.6.1.2' ); \
+    devtools::install_version('Hmisc',            version = '4.1-1'   ); \
+    devtools::install_version('jsonlite',         version = '1.5'     ); \
+    devtools::install_version('plotly',           version = '4.7.1'   ); \
+    devtools::install_version('plyr',             version = '1.8.4'   ); \
+    devtools::install_version('psych',            version = '1.7.8'   ); \
+    devtools::install_version('readxl',           version = '1.0.0'   ); \
+    devtools::install_version('rio',              version = '0.5.9'   ); \
+    devtools::install_version('shiny',            version = '1.0.5'   ); \
+    devtools::install_version('shinyFiles',       version = '0.6.2'   ); \
+    devtools::install_version('stringr',          version = '1.2.0'   ); \
+    devtools::install_version('tidyr',            version = '0.8.0'   ); \
+    devtools::install_version('xlsx',             version = '0.5.7'   ); "
 
 RUN pip install --upgrade pip \
  && pip install \
