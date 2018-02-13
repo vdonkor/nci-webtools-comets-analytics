@@ -1,7 +1,8 @@
-library(stringr)
-library(jsonlite)
 library(COMETS)
+library(jsonlite)
+library(openxlsx)
 library(stats)
+library(stringr)
 
 runAllModels <- function(jsonData) {
     integrityCheck <- list()
@@ -29,7 +30,13 @@ runAllModels <- function(jsonData) {
     if ('error' %in% names(integrityCheck)) {
       return(toJSON(list(integrityCheck=integrityCheck,models=list(),timestamp=input$timestamp), auto_unbox = T))
     }
-    returnValue <- list()
+    copyName = str_replace(input$filename,"([\\/])[^.]+(.+)$",paste0("\\1inputs_",input$timestamp,"\\2"))
+    file.copy(input$filename,copyName)
+    wb = loadWorkbook(copyName)
+    for (sheet in names(wb)[!is.element(names(wb),c("Metabolites","VarMap","Models"))]) {
+      removeWorksheet(wb,sheet=sheet)
+    }
+    returnValue <- list(inputs=copyName)
     for (model in exmetabdata$mods$model) {
       returnModel <- runModel(input,exmetabdata,model)
       returnModel$modelName <- model
