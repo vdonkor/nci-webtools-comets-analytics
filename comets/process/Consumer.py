@@ -104,10 +104,11 @@ class Consumer(object):
                 content += " - Error"
             else:
                 content += " - Complete"
-                if (len(mod['ptime']) > 0):
-                    content += " ( "+mod['ptime']+" )"
-                    ptime += float(mod['ptime'][17:-4])
-                del mod['ptime']
+                if ('ptime' in mod):
+                    if (len(mod['ptime']) > 0):
+                        content += " ( "+mod['ptime']+" )"
+                        ptime += float(mod['ptime'][17:-4])
+                    del mod['ptime']
             content += "\n"
             if ('saveValue' in mod):
                 filename = mod['saveValue']
