@@ -36,14 +36,14 @@ runAllModels <- function(jsonData) {
     for (sheet in names(wb)[!is.element(names(wb),c("Metabolites","VarMap","Models"))]) {
       removeWorksheet(wb,sheet=sheet)
     }
-    returnValue <- list(inputs=copyName)
+    returnValue <- list()
     for (model in exmetabdata$mods$model) {
       returnModel <- runModel(input,exmetabdata,model)
       returnModel$modelName <- model
       returnModel$warnings <- unique(returnModel$warnings)
       returnValue[[length(returnValue)+1]] <- returnModel
     }
-    toJSON(list(integrityCheck=integrityCheck,models=returnValue,timestamp=input$timestamp), auto_unbox = T)
+    toJSON(list(inputs=copyName,integrityCheck=integrityCheck,models=returnValue,timestamp=input$timestamp), auto_unbox = T)
 }
 
 runModel <- function(input,exmetabdata,model) {
