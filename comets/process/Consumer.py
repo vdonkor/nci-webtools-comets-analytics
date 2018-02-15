@@ -52,7 +52,7 @@ class Consumer(object):
   
     @defer.inlineCallbacks
     def run(self):
-        client = Stomp(StompConfig('tcp://'+config['queue.host']+':'+str(config['queue.port'])))
+        client = Stomp(StompConfig('tcp://'+config['queue.host']+':'+str(config['queue.port'])+'?startupMaxReconnectAttempts=-1,initialReconnectDelay=1000,maxReconnectAttempts=-1'))
         yield client.connect()
         headers = { StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL }
         client.subscribe('/queue/test', headers, listener = SubscriptionListener(self.consume, errorDestination = '/queue/error'))
@@ -96,9 +96,9 @@ class Consumer(object):
         filenameZ = str(result['timestamp'])+'.zip'
         filepath = os.path.join('tmp',filenameZ)
         zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
-		if 'inputs' in result:
-			zipf.write(result['inputs'],os.path.basename(result['inputs']))
-			os.remove(result['inputs'])
+        if 'inputs' in result:
+            zipf.write(result['inputs'],os.path.basename(result['inputs']))
+            os.remove(result['inputs'])
         ptime = 0
         for mod in result['models']:
             model = mod['modelName']
@@ -107,10 +107,11 @@ class Consumer(object):
                 content += " - Error"
             else:
                 content += " - Complete"
-                if (len(mod['ptime']) > 0):
-                    content += " ( "+mod['ptime']+" )"
-                    ptime += float(mod['ptime'][17:-4])
-                del mod['ptime']
+                if ('ptime' in mod):
+                    if (len(mod['ptime']) > 0):
+                        content += " ( "+mod['ptime']+" )"
+                        ptime += float(mod['ptime'][17:-4])
+                    del mod['ptime']
             content += "\n"
             if ('saveValue' in mod):
                 filename = mod['saveValue']

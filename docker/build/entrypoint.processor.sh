@@ -12,6 +12,7 @@ touch /deploy/logs/comets_processor.log
 chown -R ncianalysis:ncianalysis /deploy
 
 # start python development server with specified filename
-# if not specified, use default RequestProcessor.py
+# if not specified, use default Consumer.py
+su ncianalysis
 pushd /deploy/app
-python ${1:-"RequestProcessor.py"} > /deploy/logs/comets_processor.log  2>&1
+python ${1:-"process/Consumer.py"} > /deploy/logs/comets_processor.log  2>&1
