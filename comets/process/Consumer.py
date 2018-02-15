@@ -87,7 +87,7 @@ class Consumer(object):
                         logger.info("Email not sent")
                     return
                 if ('csv' in ic):
-                    integrityFile = csv
+                    integrityFile = ic['csv']
         except Exception as e:
             exc_type, exc_obj, tb = sys.exc_info()
             f = tb.tb_frame
