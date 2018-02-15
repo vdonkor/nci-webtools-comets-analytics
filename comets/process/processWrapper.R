@@ -14,8 +14,7 @@ runAllModels <- function(jsonData) {
             input = fromJSON(jsonData)
             input$timestamp = as.integer(Sys.time())
             exmetabdata <- readCOMETSinput(paste0(input$filename))
-            exmetabdata$csv = OutputCSVResults(paste0('tmp/Harmonization',input$timestamp),exmetabdata$metab,input$cohortSelection)
-            exmetabdata
+            list(csv=OutputCSVResults(paste0('tmp/Harmonization',input$timestamp),exmetabdata$metab,input$cohortSelection))
           },
           message=function(m) {
             print(m$message)
@@ -30,7 +29,7 @@ runAllModels <- function(jsonData) {
         }
       )
     }))
-    integrityCheck$warnings <- unqiue(warnings)
+    integrityCheck$warnings <- unique(warnings)
     if ('error' %in% names(integrityCheck)) {
       return(toJSON(list(integrityCheck=integrityCheck,models=list(),timestamp=input$timestamp), auto_unbox = T))
     }
