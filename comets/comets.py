@@ -93,7 +93,7 @@ def queueFile(parameters):
 # heartbeat monitor
 @app.route('/cometsRest/public/ping', methods = ['GET'])
 def ping():
-    return buildSuccess({'pong':1})
+    return buildSuccess({'ok':1})
 
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])
