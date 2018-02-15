@@ -6,8 +6,9 @@ library(stringr)
 
 runAllModels <- function(jsonData) {
     integrityCheck <- list()
+    warnings <- c()
     suppressWarnings(suppressMessages({
-      tryCatch(
+      integrityCheck <- tryCatch(
         withCallingHandlers(
           {
             input = fromJSON(jsonData)
@@ -20,7 +21,7 @@ runAllModels <- function(jsonData) {
             print(m$message)
           },
           warning=function(w) {
-            integrityCheck$warnings <<- append(integrityCheck$warnings, w$message)
+            warnings <<- append(warnings, w$message)
           }
         ),
         error=function(e) {
@@ -29,6 +30,7 @@ runAllModels <- function(jsonData) {
         }
       )
     }))
+    integrityCheck$warnings <- unqiue(warnings)
     if ('error' %in% names(integrityCheck)) {
       return(toJSON(list(integrityCheck=integrityCheck,models=list(),timestamp=input$timestamp), auto_unbox = T))
     }
