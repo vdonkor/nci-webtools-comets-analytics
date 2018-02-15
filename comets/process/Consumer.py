@@ -52,7 +52,7 @@ class Consumer(object):
   
     @defer.inlineCallbacks
     def run(self):
-        client = Stomp(StompConfig('tcp://'+config['queue.host']+':'+str(config['queue.port'])))
+        client = Stomp(StompConfig('tcp://'+config['queue.host']+':'+str(config['queue.port'])+'?startupMaxReconnectAttempts=-1,initialReconnectDelay=1000,maxReconnectAttempts=-1'))
         yield client.connect()
         headers = { StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL }
         client.subscribe('/queue/test', headers, listener = SubscriptionListener(self.consume, errorDestination = '/queue/error'))

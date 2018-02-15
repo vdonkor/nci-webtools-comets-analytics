@@ -85,7 +85,7 @@ def queueFile(parameters):
     s3conn = S3Connection(app.config['s3.username'],app.config['s3.password']).get_bucket(app.config['s3.bucket']).new_key('/comets/input/'+parameters['filename'])
     s3conn.set_contents_from_filename(os.path.join('tmp',parameters['filename']))
     forQueue = json.dumps(parameters)
-    client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])))
+    client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])+'?startupMaxReconnectAttempts=-1,initialReconnectDelay=1000,maxReconnectAttempts=-1'))
     client.connect()
     client.send('/queue/test',forQueue)
     client.disconnect()
