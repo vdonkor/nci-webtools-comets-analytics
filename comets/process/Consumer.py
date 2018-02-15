@@ -96,9 +96,9 @@ class Consumer(object):
         filenameZ = str(result['timestamp'])+'.zip'
         filepath = os.path.join('tmp',filenameZ)
         zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
-		if 'inputs' in result:
-			zipf.write(result['inputs'],os.path.basename(result['inputs']))
-			os.remove(result['inputs'])
+        if 'inputs' in result:
+            zipf.write(result['inputs'],os.path.basename(result['inputs']))
+            os.remove(result['inputs'])
         ptime = 0
         for mod in result['models']:
             model = mod['modelName']
