@@ -13,6 +13,8 @@ runAllModels <- function(jsonData) {
             input = fromJSON(jsonData)
             input$timestamp = as.integer(Sys.time())
             exmetabdata <- readCOMETSinput(paste0(input$filename))
+            exmetabdata$csv = OutputCSVResults(paste0('tmp/Harmonization',input$timestamp),exmetabdata$metab,input$cohortSelection)
+            exmetabdata
           },
           message=function(m) {
             print(m$message)

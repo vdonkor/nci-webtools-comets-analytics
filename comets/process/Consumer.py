@@ -69,6 +69,7 @@ class Consumer(object):
         logger.debug(result)
         sys.stdout.flush();
         content = ""
+        integrityFile = None
         try:
             if (type(result['integrityCheck']) is dict):
                 ic = result['integrityCheck']
@@ -85,6 +86,8 @@ class Consumer(object):
                     else:
                         logger.info("Email not sent")
                     return
+                if ('csv' in ic):
+                    integrityFile = csv
         except Exception as e:
             exc_type, exc_obj, tb = sys.exc_info()
             f = tb.tb_frame
@@ -96,6 +99,9 @@ class Consumer(object):
         filenameZ = str(result['timestamp'])+'.zip'
         filepath = os.path.join('tmp',filenameZ)
         zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
+        if (integrityFile):
+            zipf.write(integrityFile,os.path.basename(integrityFile))
+            os.remove(integrityFile)
         if 'inputs' in result:
             zipf.write(result['inputs'],os.path.basename(result['inputs']))
             os.remove(result['inputs'])
