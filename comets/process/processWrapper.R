@@ -34,11 +34,11 @@ runAllModels <- function(jsonData) {
       return(toJSON(list(integrityCheck=integrityCheck,models=list(),timestamp=input$timestamp), auto_unbox = T))
     }
     copyName = str_replace(input$filename,"([\\/])[^.]+(.+)$",paste0("\\1inputs_",input$timestamp,"\\2"))
-    file.copy(input$filename,copyName)
-    wb = loadWorkbook(copyName)
+    wb = loadWorkbook(input$filename)
     for (sheet in names(wb)[!is.element(names(wb),c("Metabolites","VarMap","Models"))]) {
       removeWorksheet(wb,sheet=sheet)
     }
+    saveWorkbook(wb,copyName,overwrite=TRUE)
     returnValue <- list()
     for (model in exmetabdata$mods$model) {
       returnModel <- runModel(input,exmetabdata,model)
