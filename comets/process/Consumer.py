@@ -106,7 +106,7 @@ class Consumer(object):
             zipf.write(result['inputs'],os.path.basename(result['inputs']))
             os.remove(result['inputs'])
         if 'descrcsv' in result:
-            zipf.write(result['descrcsv',os.path.basename(result['descrcsv']))
+            zipf.write(result['descrcsv'],os.path.basename(result['descrcsv']))
             os.remove(result['descrcsv'])
         ptime = 0
         for mod in result['models']:
