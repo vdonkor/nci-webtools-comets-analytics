@@ -1,6 +1,7 @@
 import json, linecache, logging, os, smtplib, sys, yaml, zipfile
 
 from boto.s3.connection import S3Connection
+from datetime import datetime
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -96,7 +97,7 @@ class Consumer(object):
             linecache.checkcache(filename)
             line = linecache.getline(filename, lineno, f.f_globals)
             print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        filenameZ = str(result['timestamp'])+'.zip'
+        filenameZ = "Result_"+filename+"_"+datetime.fromtimestamp(result['timestamp']).strftime("%Y_%m_%d_%I_%M")+'.zip'
         filepath = os.path.join('tmp',filenameZ)
         zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
         if (integrityFile):

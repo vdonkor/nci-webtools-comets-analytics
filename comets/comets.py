@@ -85,7 +85,7 @@ def queueFile(parameters):
     s3conn = S3Connection(app.config['s3.username'],app.config['s3.password']).get_bucket(app.config['s3.bucket']).new_key('/comets/input/'+parameters['filename'])
     s3conn.set_contents_from_filename(os.path.join('tmp',parameters['filename']))
     forQueue = json.dumps(parameters)
-    client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])+'?startupMaxReconnectAttempts=-1,initialReconnectDelay=1000,maxReconnectAttempts=-1'))
+    client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])))
     client.connect()
     client.send('/queue/test',forQueue)
     client.disconnect()
@@ -93,7 +93,7 @@ def queueFile(parameters):
 # heartbeat monitor
 @app.route('/cometsRest/public/ping', methods = ['GET'])
 def ping():
-    return buildSuccess({'ok':1})
+    return buildSuccess({'pong':1})
 
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])
@@ -103,7 +103,7 @@ def integrityCheck():
         if not os.path.exists('tmp'):
             os.makedirs('tmp')
         name, ext = os.path.splitext(userFile.filename)
-        filename = "cometsInput_" + time.strftime("%Y_%m_%d_%I_%M") + ext
+        filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext
         saveFile = userFile.save(os.path.join('tmp', filename))
         if os.path.isfile(os.path.join('tmp', filename)):
             print("Successfully Uploaded")
@@ -184,6 +184,7 @@ def correlate():
                 response = buildFailure(result['error'])
             else:
                 response = buildSuccess(result['saveValue'])
+                
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame
