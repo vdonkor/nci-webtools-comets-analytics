@@ -97,7 +97,7 @@ class Consumer(object):
             linecache.checkcache(filename)
             line = linecache.getline(filename, lineno, f.f_globals)
             print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        filenameZ = "Result_"+filename+"_"+datetime.fromtimestamp(result['timestamp']).strftime("%Y_%m_%d_%I_%M")+'.zip'
+        filenameZ = "Result_"+parameters['originalFilename'][:-5]+"_"+datetime.fromtimestamp(result['timestamp']).strftime("%Y_%m_%d_%I_%M")+'.zip'
         filepath = os.path.join('tmp',filenameZ)
         zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
         if (integrityFile):
@@ -138,7 +138,7 @@ class Consumer(object):
                 if ('error' in mod):
                     content += "    Error: "+mod['error']+"\n"
         zipf.close()
-        header = "We've finished running your file: "+parameters['originalFilename']+"\n\n"
+        header = "We've finished running your file: "+os.path.splitext(parameters['originalFilename'])[0]+"\n\n"
         if (len(zipf.infolist()) > 0):
             s3key = s3conn.new_key('/comets/results/'+filenameZ);
             s3key.set_contents_from_filename(filepath)
