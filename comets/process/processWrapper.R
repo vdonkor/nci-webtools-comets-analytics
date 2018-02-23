@@ -39,6 +39,8 @@ runAllModels <- function(jsonData) {
       removeWorksheet(wb,sheet=sheet)
     }
     saveWorkbook(wb,copyName,overwrite=TRUE)
+    descdata <- runDescrip(exmetabdata)
+    descrcsv <- OutputXLSResults(filename="tmp/descr",datal=descdata,cohort=input$cohortSelection)
     returnValue <- list()
     for (model in exmetabdata$mods$model) {
       returnModel <- runModel(input,exmetabdata,model)
@@ -46,7 +48,7 @@ runAllModels <- function(jsonData) {
       returnModel$warnings <- unique(returnModel$warnings)
       returnValue[[length(returnValue)+1]] <- returnModel
     }
-    toJSON(list(inputs=copyName,integrityCheck=integrityCheck,models=returnValue,timestamp=input$timestamp), auto_unbox = T)
+    toJSON(list(descrcsv=descrcsv,inputs=copyName,integrityCheck=integrityCheck,models=returnValue,timestamp=input$timestamp), auto_unbox = T)
 }
 
 runModel <- function(input,exmetabdata,model) {
