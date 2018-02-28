@@ -71,8 +71,8 @@ class Consumer(object):
         logger.debug(result)
         sys.stdout.flush();
         try:
-			content = ""
-			integrityFile = None
+            content = ""
+            integrityFile = None
             if (type(result['integrityCheck']) is dict):
                 ic = result['integrityCheck']
                 content += "  Integrity Check\n"
@@ -90,74 +90,74 @@ class Consumer(object):
                     return
                 if ('csv' in ic):
                     integrityFile = ic['csv']
-			filenameZ = "Result_"+parameters['originalFilename'][:-5]+"_"+datetime.fromtimestamp(result['timestamp']).strftime("%Y_%m_%d_%I_%M")+'.zip'
-			filepath = os.path.join('tmp',filenameZ)
-			zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
-			if (integrityFile):
-				zipf.write(integrityFile,os.path.basename(integrityFile))
-				os.remove(integrityFile)
-			if 'inputs' in result:
-				zipf.write(result['inputs'],os.path.basename(result['inputs']))
-				os.remove(result['inputs'])
-			if 'descrcsv' in result:
-				zipf.write(result['descrcsv'],os.path.basename(result['descrcsv']))
-				os.remove(result['descrcsv'])
-			ptime = 0
-			for mod in result['models']:
-				model = mod['modelName']
-				content += "\n  "+model
-				if ('error' in mod):
-					content += " - Error"
-				else:
-					content += " - Complete"
-					if ('ptime' in mod):
-						if (len(mod['ptime']) > 0):
-							try:
-								ptime += float(mod['ptime'][17:-4])
-								content += " ( "+mod['ptime']+" )"
-							except ValueError as e:
-								pass
-						del mod['ptime']
-				content += "\n"
-				if ('saveValue' in mod):
-					filename = mod['saveValue']
-					if (os.path.isfile(filename)):
-						zipf.write(filename,os.path.basename(filename))
-					os.remove(filename)
-					del mod['saveValue']
-				if (len(mod) > 0):
-					if ('warnings' in mod):
-						content += "    Warnings:\n"
-						warnings = mod['warnings'] if type(mod['warnings']) is list else [mod['warnings']]
-						for warning in warnings:
-							content += "      * "+warning+"\n"
-					if ('error' in mod):
-						content += "    Error: "+mod['error']+"\n"
-			zipf.close()
-			header = "We've finished running your file: "+os.path.splitext(parameters['originalFilename'])[0]+"\n\n"
-			if (len(zipf.infolist()) > 0):
-				s3key = s3conn.new_key('/comets/results/'+filenameZ);
-				s3key.set_contents_from_filename(filepath)
-				header += "The results of your batch data run are available through the following link. Any additional information (warnings, errors, etc.) are included below.\n\n"
-				header += s3key.generate_url(expires_in=604800)+"\n\n" #604800 = 7d*24h*60m*60s
-				header += "The search results will be available for the next 7 days.\n\n"
-			else:
-				header += "There were no models or all the models resulted in errors, so no data is available. Any additional information (warnings, errors, etc.) are included below.\n\n"
-			if (self.composeMail(
-					config['email.sender'],
-					parameters['email'],
-					"Comets Batch Mode Model Results - "+filenameZ,
-					"Dear COMETS user,\n\n"+
-					header+
-					"The following models were run and took a total processing time of "+format(ptime,".4g")+" sec.\n"+
-					content+"\n\n"+
-					"Respectfully,\n\n"+
-					"COMETS Web Tool"
-				)):
-				logger.info("Email sent")
-			else:
-				logger.info("Email not sent")
-			os.remove(filepath)
+            filenameZ = "Result_"+parameters['originalFilename'][:-5]+"_"+datetime.fromtimestamp(result['timestamp']).strftime("%Y_%m_%d_%I_%M")+'.zip'
+            filepath = os.path.join('tmp',filenameZ)
+            zipf = zipfile.ZipFile(filepath,'w',zipfile.ZIP_STORED)
+            if (integrityFile):
+                zipf.write(integrityFile,os.path.basename(integrityFile))
+                os.remove(integrityFile)
+            if 'inputs' in result:
+                zipf.write(result['inputs'],os.path.basename(result['inputs']))
+                os.remove(result['inputs'])
+            if 'descrcsv' in result:
+                zipf.write(result['descrcsv'],os.path.basename(result['descrcsv']))
+                os.remove(result['descrcsv'])
+            ptime = 0
+            for mod in result['models']:
+                model = mod['modelName']
+                content += "\n  "+model
+                if ('error' in mod):
+                    content += " - Error"
+                else:
+                    content += " - Complete"
+                    if ('ptime' in mod):
+                        if (len(mod['ptime']) > 0):
+                            try:
+                                ptime += float(mod['ptime'][17:-4])
+                                content += " ( "+mod['ptime']+" )"
+                            except ValueError as e:
+                                pass
+                        del mod['ptime']
+                content += "\n"
+                if ('saveValue' in mod):
+                    filename = mod['saveValue']
+                    if (os.path.isfile(filename)):
+                        zipf.write(filename,os.path.basename(filename))
+                    os.remove(filename)
+                    del mod['saveValue']
+                if (len(mod) > 0):
+                    if ('warnings' in mod):
+                        content += "    Warnings:\n"
+                        warnings = mod['warnings'] if type(mod['warnings']) is list else [mod['warnings']]
+                        for warning in warnings:
+                            content += "      * "+warning+"\n"
+                    if ('error' in mod):
+                        content += "    Error: "+mod['error']+"\n"
+            zipf.close()
+            header = "We've finished running your file: "+os.path.splitext(parameters['originalFilename'])[0]+"\n\n"
+            if (len(zipf.infolist()) > 0):
+                s3key = s3conn.new_key('/comets/results/'+filenameZ);
+                s3key.set_contents_from_filename(filepath)
+                header += "The results of your batch data run are available through the following link. Any additional information (warnings, errors, etc.) are included below.\n\n"
+                header += s3key.generate_url(expires_in=604800)+"\n\n" #604800 = 7d*24h*60m*60s
+                header += "The search results will be available for the next 7 days.\n\n"
+            else:
+                header += "There were no models or all the models resulted in errors, so no data is available. Any additional information (warnings, errors, etc.) are included below.\n\n"
+            if (self.composeMail(
+                    config['email.sender'],
+                    parameters['email'],
+                    "Comets Batch Mode Model Results - "+filenameZ,
+                    "Dear COMETS user,\n\n"+
+                    header+
+                    "The following models were run and took a total processing time of "+format(ptime,".4g")+" sec.\n"+
+                    content+"\n\n"+
+                    "Respectfully,\n\n"+
+                    "COMETS Web Tool"
+                )):
+                logger.info("Email sent")
+            else:
+                logger.info("Email not sent")
+            os.remove(filepath)
         except Exception as e:
             exc_type, exc_obj, tb = sys.exc_info()
             f = tb.tb_frame
@@ -166,16 +166,16 @@ class Consumer(object):
             linecache.checkcache(filename)
             line = linecache.getline(filename, lineno, f.f_globals)
             print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-			if (self.composeMail(
-					config['email.sender'],
-					parameters['email'],
-					"Comets Batch Mode Model Results - error",
-					"Dear COMETS user,\n\n"+
-					"Due to an unexpected error, no meaningful results could be provided. Please contact the COMETS Web Tool team for assistance in resolving the issue.\n\n"+
-					"Respectfully,\n\n"+
-					"COMETS Web Tool"
-				)):
-				logger.info("Failure email sent.")
+            if (self.composeMail(
+                    config['email.sender'],
+                    parameters['email'],
+                    "Comets Batch Mode Model Results - error",
+                    "Dear COMETS user,\n\n"+
+                    "Due to an unexpected error, no meaningful results could be provided. Please contact the COMETS Web Tool team for assistance in resolving the issue.\n\n"+
+                    "Respectfully,\n\n"+
+                    "COMETS Web Tool"
+                )):
+                logger.info("Failure email sent.")
 
 if __name__ == '__main__':
     def flatten(yaml,parent=None):
