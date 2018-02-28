@@ -14,6 +14,7 @@ from twisted.internet import defer, reactor
 
 config = {}
 logger = logging.getLogger("comets_processor")
+logger.addHandler(logging.handlers.TimedRotatingFileHandler("comets_processor.log",'midnight'))
 
 class Consumer(object):
     def composeMail(self,sender,recipients,subject,message,files=[]):
@@ -119,8 +120,11 @@ class Consumer(object):
                 content += " - Complete"
                 if ('ptime' in mod):
                     if (len(mod['ptime']) > 0):
-                        content += " ( "+mod['ptime']+" )"
-                        ptime += float(mod['ptime'][17:-4])
+						try:
+							ptime += float(mod['ptime'][17:-4])
+							content += " ( "+mod['ptime']+" )"
+						except ValueError as e:
+							pass
                     del mod['ptime']
             content += "\n"
             if ('saveValue' in mod):
