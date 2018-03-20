@@ -183,6 +183,8 @@ def correlate():
             if ("error" in result):
                 response = buildFailure(result['error'])
             else:
+                if ('warnings' in result):
+                    result['saveValue']['warnings'] = result['warnings']
                 response = buildSuccess(result['saveValue'])
                 
     except Exception as e:

@@ -109,7 +109,7 @@ checkIntegrity <- function(filename,cohort) {
                     print(m$message)
                 },
                 warning=function(w) {
-                    returnValue$warnings <<- append(returnValue$warnings, w$message)
+                    returnValue$warnings <<- unique(append(returnValue$warnings, w$message))
                 }
             ),
             error=function(e) {
@@ -205,7 +205,7 @@ runModel <- function(jsonData) {
                     print(m$message)
                 },
                 warning=function(w) {
-                    returnValue$warnings <<- append(returnValue$warnings, w$message)
+                    returnValue$warnings <<- unique(append(returnValue$warnings, w$message))
                 }
             ),
             error=function(e) {

@@ -1,5 +1,15 @@
 <% if (status === true) { %>
     <h3>Correlation Results</h3>
+    <% if (warnings !== undefined) { %>
+    <div id="resultWarnings" class="alert alert-warning">
+        <% for (var index in warnings) { %>
+            <div>
+                <span class="glyphicon glyphicon-warning-sign"></span>
+                <%= warnings[index] %>
+            </div>
+        <% } %>
+    </div>
+    <% } %>
     <div id="resultStatus" class="alert alert-success">
         <span class="glyphicon glyphicon-ok"></span>
         <%= statusMessage %>
@@ -22,7 +32,7 @@
                 <button class="btn btn-default" id="summaryDownload">Download Results</button>
             </div>
         </div>
-        <table class="table-striped table-hover">
+        <table class="display">
             <thead>
                 <tr>
                     <th class="borderless">
