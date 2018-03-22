@@ -255,6 +255,7 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         });
         var exposures = response.exposures.constructor === Array ? response.exposures : [response.exposures];
         var strata = response.strata.constructor === Array ? response.strata : [response.strata];
+        var warnings = Array.isArray(response.warnings||[]) ? response.warnings||[] : [response.warnings];
         $.extend(response, {
             clusterResults: false,
             correlationRun: true,
@@ -268,7 +269,8 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
             sortStratum: "All participants (no stratification)",
             sortHeader: response.tableOrder[0],
             sortAsc: true,
-            strataStore: strata
+            strataStore: strata,
+            warnings: warnings
         });
         response.filterdata = response.filterdata.sort(appComets.sorts.property(response.sortHeader,response.sortAsc));
         if (excorrdata.length < 1) {
