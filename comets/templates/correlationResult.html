@@ -1,6 +1,6 @@
 <% if (status === true) { %>
     <h3>Correlation Results</h3>
-    <% if (warnings !== undefined) { %>
+    <% if (warnings.length > 0) { %>
     <div id="resultWarnings" class="alert alert-warning">
         <% for (var index in warnings) { %>
             <div>

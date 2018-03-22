@@ -218,7 +218,8 @@ appComets.CorrelationResultsModel = Backbone.Model.extend({
         status: false,
         statusMessage: "An unknown error occurred",
         strataStore: [],
-        tableOrder: []
+        tableOrder: [],
+        warnings: []
     },
     url: "/cometsRest/correlate",
     fetch: function(options) {
