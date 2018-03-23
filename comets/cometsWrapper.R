@@ -177,8 +177,11 @@ runModel <- function(jsonData) {
                         rowTree=makeBranches(rowDendrogram,outcomeLookup)
                       )
                     }
+                    if (!is.null(excorrdata$corr)) {
+                      excorrdata[,'corr'] <- with(excorrdata,format(as.numeric(corr),scientific=TRUE,digits=I(3)))
+                    }
                     if (!is.null(excorrdata$pvalue)) {
-                      excorrdata[,'pvalue'] <- with(excorrdata,format(pvalue, scientific=TRUE,digits=I(3)))
+                      excorrdata[,'pvalue'] <- with(excorrdata,format(as.numeric(pvalue),scientific=TRUE,digits=I(3)))
                     }
                     if(any(names(excorrdata) == "stratavar")) {
                       strataVector <- excorrdata[!duplicated(excorrdata[,'stratavar']),'stratavar']
