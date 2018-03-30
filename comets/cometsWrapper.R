@@ -178,7 +178,7 @@ runModel <- function(jsonData) {
                       )
                     }
                     if (!is.null(excorrdata$corr)) {
-                      excorrdata[,'corr'] <- with(excorrdata,round(as.numeric(corr),3))
+                      excorrdata[,'corr'] <- with(excorrdata,format(round(as.numeric(corr),3),scientific=FALSE,digits=I(3)))
                     }
                     if (!is.null(excorrdata$pvalue)) {
                       excorrdata[,'pvalue'] <- with(excorrdata,format(as.numeric(pvalue),scientific=TRUE,digits=I(3)))
