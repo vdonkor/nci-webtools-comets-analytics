@@ -48,6 +48,7 @@ RUN R -e "\
     devtools::install_version('jsonlite',         version = '1.5'     ); \
     devtools::install_version('plotly',           version = '4.7.1'   ); \
     devtools::install_version('plyr',             version = '1.8.4'   ); \
+    devtools::install_version('ppcor',            version = '1.1'     ); \
     devtools::install_version('psych',            version = '1.7.8'   ); \
     devtools::install_version('readxl',           version = '1.0.0'   ); \
     devtools::install_version('rio',              version = '0.5.9'   ); \
