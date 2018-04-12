@@ -41,6 +41,7 @@ RUN R -e "\
     devtools::install_git('https://git.bioconductor.org/packages/BiocInstaller', branch = 'RELEASE_3_4'); \
     devtools::install_bioc('Biobase'); \
     devtools::install_version('ClassComparison',  version = '3.1.5'   ); \
+    devtools::install_version('caret',            version = '6.0-79'  ); \
     devtools::install_version('dplyr',            version = '0.7.4'   ); \
     devtools::install_version('d3heatmap',        version = '0.6.1.2' ); \
     devtools::install_version('Hmisc',            version = '4.1-1'   ); \
