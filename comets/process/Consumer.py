@@ -11,12 +11,17 @@ from stompest.async import Stomp
 from stompest.async.listener import SubscriptionListener
 from stompest.protocol import StompSpec
 from twisted.internet import defer, reactor
+import datetime
 
 config = {}
 logger = logging.getLogger("comets_processor")
 logger.addHandler(logging.handlers.TimedRotatingFileHandler("comets_processor.log",'midnight'))
 
 class Consumer(object):
+
+    def timestamp():
+        return datetime.datetime.now().strftime("%d %B %Y %I:%M:%S")
+
     def composeMail(self,sender,recipients,subject,message,files=[]):
         try:
             if not isinstance(recipients,list):
@@ -48,10 +53,10 @@ class Consumer(object):
             filename = f.f_code.co_filename
             linecache.checkcache(filename)
             line = linecache.getline(filename, lineno, f.f_globals)
-            print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+            print('[{}] EXCEPTION IN ({}, LINE {} "{}"): {}'.format(self.timestamp(), filename, lineno, line.strip(), exc_obj))
             pass
         return False
-  
+
     @defer.inlineCallbacks
     def run(self):
         client = Stomp(StompConfig('tcp://'+config['queue.host']+':'+str(config['queue.port'])+'?startupMaxReconnectAttempts=-1,initialReconnectDelay=1000,maxReconnectAttempts=-1'))
@@ -61,13 +66,14 @@ class Consumer(object):
 
     def consume(self, client, frame):
         parameters = json.loads(frame.body)
-        logger.info('Received frame: %s' % parameters)
+
+        logger.info('[%s] Received frame: %s' % (self.timestamp(), parameters))
         filename = parameters['filename']
         parameters['filename'] = os.path.join('tmp',filename)
         s3conn = S3Connection(config['s3.username'],config['s3.password']).get_bucket(config['s3.bucket'])
         s3conn.get_key('/comets/input/'+filename).get_contents_to_filename(parameters['filename'])
         result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
-        logger.debug('result contents')
+        logger.debug('[%s] result contents' % self.timestamp())
         logger.debug(result)
         sys.stdout.flush();
         try:
@@ -84,9 +90,9 @@ class Consumer(object):
                 if ('error' in ic):
                     content += "    Error: "+ic['error']+"\n"
                     if (self.composeMail(config['email.sender'],parameters['email'],"Model data for "+filename[4:],content)):
-                        logger.info("Email sent")
+                        logger.info("[%s] Email sent" % self.timestamp())
                     else:
-                        logger.info("Email not sent")
+                        logger.info("[%s] Email not sent"  % self.timestamp())
                     return
                 if ('csv' in ic):
                     integrityFile = ic['csv']
@@ -154,9 +160,9 @@ class Consumer(object):
                     "Respectfully,\n\n"+
                     "COMETS Web Tool"
                 )):
-                logger.info("Email sent")
+                logger.info("[%s] Email sent" % self.timestamp())
             else:
-                logger.info("Email not sent")
+                logger.info("[%s] Email not sent" % self.timestamp())
             os.remove(filepath)
         except Exception as e:
             exc_type, exc_obj, tb = sys.exc_info()
@@ -165,7 +171,7 @@ class Consumer(object):
             filename = f.f_code.co_filename
             linecache.checkcache(filename)
             line = linecache.getline(filename, lineno, f.f_globals)
-            print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+            print('EXCEPTION IN ([{}] {}, LINE {} "{}"): {}'.format(self.timestamp(), filename, lineno, line.strip(), exc_obj))
             if (self.composeMail(
                     config['email.sender'],
                     parameters['email'],
@@ -175,7 +181,7 @@ class Consumer(object):
                     "Respectfully,\n\n"+
                     "COMETS Web Tool"
                 )):
-                logger.info("Failure email sent.")
+                logger.info("[%s] Failure email sent." self.timestamp())
 
 if __name__ == '__main__':
     def flatten(yaml,parent=None):
