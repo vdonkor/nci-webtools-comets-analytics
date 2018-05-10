@@ -19,7 +19,7 @@ logger.addHandler(logging.handlers.TimedRotatingFileHandler("comets_processor.lo
 
 class Consumer(object):
 
-    def timestamp():
+    def timestamp(self):
         return datetime.datetime.now().strftime("%d %B %Y %I:%M:%S")
 
     def composeMail(self,sender,recipients,subject,message,files=[]):
