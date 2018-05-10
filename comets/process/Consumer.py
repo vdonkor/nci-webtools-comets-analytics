@@ -183,7 +183,7 @@ class Consumer(object):
                     "Respectfully,\n\n"+
                     "COMETS Web Tool"
                 )):
-                logger.info("[%s] Failure email sent." self.timestamp())
+                logger.info("[%s] Failure email sent." % self.timestamp())
 
 if __name__ == '__main__':
     def flatten(yaml,parent=None):
