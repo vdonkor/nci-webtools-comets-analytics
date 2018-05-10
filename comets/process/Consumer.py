@@ -65,18 +65,20 @@ class Consumer(object):
         client.subscribe('/queue/test', headers, listener = SubscriptionListener(self.consume, errorDestination = '/queue/error'))
 
     def consume(self, client, frame):
-        parameters = json.loads(frame.body)
-
-        logger.info('[%s] Received frame: %s' % (self.timestamp(), parameters))
-        filename = parameters['filename']
-        parameters['filename'] = os.path.join('tmp',filename)
-        s3conn = S3Connection(config['s3.username'],config['s3.password']).get_bucket(config['s3.bucket'])
-        s3conn.get_key('/comets/input/'+filename).get_contents_to_filename(parameters['filename'])
-        result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
-        logger.debug('[%s] result contents' % self.timestamp())
-        logger.debug(result)
-        sys.stdout.flush();
         try:
+
+            parameters = json.loads(frame.body)
+
+            logger.info('[%s] Received frame: %s' % (self.timestamp(), parameters))
+            filename = parameters['filename']
+            parameters['filename'] = os.path.join('tmp',filename)
+            s3conn = S3Connection(config['s3.username'],config['s3.password']).get_bucket(config['s3.bucket'])
+            s3conn.get_key('/comets/input/'+filename).get_contents_to_filename(parameters['filename'])
+            result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
+            logger.debug('[%s] result contents' % self.timestamp())
+            logger.debug(result)
+            sys.stdout.flush()
+
             content = ""
             integrityFile = None
             if (type(result['integrityCheck']) is dict):
