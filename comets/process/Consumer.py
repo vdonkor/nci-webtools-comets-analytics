@@ -11,7 +11,6 @@ from stompest.async import Stomp
 from stompest.async.listener import SubscriptionListener
 from stompest.protocol import StompSpec
 from twisted.internet import defer, reactor
-import datetime
 
 config = {}
 logger = logging.getLogger("comets_processor")
@@ -20,7 +19,7 @@ logger.addHandler(logging.handlers.TimedRotatingFileHandler("comets_processor.lo
 class Consumer(object):
 
     def timestamp(self):
-        return datetime.datetime.now().strftime("%d %B %Y %I:%M:%S")
+        return datetime.now().strftime("%d %B %Y %I:%M:%S")
 
     def composeMail(self,sender,recipients,subject,message,files=[]):
         try:
