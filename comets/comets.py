@@ -103,7 +103,7 @@ def integrityCheck():
         if not os.path.exists('tmp'):
             os.makedirs('tmp')
         name, ext = os.path.splitext(userFile.filename)
-        filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext
+        filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext.lower()
         saveFile = userFile.save(os.path.join('tmp', filename))
         if os.path.isfile(os.path.join('tmp', filename)):
             print("Successfully Uploaded")
