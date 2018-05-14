@@ -14,12 +14,12 @@ from twisted.internet import defer, reactor
 
 config = {}
 logger = logging.getLogger("comets_processor")
-logger.addHandler(logging.handlers.TimedRotatingFileHandler("comets_processor.log",'midnight'))
+#logger.addHandler(logging.handlers.TimedRotatingFileHandler("comets_processor.log",'midnight'))
 
 class Consumer(object):
 
     def timestamp(self):
-        return datetime.now().strftime("%d %B %Y %I:%M:%S")
+        return datetime.now().strftime("%Y-%m-%d %T")
 
     def composeMail(self,sender,recipients,subject,message,files=[]):
         try:
@@ -65,14 +65,18 @@ class Consumer(object):
 
     def consume(self, client, frame):
         try:
-
             parameters = json.loads(frame.body)
-
-            logger.info('[%s] Received frame: %s' % (self.timestamp(), parameters))
             filename = parameters['filename']
+
+            logger.info('--------------------------------------------------------------------------------')
+            logger.info('[%s] Received frame: %s' % (self.timestamp(), parameters))
+            logger.info('[%s] Original filename: %s' % (self.timestamp(), parameters['originalFilename']))
+            logger.info('[%s] Fetching input file from S3: %s' % (self.timestamp(), '/comets/input/'+filename))
             parameters['filename'] = os.path.join('tmp',filename)
             s3conn = S3Connection(config['s3.username'],config['s3.password']).get_bucket(config['s3.bucket'])
             s3conn.get_key('/comets/input/'+filename).get_contents_to_filename(parameters['filename'])
+            logger.info('[%s] Load data input file: %s' % (self.timestamp(), filename))
+
             result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
             logger.debug('[%s] result contents' % self.timestamp())
             logger.debug(result)
@@ -195,6 +199,7 @@ if __name__ == '__main__':
         flatten(yaml.safe_load(f))
     wrapper.source('./process/processWrapper.R')
     logging.basicConfig(level = logging.INFO)
+    logger.info('[%s] Started COMETS processor' % datetime.now().strftime("%Y-%m-%d %T"))
     Consumer().run()
     reactor.run()
 
