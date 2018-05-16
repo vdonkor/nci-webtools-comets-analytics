@@ -31,6 +31,6 @@ mod_wsgi-express start-server /deploy/app/deploy.wsgi \
   --request-timeout 900 \
   --reload-on-changes \
   --limit-request-body 2147483647 \
-  --processes 3 \
-  --threads 1 \
+  --processes 2 \
+  --threads 4 \
   --rotate-logs
