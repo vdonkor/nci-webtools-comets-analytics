@@ -61,7 +61,7 @@ class Consumer(object):
         client = Stomp(StompConfig('tcp://'+config['queue.host']+':'+str(config['queue.port'])+'?startupMaxReconnectAttempts=-1,initialReconnectDelay=1000,maxReconnectAttempts=-1'))
         yield client.connect()
         headers = { StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL }
-        client.subscribe('/queue/test', headers, listener = SubscriptionListener(self.consume, errorDestination = '/queue/error'))
+        client.subscribe('/queue/Comets', headers, listener = SubscriptionListener(self.consume, errorDestination = '/queue/error'))
 
     def consume(self, client, frame):
         try:

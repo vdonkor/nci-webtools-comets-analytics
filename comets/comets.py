@@ -87,7 +87,7 @@ def queueFile(parameters):
     forQueue = json.dumps(parameters)
     client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])))
     client.connect()
-    client.send('/queue/test',forQueue)
+    client.send('/queue/Comets',forQueue)
     client.disconnect()
 
 # heartbeat monitor
@@ -135,7 +135,7 @@ def integrityCheck():
     finally:
         return response
 
-# takes previously uploaded file and 
+# takes previously uploaded file and
 @app.route('/cometsRest/correlate', methods = ['POST'])
 def correlate():
     try:
@@ -186,7 +186,7 @@ def correlate():
                 if ('warnings' in result):
                     result['saveValue']['warnings'] = result['warnings']
                 response = buildSuccess(result['saveValue'])
-                
+
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
         f = tb.tb_frame
@@ -267,7 +267,7 @@ def templates():
 @app.route('/cometsRest/excelTemplates', methods=['GET'])
 def excelTemplates():
     return buildSuccess(app.config["excelTemplates"])
-        
+
 @app.route('/cometsRest/public/cohorts', methods=['GET'])
 def cohorts():
     return buildSuccess(app.config['cohortList'])
