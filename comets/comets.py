@@ -87,7 +87,7 @@ def queueFile(parameters):
     forQueue = json.dumps(parameters)
     client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])))
     client.connect()
-    client.send('/queue/Comets',forQueue)
+    client.send('/queue/Comets',forQueue,{'correlation-id': parameters['filename']})
     client.disconnect()
 
 # heartbeat monitor
