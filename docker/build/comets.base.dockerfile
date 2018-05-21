@@ -55,6 +55,7 @@ RUN R -e "\
     devtools::install_version('shiny',            version = '1.0.5'   ); \
     devtools::install_version('shinyFiles',       version = '0.6.2'   ); \
     devtools::install_version('stringr',          version = '1.2.0'   ); \
+    devtools::install_version('subselect',        version = '0.14'    ); \
     devtools::install_version('tidyr',            version = '0.8.0'   ); \
     devtools::install_version('xlsx',             version = '0.5.7'   ); "
 
