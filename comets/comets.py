@@ -401,7 +401,7 @@ if __name__ == '__main__':
     if (args.debug):
         @app.route('/common/<path:path>')
         def common_folder(path):
-            return send_from_directory("C:\\common\\",path)
+            return send_from_directory('common',path)
 
         @app.route('/<path:path>')
         def static_files(path):
