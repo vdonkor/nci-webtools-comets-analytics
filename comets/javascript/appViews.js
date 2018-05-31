@@ -29,7 +29,7 @@ var appComets = {
             if (e.attr('type') == 'checkbox') {
                 this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'));
             } else {
-                this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
+                this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split('|') : []);
             }
         }
     },
@@ -326,6 +326,7 @@ appComets.FormView = Backbone.View.extend({
         this.template = _.template(appComets.templatesList['harmonizationForm.options']);
         this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
             $(el).selectize({
+                delimiter: '|',
                 plugins: ['remove_button'],
                 sortField: 'order'
             });
@@ -461,9 +462,9 @@ appComets.FormView = Backbone.View.extend({
             runModelHelper = function() {
                 var makeList = function(entry) { return entry.split(';'); };
                 var methodSelection = this.model.get('methodSelection'),
-                    outcome = _.flatten(this.model.get('outcome').map(makeList)),
-                    exposure = _.flatten(this.model.get('exposure').map(makeList)),
-                    covariates = _.flatten(this.model.get('covariates').map(makeList)),
+                    outcome = _.flatten(this.model.get('outcome')),//.map(makeList)),
+                    exposure = _.flatten(this.model.get('exposure')),//.map(makeList)),
+                    covariates = _.flatten(this.model.get('covariates')),//.map(makeList)),
                     metaboliteIds = this.model.get('metaboliteIds'),
                     whereCategory = this.model.get('whereCategory'),
                     whereComparator = this.model.get('whereComparator'),
