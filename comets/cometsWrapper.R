@@ -224,7 +224,7 @@ runModel <- function(jsonData) {
             }
         )
     }))
-    output = toJSON(returnValue, auto_unbox = T))
+    output = toJSON(returnValue, auto_unbox = T)
     filename = paste0('tmp/runMdl',timestamp,'.out')
     fileConn = file(filename)
     writeLines(output,fileConn)
