@@ -39,7 +39,7 @@ appRegistration.FormView = Backbone.View.extend({
         if (e.attr('type') == 'checkbox') {
             this.model.set(e.attr('name') || e.attr('id'), e.prop('checked'));
         } else {
-            this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split(',') : []);
+            this.model.set(e.attr('name') || e.attr('id'), !e.hasClass('selectized') ? e.val() : e.val().length > 0 ? e.val().split('|') : []);
         }
     },
     register: function(e) {
