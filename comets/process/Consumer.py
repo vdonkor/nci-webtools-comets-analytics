@@ -69,6 +69,7 @@ class Consumer(object):
             filename = parameters['filename']
 
             logger.info('--------------------------------------------------------------------------------')
+            
             logger.info('[%s] Received frame: %s' % (self.timestamp(), parameters))
             logger.info('[%s] Original filename: %s' % (self.timestamp(), parameters['originalFilename']))
             logger.info('[%s] Fetching input file from S3: %s' % (self.timestamp(), '/comets/input/'+filename))
@@ -77,8 +78,15 @@ class Consumer(object):
             s3conn.get_key('/comets/input/'+filename).get_contents_to_filename(parameters['filename'])
             logger.info('[%s] Load data input file: %s' % (self.timestamp(), filename))
 
+            s3conn.delete_key('/comets/input/'+filename)
+            logger.info('[%s] Delete input file from s3 bucket: %s' % (self.timestamp(), filename))
+
             result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
             logger.debug('[%s] result contents' % self.timestamp())
+
+            logger.info('[%s] Delete input file after running models: %s' % (self.timestamp(), filename))
+            os.remove(parameters['filename'])
+
             logger.debug(result)
             sys.stdout.flush()
 

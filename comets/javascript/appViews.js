@@ -481,6 +481,7 @@ appComets.FormView = Backbone.View.extend({
                 var $that = this;
                 var formData = new FormData();
                 var toAppend = {
+                    'inputFile': this.model.get('csvFile'),
                     'originalFilename': this.model.get('originalFilename'),
                     'filename': this.model.get('filename'),
                     'cohortSelection': this.model.get('cohortSelection'),
@@ -495,9 +496,15 @@ appComets.FormView = Backbone.View.extend({
                     'email': this.model.get('email'),
                     'whereQuery': JSON.stringify(whereQuery)
                 };
+
                 for (var key in toAppend) {
-                    formData.append(key, toAppend[key]);
+                    var value = toAppend[key];
+                    if (value.constructor === File)
+                      formData.append(key, value, value.name)
+                    else
+                      formData.append(key, value);
                 }
+
                 return appComets.models.correlationResults.fetch({
                     type: "POST",
                     data: formData,

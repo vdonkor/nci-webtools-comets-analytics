@@ -104,7 +104,9 @@ def integrityCheck():
             os.makedirs('tmp')
         name, ext = os.path.splitext(userFile.filename)
         filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext.lower()
+        filepath = os.path.join('tmp', filename)
         saveFile = userFile.save(os.path.join('tmp', filename))
+        
         if os.path.isfile(os.path.join('tmp', filename)):
             print("Successfully Uploaded")
         r = pr.R()
@@ -117,6 +119,7 @@ def integrityCheck():
         with open(returnFile) as file:
             result = json.loads(file.read())
         os.remove(returnFile)
+        os.remove(filepath)
         if ("error" in result):
             response = buildFailure(result['error'])
         else:
@@ -139,11 +142,19 @@ def integrityCheck():
 @app.route('/cometsRest/correlate', methods = ['POST'])
 def correlate():
     try:
+        userFile = request.files['inputFile']
+        if not os.path.exists('tmp'):
+            os.makedirs('tmp')
+        name, ext = os.path.splitext(userFile.filename)
+        filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext.lower()
+        filepath = os.path.join('tmp', filename)
+        saveFile = userFile.save(os.path.join('tmp', filename))
+
         parameters = dict(request.form)
         for field in parameters:
             parameters[field] = parameters[field][0]
-        if ('filename' in parameters):
-            parameters['filename'] = parameters['filename']+".xlsx"
+        parameters['filename'] = filename
+
         if ('outcome' in parameters):
             parameters['outcome'] = json.loads(parameters['outcome'])
             if (len(parameters['outcome']) == 0):
@@ -167,6 +178,7 @@ def correlate():
                 parameters['whereQuery'] = None
         if (parameters['modelName'] == "All models"):
             queueFile(parameters)
+            os.remove(filepath)
             response = buildFailure({'status': 'info', 'statusMessage': "The results will be emailed to you."})
         else:
             if ('filename' in parameters):
@@ -176,6 +188,7 @@ def correlate():
             r.assign('parameters',json.dumps(parameters))
             r('correlate = runModel(parameters)')
             returnFile = r['correlate']
+            os.remove(filepath)
             del r
             with open(returnFile) as file:
                 result = json.loads(file.read())
