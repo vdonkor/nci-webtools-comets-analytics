@@ -11,3 +11,4 @@ comets/examples/*
 comets/restricted/token.txt
 comets/tmp/
 docker/run/
+.vscode
