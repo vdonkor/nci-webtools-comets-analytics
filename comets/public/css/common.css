@@ -9,6 +9,9 @@ header img {
     width: 500px;
     max-width: 100%;
 }
+#comets-tab-nav {
+    padding: 0 10px;
+}
 #page-head {
     color: #FFF;
     font-size: 14pt;

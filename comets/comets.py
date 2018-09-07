@@ -1,3 +1,4 @@
+from traceback import format_exc
 import json, linecache, os, requests, smtplib, sys, time, yaml
 import pyper as pr
 from boto.s3.connection import S3Connection
@@ -14,32 +15,33 @@ def flatten(yaml,parent=None):
         else:
             app.config[(parent+"." if parent else "")+param] = yaml[param]
 
-def loadHtmlTemplates(app):
+def load_files(directory='templates'):
+    """
+        Loads file contents as a dict
+    """
+
     templates = {}
-    if os.path.exists('templates'):
-        for templateFile in os.listdir("templates"):
-            if templateFile.endswith('.html'):
-                with open(os.path.join('templates', templateFile), 'r') as content_file:
-                    content = content_file.read()
-                    filename = os.path.splitext(templateFile)[0]
-                    templates[filename] = content
-    app.config["htmlTemplates"] = templates
+    for template_file in os.listdir(templates_path):
+        with open(os.path.join(templates_path, template_file), 'r') as content_file:
+            filename = os.path.splitext(template_file)[0]
+            templates[filename] = content_file.read()
+    return templates
 
-def loadExcelTemplates(app):
+def init():
+    with open("restricted/settings.yml", 'r') as f:
+        flatten(yaml.safe_load(f))
+
     r = pr.R()
     r('source("./cometsWrapper.R")')
-    r('templates = getTemplates()')
-    app.config["excelTemplates"] = {
-        'templates': json.loads(r['templates'])
-    }
+    app.config["htmlTemplates"] = load_html_templates()
+    app.config["excelTemplates"] = {'templates': json.loads(r['getTemplates()'])}
+    app.config["cohortList"] = {'cohorts': json.loads(r['getCohorts()'])}
 
-def loadCohortList(app):
-    r = pr.R()
-    r('source("./cometsWrapper.R")')
-    r('cohorts = getCohorts()')
-    app.config["cohortList"] = {
-        'cohorts': json.loads(r['cohorts'])
-    }
+
+@app.errorhandler(Exception)
+def handle_error(e):
+    app.logger.error(format_exc())
+    return jsonify(str(e)), 500
 
 def buildFailure(message,statusCode = 500):
   response = jsonify(message)
@@ -70,16 +72,9 @@ def composeMail(sender,recipients,subject,content):
         smtp.sendmail(sender,recipients,message)
         smtp.quit()
         return True
-    except Exception as e:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        pass
-    return False
+    except Exception:
+        app.logger.error(format_exc())
+        return False
 
 def queueFile(parameters):
     s3conn = S3Connection(app.config['s3.username'],app.config['s3.password']).get_bucket(app.config['s3.bucket']).new_key('/comets/input/'+parameters['filename'])
@@ -106,7 +101,8 @@ def integrityCheck():
         filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext.lower()
         filepath = os.path.join('tmp', filename)
         saveFile = userFile.save(os.path.join('tmp', filename))
-        
+        rds_filepath = filepath + '.rds'
+
         if os.path.isfile(os.path.join('tmp', filename)):
             print("Successfully Uploaded")
         r = pr.R()
@@ -114,6 +110,7 @@ def integrityCheck():
         r.assign('filename',os.path.join('tmp',filename))
         r.assign('cohort',request.form['cohortSelection'])
         r('checkIntegrity = checkIntegrity(filename,cohort)')
+        r('saveRDS(checkIntegrity, file="%s")' % rds_filepath)
         returnFile = r['checkIntegrity']
         del r
         with open(returnFile) as file:
@@ -125,15 +122,10 @@ def integrityCheck():
         else:
             result['saveValue']['filename'] = os.path.splitext(filename)[0]
             result['saveValue']['originalFilename'] = name+ext
+            result['saveValue']['rdsFilename'] = rds_filepath
             response = buildSuccess(result['saveValue'])
-    except Exception as e:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+    except Exception:
+        app.logger.error(format_exc())
         response = buildFailure({"status": False, "integritymessage":"An unknown error occurred"})
     finally:
         return response
@@ -200,14 +192,8 @@ def correlate():
                     result['saveValue']['warnings'] = result['warnings']
                 response = buildSuccess(result['saveValue'])
 
-    except Exception as e:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+    except Exception:
+        app.logger.error(format_exc())
         response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
     finally:
         return response
@@ -261,14 +247,8 @@ def combine():
             response = buildFailure(result['error'])
         else:
             response = buildSuccess(result['saveValue'])
-    except Exception as e:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+    except Exception:
+        app.logger.error(format_exc())
         response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
     finally:
         return response
@@ -324,14 +304,8 @@ def user_metadata():
             "Sent from the Comets Analytics Web Tool"
         )
         response = buildSuccess(response)
-    except Exception as e:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
+    except Exception:
+        app.logger.error(format_exc())
         response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
     finally:
         return response
@@ -351,18 +325,10 @@ def user_list_get():
             page += 1
             request = json.loads(requests.get(url+str(page),headers=headers).text)
             response += request
-        response = buildSuccess({"user_list":response})
-    except Exception as e:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
-    finally:
-        return response
+        return buildSuccess({"user_list":response})
+    except Exception:
+        app.logger.error(format_exc())
+        return buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
 
 @app.route('/cometsRest/admin/users', methods=['PATCH'])
 def user_list_update():
@@ -381,45 +347,26 @@ def user_list_update():
                 "Authorization": "Bearer "+app.config['auth0.token'],
                 "Content-Type": "application/json"
             }
-            line = json.loads(requests.patch(url,data=json.dumps(data),headers=headers).text)
+            line = json.loads(requests.patch(url, data=json.dumps(data), headers=headers).text)
             line['comets'] = line['app_metadata']['comets']
             response.append(line)
-        response = buildSuccess({'user_list': response})
-    except Exception as e:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
-    finally:
-        return response
 
-with open("restricted/settings.yml", 'r') as f:
-    flatten(yaml.safe_load(f))
-loadHtmlTemplates(app)
-loadExcelTemplates(app)
-loadCohortList(app)
+        return jsonify({'user_list': response})
+    except Exception:
+        app.logger.error(format_exc())
+        return buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+
+init()
 
 if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
+    # If this script is being run using the python interpreter
+    # then serve this application using debug mode on port 8000
 
-    # Default port is 9200
-    parser.add_argument('-p', '--port', type = int, dest = 'port', default = 9200, help = 'Sets the Port')
-    parser.add_argument('-d', '--debug', action = 'store_true', help = 'Enables debugging')
-    args = parser.parse_args()
-    if (args.debug):
-        @app.route('/common/<path:path>')
-        def common_folder(path):
-            return send_from_directory('common',path)
+    @app.route('/')
+    @app.route('/<path:path>', strict_slashes=False)
+    def static_files(path):
+        if path.endswith('/') or len(path) == 0:
+            path += 'index.html'
+        return send_from_directory(os.getcwd(), path)
 
-        @app.route('/<path:path>')
-        def static_files(path):
-            if (path.endswith('/')):
-                path += 'index.html'
-            return send_from_directory(os.getcwd(),path)
-    #end remove
-    app.run(host = '0.0.0.0', port = args.port, debug = args.debug, use_evalex = False)
+    app.run(host = '0.0.0.0', port = 8000, debug = True)

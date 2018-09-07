@@ -8,7 +8,10 @@ comets/.Rhistory
 comets/app/
 comets/common/
 comets/examples/*
+comets/restricted/rcode/*
+comets/restricted/settings.yml
 comets/restricted/token.txt
 comets/tmp/
 docker/run/
 .vscode
+/dev.bat

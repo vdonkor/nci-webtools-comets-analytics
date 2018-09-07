@@ -23,14 +23,15 @@ mod_wsgi-express start-server /deploy/app/deploy.wsgi \
   --working-directory app \
   --directory-index index.html \
   --log-directory logs \
+  --rotate-logs \
   --socket-timeout 900 \
   --queue-timeout 900 \
   --shutdown-timeout 900 \
   --graceful-timeout 900 \
   --connect-timeout 900 \
   --request-timeout 900 \
-  --reload-on-changes \
   --limit-request-body 2147483647 \
   --processes 2 \
   --threads 4 \
-  --rotate-logs
+  --reload-on-changes \
+  --include-file /deploy/app/mod_wsgi.conf
