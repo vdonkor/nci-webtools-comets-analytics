@@ -3,6 +3,7 @@ FROM centos
 RUN yum -y update \
  && yum -y install epel-release \
  && yum -y install \
+    dos2unix \
     gcc \
     gcc-c++ \
     gcc-gfortran \
@@ -22,15 +23,15 @@ RUN yum -y update \
  && yum clean all
 
 RUN { \
-    echo "local({"                                      ;\
-    echo "    r <- getOption('repos')"                  ;\
-    echo "    r['CRAN'] <- 'http://cran.rstudio.com/'"  ;\
-    echo "    options(repos = r)"                       ;\
-    echo "})"                                           ;\
+    echo "local({"                                         ;\
+    echo "    r <- getOption('repos')"                     ;\
+    echo "    r['CRAN'] <- 'http://cloud.r-project.org/'"  ;\
+    echo "    options(repos = r)"                          ;\
+    echo "})"                                              ;\
 } | tee -a "/usr/lib64/R/library/base/R/Rprofile"
 
 RUN ln -s /usr/lib/jvm/jre/lib/amd64/server/libjvm.so /usr/lib64/libjvm.so \
- && install -Dv /dev/null /usr/share/doc/R-3.4.{0-9}/html/R.css
+ && install -Dv /dev/null /usr/share/doc/R-3.5.{0-9}/html/R.css
 
 RUN R -e "install.packages( \
         c('devtools', 'roxygen2'), \
@@ -78,13 +79,15 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 # Copy entrypoint and make it executable
 COPY "./entrypoint.sh" "/usr/bin/entrypoint.sh"
 
-RUN chmod 755 /usr/bin/entrypoint.sh \
+RUN dos2unix /usr/bin/entrypoint.sh \
+ && chmod 755 /usr/bin/entrypoint.sh \
  && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
 
 # Copy comets package installation script and make it executable
 COPY "./install_comets_package.sh" "/usr/bin/install_comets_package.sh"
 
-RUN chmod 755 /usr/bin/install_comets_package.sh \
+RUN dos2unix /usr/bin/install_comets_package.sh \
+ && chmod 755 /usr/bin/install_comets_package.sh \
  && ln -s /usr/bin/install_comets_package.sh /install_comets_package.sh
 
 RUN adduser -u 4004 ncianalysis

@@ -3,7 +3,7 @@ FROM cbiitss/comets:base0
 RUN rm -rf /entrypoint.sh
 
 # Copy entrypoint and make it executable
-COPY "./entrypoint.processor.sh" "/usr/bin/entrypoint.sh"
+COPY "./entrypoint.dev.sh" "/usr/bin/entrypoint.sh"
 
 RUN dos2unix /usr/bin/entrypoint.sh \
  && chmod 755 /usr/bin/entrypoint.sh \
