@@ -8,21 +8,10 @@ from stompest.sync import Stomp
 
 app = Flask(__name__)
 
-def flatten(yaml,parent=None):
-    for param in yaml:
-        if (isinstance(yaml[param],dict)):
-            flatten(yaml[param],param)
-        else:
-            app.config[(parent+"." if parent else "")+param] = yaml[param]
-
-def load_file_contents(directory):
-    """ Loads a directory's files as a dict of file names and their contents """
-    files = {}
-    for filename in os.listdir(directory):
-        with open(os.path.join(directory, filename), 'r') as f:
-            name = os.path.splitext(filename)[0]
-            files[name] = f.read()
-    return files
+@app.errorhandler(Exception)
+def error_handler(e):
+    app.logger.error(format_exc())
+    return jsonify(str(e)), 500
 
 def init():
     with open('restricted/settings.yml', 'r') as f:
@@ -34,43 +23,53 @@ def init():
     app.config['excelTemplates'] = {'templates': json.loads(r['getTemplates()'])}
     app.config['cohortList'] = {'cohorts': json.loads(r['getCohorts()'])}
 
-@app.errorhandler(Exception)
-def handle_error(e):
-    app.logger.error(format_exc())
-    return jsonify(str(e)), 500
-
-def buildFailure(message,statusCode = 500):
-  response = jsonify(message)
-  response.status_code = statusCode
-  return response
-
-def buildSuccess(message):
-    def generate():
-        forOutput = ""
-        for chunk in json.JSONEncoder().iterencode(message):
-            forOutput += chunk
-            if (len(forOutput) > 10000):
-                yield forOutput
-                forOutput = ""
-        yield forOutput
-    return Response(generate(),status=200)
-
-def composeMail(sender,recipients,subject,content):
-    try:
-        if (not isinstance(recipients,list)):
-            recipients = [ recipients ]
-        if (app.config['email.auth']):
-            smtp = smtplib.SMTP_SSL(app.config['email.host'], app.config['email.port'])
-            smtp.login(app.config['email.username'],app.config['email.password'])
+def flatten(yaml,parent=None):
+    for param in yaml:
+        if (isinstance(yaml[param],dict)):
+            flatten(yaml[param],param)
         else:
-            smtp = smtplib.SMTP(app.config['email.host'], app.config['email.port'])
-        message = "From: "+sender+"\n"+"To: "+", ".join(recipients)+"\n"+"Subject: "+subject+"\n\n"+content
-        smtp.sendmail(sender,recipients,message)
-        smtp.quit()
-        return True
-    except Exception:
-        app.logger.error(format_exc())
-        return False
+            app.config[(parent+"." if parent else "")+param] = yaml[param]
+
+def load_file_contents(directory):
+    '''
+        Loads a directory's files as a dict of file names and their contents
+
+        :param str directory: The directory to load files from
+        :return a dict where the keys are file names (without the extension) \
+            and the values are the contents of the file
+        :rtype: dict
+    '''
+    files = {}
+    for filename in os.listdir(directory):
+        with open(os.path.join(directory, filename), 'r') as f:
+            name = os.path.splitext(filename)[0]
+            files[name] = f.read()
+    return files
+
+def stream_json(data):
+    for chunk in json.JSONEncoder().iterencode(data):
+        yield chunk
+
+def send_mail(sender, recipients, subject, contents):
+    """Sends an email
+
+    Parameters
+
+
+
+    """
+    smtp = smtplib.SMTP_SSL(app.config['email.host'], app.config['email.port'])
+    smtp.login(app.config['email.username'], app.config['email.password'])
+    message = (
+        "From: {sender}\n" + "To: {recipients}\n" +
+        "Subject: {subject}\n" + "{contents}"
+    ).format(
+        sender=sender, recipients=recipients,
+        subject=subject, contents=contents
+    )
+    smtp.sendmail(sender, recipients, message)
+    smtp.quit()
+    return True
 
 def queueFile(parameters):
     s3conn = S3Connection(app.config['s3.username'],app.config['s3.password']).get_bucket(app.config['s3.bucket']).new_key('/comets/input/'+parameters['filename'])
@@ -229,7 +228,7 @@ def combine():
             print("Successfully Uploaded Sample")
         r = pr.R()
         r('source("./cometsWrapper.R")')
-        r.assign('parameters',json.dumps(parameters))
+        r.assign('parameters', json.dumps(parameters))
         r('combine = combineInputs(parameters)')
         returnFile = r['combine']
         del r
@@ -240,14 +239,12 @@ def combine():
         os.remove(filenameM)
         os.remove(filenameS)
         if ("error" in result):
-            response = buildFailure(result['error'])
+            return jsonify(result['error']), 500
         else:
-            response = buildSuccess(result['saveValue'])
+            return jsonify(result['saveValue'])
     except Exception:
         app.logger.error(format_exc())
-        response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
-    finally:
-        return response
+        return jsonify({"status": False, "statusMessage":"An unknown error has occurred."}), 500
 
 @app.route('/cometsRest/templates', methods = ['GET'])
 def templates():
@@ -255,11 +252,11 @@ def templates():
 
 @app.route('/cometsRest/excelTemplates', methods=['GET'])
 def excelTemplates():
-    return buildSuccess(app.config["excelTemplates"])
+    return jsonify(app.config["excelTemplates"])
 
 @app.route('/cometsRest/public/cohorts', methods=['GET'])
 def cohorts():
-    return buildSuccess(app.config['cohortList'])
+    return jsonify(app.config['cohortList'])
 
 @app.route('/cometsRest/registration/user_metadata', methods=['POST'])
 def user_metadata():
@@ -299,12 +296,10 @@ def user_metadata():
             "Sincerely,\n"+
             "Sent from the Comets Analytics Web Tool"
         )
-        response = buildSuccess(response)
+        return jsonify(response)
     except Exception:
         app.logger.error(format_exc())
-        response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
-    finally:
-        return response
+        return jsonify({"status": False, "statusMessage":"An unknown error has occurred."}), 500
 
 @app.route('/cometsRest/admin/users', methods=['GET'])
 def user_list_get():
@@ -324,7 +319,7 @@ def user_list_get():
         return buildSuccess({"user_list":response})
     except Exception:
         app.logger.error(format_exc())
-        return buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+        return jsonify({"status": False, "statusMessage":"An unknown error occurred"}), 500
 
 @app.route('/cometsRest/admin/users', methods=['PATCH'])
 def user_list_update():
@@ -350,18 +345,18 @@ def user_list_update():
         return jsonify({'user_list': response})
     except Exception:
         app.logger.error(format_exc())
-        return buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
+        return jsonify({"status": False, "statusMessage":"An unknown error occurred"}), 500
 
 init()
 
 if __name__ == '__main__':
-    # If this script is being run using the python interpreter
+    # If this script is being run by the python interpreter
     # then serve this application using debug mode on port 8000
 
-    @app.route('/')
+    @app.route('/', strict_slashes=False)
     @app.route('/<path:path>', strict_slashes=False)
     def static_files(path):
-        if path.endswith('/') or len(path) == 0:
+        if path.endswith('/') or '.' not in path:
             path += 'index.html'
         return send_from_directory(os.getcwd(), path)
 
