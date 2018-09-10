@@ -1,6 +1,6 @@
 from traceback import format_exc
 import json, linecache, os, requests, smtplib, sys, time, yaml
-import pyper as pr
+from pyper import R
 from boto.s3.connection import S3Connection
 from flask import Flask, json, jsonify, request, Response, send_from_directory
 from stompest.config import StompConfig
@@ -14,21 +14,16 @@ def error_handler(e):
     return jsonify(str(e)), 500
 
 def init():
+    '''Performs initial setup for the application'''
+
     with open('restricted/settings.yml', 'r') as f:
-        flatten(yaml.safe_load(f))
+        app.config = yaml.safe_load(f)
 
-    r = pr.R()
+    r = R()
     r('source("./cometsWrapper.R")')
-    app.config['htmlTemplates'] = load_file_contents('templates')
-    app.config['excelTemplates'] = {'templates': json.loads(r['getTemplates()'])}
-    app.config['cohortList'] = {'cohorts': json.loads(r['getCohorts()'])}
-
-def flatten(yaml,parent=None):
-    for param in yaml:
-        if (isinstance(yaml[param],dict)):
-            flatten(yaml[param],param)
-        else:
-            app.config[(parent+"." if parent else "")+param] = yaml[param]
+    app.config['html_templates'] = load_file_contents('templates')
+    app.config['excel_templates'] = json.loads(r['getTemplates()'])
+    app.config['cohorts'] = json.loads(r['getCohorts()'])
 
 def load_file_contents(directory):
     '''
@@ -50,16 +45,20 @@ def stream_json(data):
     for chunk in json.JSONEncoder().iterencode(data):
         yield chunk
 
-def send_mail(sender, recipients, subject, contents):
-    """Sends an email
+def send_email(sender, recipients, subject, contents):
+    '''Sends an email
 
     Parameters
+    ----------
+    sender - The sender of the email
+    recipients - A comma-separated string of recipients
+    subject - The email's subject
+    contents - A utf-8 string containing the email's contents
+    '''
 
-
-
-    """
-    smtp = smtplib.SMTP_SSL(app.config['email.host'], app.config['email.port'])
-    smtp.login(app.config['email.username'], app.config['email.password'])
+    config = app.config['email']
+    smtp = smtplib.SMTP_SSL(config['host'], config['port'])
+    smtp.login(config['username'], config['password'])
     message = (
         "From: {sender}\n" + "To: {recipients}\n" +
         "Subject: {subject}\n" + "{contents}"
@@ -69,12 +68,20 @@ def send_mail(sender, recipients, subject, contents):
     )
     smtp.sendmail(sender, recipients, message)
     smtp.quit()
-    return True
 
-def queueFile(parameters):
-    s3conn = S3Connection(app.config['s3.username'],app.config['s3.password']).get_bucket(app.config['s3.bucket']).new_key('/comets/input/'+parameters['filename'])
-    s3conn.set_contents_from_filename(os.path.join('tmp',parameters['filename']))
-    forQueue = json.dumps(parameters)
+def queue_file(parameters):
+    config = app.config['s3']
+    bucket_key = '/comets/input/' + parameters['filename']
+    queue_name = '/queue/comets'
+
+    S3Connection(config['username'], config['password'])\
+        .get_bucket(config['bucket'])\
+        .new_key(bucket_key)\
+        .set_contents_from_filename(os.path.join('tmp',parameters['filename']))
+
+    queue_input = json.dumps(parameters)
+
+
     client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])))
     client.connect()
     client.send('/queue/Comets',forQueue,{'correlation-id': parameters['filename']})
