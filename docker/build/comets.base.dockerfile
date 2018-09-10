@@ -63,9 +63,9 @@ RUN R -e "\
 RUN pip install --upgrade pip \
  && pip install \
     boto==2.48.0 \
-    boto3~=1.8.9 \
-    flask~=1.0.0 \
-    mod_wsgi==4.5.18 \
+    boto3~=1.8 \
+    flask~=1.0 \
+    mod_wsgi~=4.6 \
     pyper==1.1.2 \
     pyyaml==3.12 \
     requests==2.18.4 \

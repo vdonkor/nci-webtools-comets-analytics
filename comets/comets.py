@@ -15,28 +15,24 @@ def flatten(yaml,parent=None):
         else:
             app.config[(parent+"." if parent else "")+param] = yaml[param]
 
-def load_files(directory='templates'):
-    """
-        Loads file contents as a dict
-    """
-
-    templates = {}
-    for template_file in os.listdir(templates_path):
-        with open(os.path.join(templates_path, template_file), 'r') as content_file:
-            filename = os.path.splitext(template_file)[0]
-            templates[filename] = content_file.read()
-    return templates
+def load_file_contents(directory):
+    """ Loads a directory's files as a dict of file names and their contents """
+    files = {}
+    for filename in os.listdir(directory):
+        with open(os.path.join(directory, filename), 'r') as f:
+            name = os.path.splitext(filename)[0]
+            files[name] = f.read()
+    return files
 
 def init():
-    with open("restricted/settings.yml", 'r') as f:
+    with open('restricted/settings.yml', 'r') as f:
         flatten(yaml.safe_load(f))
 
     r = pr.R()
     r('source("./cometsWrapper.R")')
-    app.config["htmlTemplates"] = load_html_templates()
-    app.config["excelTemplates"] = {'templates': json.loads(r['getTemplates()'])}
-    app.config["cohortList"] = {'cohorts': json.loads(r['getCohorts()'])}
-
+    app.config['htmlTemplates'] = load_file_contents('templates')
+    app.config['excelTemplates'] = {'templates': json.loads(r['getTemplates()'])}
+    app.config['cohortList'] = {'cohorts': json.loads(r['getCohorts()'])}
 
 @app.errorhandler(Exception)
 def handle_error(e):
