@@ -1,5 +1,6 @@
 FROM centos
 
+# Install/update system packages
 RUN yum -y update \
  && yum -y install epel-release \
  && yum -y install \
@@ -22,24 +23,30 @@ RUN yum -y update \
     subversion \
  && yum clean all
 
+# Set en_us.UTF-8 as the locale
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8
+
+# Use libjvm.so from jre
+RUN ln -s /usr/lib/jvm/jre/lib/amd64/server/libjvm.so /usr/lib64/libjvm.so
+
+# Set CRAN respository
 RUN { \
     echo "local({"                                         ;\
     echo "    r <- getOption('repos')"                     ;\
-    echo "    r['CRAN'] <- 'http://cloud.r-project.org/'"  ;\
+    echo "    r['CRAN'] <- 'https://cloud.r-project.org/'"  ;\
     echo "    options(repos = r)"                          ;\
     echo "})"                                              ;\
 } | tee -a "/usr/lib64/R/library/base/R/Rprofile"
 
-RUN ln -s /usr/lib/jvm/jre/lib/amd64/server/libjvm.so /usr/lib64/libjvm.so \
- && install -Dv /dev/null /usr/share/doc/R-3.5.{0-9}/html/R.css
-
+# Install R development tools
 RUN R -e "install.packages( \
         c('devtools', 'roxygen2'), \
         INSTALL_opts = c('--no-html') \
     );"
 
+# Install R dependencies
 RUN R -e "\
-    devtools::install_git('https://git.bioconductor.org/packages/BiocInstaller', branch = 'RELEASE_3_4'); \
+    devtools::install_git('https://git.bioconductor.org/packages/BiocInstaller', branch = 'RELEASE_3_7'); \
     devtools::install_bioc('Biobase'); \
     devtools::install_version('ClassComparison',  version = '3.1.5'   ); \
     devtools::install_version('caret',            version = '6.0-79'  ); \
@@ -60,9 +67,9 @@ RUN R -e "\
     devtools::install_version('tidyr',            version = '0.8.0'   ); \
     devtools::install_version('xlsx',             version = '0.5.7'   ); "
 
+# Install python dependencies
 RUN pip install --upgrade pip \
  && pip install \
-    boto==2.48.0 \
     boto3~=1.8 \
     flask~=1.0 \
     mod_wsgi~=4.6 \
@@ -73,8 +80,6 @@ RUN pip install --upgrade pip \
     stompest==2.3.0 \
     stompest.async==2.3.0 \
     twisted==17.5.0
-
-RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
 # Copy entrypoint and make it executable
 COPY "./entrypoint.sh" "/usr/bin/entrypoint.sh"
