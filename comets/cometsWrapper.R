@@ -1,79 +1,107 @@
-library(stringr)
-library(jsonlite)
-library(COMETS)
-library(stats)
+#library(stringr)
+#library(jsonlite)
+#library(COMETS)
+#library(stats)
 
-getCohorts <- function() {
-    dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
-    masterfile <- file.path(dir, "compileduids.RData")
-    load(masterfile)
-    toJSON(as.list(cohorts)$Cohort, auto_unbox = T)
+temp_dir = 'tmp/'
+dir.create(temp_dir)
+
+get_timestamp <- function() {
+  format(Sys.time(), '%Y%m%d_%H%M%OS6')
 }
 
-getTemplates <- function() {
-    dir <- system.file("extdata", package="COMETS", mustWork=TRUE)
-    ageData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputAge.xlsx"),4))
-    ageData <- ageData[!is.na(ageData$VARREFERENCE),]
-    ageMap = toJSON(ageData$VARREFERENCE, auto_unbox = T)
-    rownames(ageData) <- ageData$VARREFERENCE
-    ageData = as.data.frame(t(ageData['VARDEFINITION']))
-    rownames(ageData) <- NULL
-    ageData = toJSON(ageData,auto_unbox=T)
-    ageData = substr(ageData,2,nchar(ageData)-1)
-    basicData = as.data.frame(readxl::read_excel(file.path(dir,"cometsInputBasic.xlsx"),4))
-    basicData <- basicData[!is.na(basicData$VARREFERENCE),]
-    basicMap = toJSON(basicData$VARREFERENCE, auto_unbox = T)
-    rownames(basicData) <- basicData$VARREFERENCE
-    basicData = as.data.frame(t(basicData['VARDEFINITION']))
-    rownames(basicData) <- NULL
-    basicData = toJSON(basicData,auto_unbox=T)
-    basicData = substr(basicData,2,nchar(basicData)-1)
-    paste0('[{"text":"Age","value":"age","data":',ageData,',"varlist":',ageMap,'},{"text":"Basic","value":"basic","data":',basicData,',"varlist":',basicMap,'}]')
+# gets cohort names from compiled uids
+get_comets_cohorts <- function() {
+  # load compileduids.RData
+  load(system.file(
+    "extdata", "compileduids.RData", 
+    package = "COMETS"
+  ))
+  
+  # return only cohort names
+  jsonlite::toJSON(cohorts$Cohort)
 }
 
-combineInputs <- function(jsonData) {
-  timestamp = as.integer(Sys.time())
-  suppressWarnings(suppressMessages({
-    returnValue <- list()
-    returnValue$saveValue <- tryCatch(
-      withCallingHandlers(
-        {
-          input = fromJSON(jsonData)
-          filename = paste0("tmp/combinedInput",timestamp,".xlsx")
-          COMETS::createCOMETSinput(
-            template=input$templateSelection,
-            filenames=list(
-                metabfile=input$metadata,
-                subjfile=input$sample,
-                abundancesfiles=input$abundances
-            ),
-            varmap=input,
-            outputfile=filename
-          )
-          list(downloadLink=filename)
-        },
-        message=function(m) {
-          print(m$message)
-        },
-        warning=function(w) {
-          returnValue$warnings <<- append(returnValue$warnings, w$message)
-        }
-      ),
-      error=function(e) {
-        returnValue$error <<- list(
-          status = FALSE,
-          statusMessage = e$message
-        )
-        return(NULL)
-      }
+
+# gets templates for COMETs input spreadsheets
+get_comets_templates <- function() {
+  
+  # loads the VarMap from a comets spreadsheet
+  # returns a list:
+  #   references - a character vector of VARREFERENCEs
+  #   definitions - a list of VARDEFINITIONs using names from VARREFERENCE
+  load_varmap <- function(path) {
+    varmap <- readxl::read_excel(path, sheet = "VarMap")
+    
+    references <- varmap$VARREFERENCE
+    definitions <- varmap$VARDEFINITION
+    names(definitions) <- references
+    
+    list(
+      references = references,
+      definitions = as.list(definitions)
     )
-  }))
-  output = toJSON(returnValue, auto_unbox = T)
-  filename = paste0('tmp/chkInt',timestamp,'.out')
-  fileConn = file(filename)
-  writeLines(output,fileConn)
-  close(fileConn)
-  filename
+  }
+
+  # get absolute paths to the input spreadsheets
+  age_input_filepath <- system.file(
+    "extdata", "cometsInputAge.xlsx", 
+    package = "COMETS"
+  )
+  basic_input_filepath <- system.file(
+    "extdata", "cometsInputBasic.xlsx", 
+    package = "COMETS"
+  )
+
+  # load varmaps for each template
+  age_varmap <- load_varmap(age_input_filepath)
+  basic_varmap <- load_varmap(basic_input_filepath)
+
+  # return two template definitions
+  jsonlite::toJSON(list(
+    list(
+      text = "Age",
+      value = "age",
+      data = age_varmap$definitions,
+      varlist = age_varmap$references
+    ),
+    list(
+      text = "Basic",
+      value = "basic",
+      data = basic_varmap$definitions,
+      varlist = basic_varmap$references
+    )
+  ), auto_unbox = T)
+}
+
+create_comets_input <- function(json) {
+  
+  input <- jsonlite::fromJSON(json)
+
+  output_file <- paste0(temp_dir, "comets_input_", get_timestamp(), ".xlsx")
+  
+  COMETS::createCOMETSinput(
+    template = input$template,
+    filenames = list(
+      metabfile = input$metabolites_file,
+      subjfile = input$subjects_file,
+      abundancesfile = input$abundances_file
+    ),
+    varmap = input$varmap,
+    outputfile = output_file
+  )
+  
+  output_file
+}
+
+read_comets_input <- function(filepath) {
+  output_file = paste0(temp_dir, "comets_metabolites_", get_timestamp(), ".xlsx")
+  
+  metabolite_data = COMETS::readCOMETSinput(filepath)
+}
+
+run_comets_model <- function(json) {
+  
 }
 
 checkIntegrity <- function(filename,cohort) {

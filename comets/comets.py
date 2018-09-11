@@ -1,7 +1,7 @@
 from traceback import format_exc
 import json, linecache, os, requests, smtplib, sys, time, yaml
+import boto3
 from pyper import R
-from boto.s3.connection import S3Connection
 from flask import Flask, json, jsonify, request, Response, send_from_directory
 from stompest.config import StompConfig
 from stompest.sync import Stomp
@@ -13,6 +13,7 @@ def error_handler(e):
     app.logger.error(format_exc())
     return jsonify(str(e)), 500
 
+"""
 def init():
     '''Performs initial setup for the application'''
 
@@ -21,25 +22,8 @@ def init():
 
     r = R()
     r('source("./cometsWrapper.R")')
-    app.config['html_templates'] = load_file_contents('templates')
     app.config['excel_templates'] = json.loads(r['getTemplates()'])
     app.config['cohorts'] = json.loads(r['getCohorts()'])
-
-def load_file_contents(directory):
-    '''
-        Loads a directory's files as a dict of file names and their contents
-
-        :param str directory: The directory to load files from
-        :return a dict where the keys are file names (without the extension) \
-            and the values are the contents of the file
-        :rtype: dict
-    '''
-    files = {}
-    for filename in os.listdir(directory):
-        with open(os.path.join(directory, filename), 'r') as f:
-            name = os.path.splitext(filename)[0]
-            files[name] = f.read()
-    return files
 
 def stream_json(data):
     for chunk in json.JSONEncoder().iterencode(data):
@@ -55,42 +39,61 @@ def send_email(sender, recipients, subject, contents):
     subject - The email's subject
     contents - A utf-8 string containing the email's contents
     '''
-
     config = app.config['email']
     smtp = smtplib.SMTP_SSL(config['host'], config['port'])
     smtp.login(config['username'], config['password'])
-    message = (
-        "From: {sender}\n" + "To: {recipients}\n" +
-        "Subject: {subject}\n" + "{contents}"
-    ).format(
-        sender=sender, recipients=recipients,
-        subject=subject, contents=contents
-    )
+    message = '\n'.join([
+        'From: ' + sender,
+        'To: ' + recipients,
+        'Subject: ' + subject,
+        contents
+    ])
     smtp.sendmail(sender, recipients, message)
     smtp.quit()
 
-def queue_file(parameters):
+def upload_file_s3(filepath, bucket_prefix='/comets/input/'):
     config = app.config['s3']
-    bucket_key = '/comets/input/' + parameters['filename']
-    queue_name = '/queue/comets'
 
-    S3Connection(config['username'], config['password'])\
-        .get_bucket(config['bucket'])\
-        .new_key(bucket_key)\
-        .set_contents_from_filename(os.path.join('tmp',parameters['filename']))
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=config['username'],
+        aws_secret_access_key=config['password']
+    )
 
+    filename = os.path.split(filepath)[1]
+    bucket_key = bucket_prefix + filename
+
+    s3.object(config['bucket'], bucket_key).put(
+        Body=open(filepath, 'rb')
+    )
+
+def queue_file(parameters):
+    config = app.config['queue']
+    queue_name = '/queue/Comets'
     queue_input = json.dumps(parameters)
 
-
-    client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])))
+    client = Stomp(
+        StompConfig('tcp://%s:%s' % (config['host'], config['port']))
+    )
     client.connect()
-    client.send('/queue/Comets',forQueue,{'correlation-id': parameters['filename']})
+    client.send(
+        queue_name,
+        queue_input,
+        {'correlation-id': parameters['filename']}
+    )
     client.disconnect()
 
 # heartbeat monitor
 @app.route('/cometsRest/public/ping', methods = ['GET'])
 def ping():
-    return buildSuccess({'pong':1})
+    return jsonify({'pong':1})
+
+
+@app.route('/check_integrity', methods=['POST'])
+def check_integrity():
+    input_file = request.files['inputFile']
+    input_file.save(os.path.join('tmp'))
+
 
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])
@@ -355,7 +358,7 @@ def user_list_update():
         return jsonify({"status": False, "statusMessage":"An unknown error occurred"}), 500
 
 init()
-
+"""
 if __name__ == '__main__':
     # If this script is being run by the python interpreter
     # then serve this application using debug mode on port 8000
