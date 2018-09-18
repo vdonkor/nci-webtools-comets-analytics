@@ -41,14 +41,14 @@ var appComets = {
         "Metabolite Name (Z-A)": function (obj1, obj2) {
             return ((obj1.outcome < obj2.outcome) ? 1 : (obj1.outcome > obj2.outcome) ? -1 : 0);
         },
-        "property": function (property,sortAsc) {
+        "property": function (property, sortAsc) {
             return function (obj1, obj2) {
                 var obj1 = obj1[property],
                     obj2 = obj2[property];
                 if (isNaN(parseFloat(obj1)) || isNaN(parseFloat(obj2))) {
-                    obj1 = obj1||"";
-                    obj2 = obj2||"";
-                    return obj2 > obj1 ? (sortAsc?-1:1) : obj2 < obj1 ? (sortAsc?1:-1) : 0;
+                    obj1 = obj1 || "";
+                    obj2 = obj2 || "";
+                    return obj2 > obj1 ? (sortAsc ? -1 : 1) : obj2 < obj1 ? (sortAsc ? 1 : -1) : 0;
                 } else {
                     obj1 = parseFloat(obj1);
                     obj2 = parseFloat(obj2);
@@ -58,7 +58,7 @@ var appComets = {
         },
         "default": function (property) {
             return function (obj1, obj2) {
-                return (obj2[property]==0?0:obj2[property]||Number.POSITIVE_INFINITY) - (obj1[property]==0?0:obj1[property]||Number.POSITIVE_INFINITY);
+                return (obj2[property] == 0 ? 0 : obj2[property] || Number.POSITIVE_INFINITY) - (obj1[property] == 0 ? 0 : obj1[property] || Number.POSITIVE_INFINITY);
             };
         }
     },
@@ -67,20 +67,20 @@ var appComets = {
 
 appComets.BaseView = Backbone.View.extend({
     el: 'body',
-    initialize: function() {
+    initialize: function () {
         var url = document.location.toString();
         this.render();
         if (url.match('#')) {
             var tab = $('.navbar a[data-toggle="tab"][data-target="#' + url.split('#')[1] + '"]');
             if (tab.length > 0) {
                 tab.tab('show');
-                setTimeout(function() {
+                setTimeout(function () {
                     window.scrollTo(0, 0);
                 }, 1);
             }
         }
     },
-    render: function() {
+    render: function () {
         appComets.views.home = new appComets.HomeView();
         appComets.views.header = new appComets.HeaderView({
             model: this.model
@@ -106,7 +106,7 @@ appComets.BaseView = Backbone.View.extend({
 
 appComets.HeaderView = Backbone.View.extend({
     el: '#header',
-    initialize: function() {
+    initialize: function () {
         this.model.on('change', this.render, this);
         this.model.fetch();
     },
@@ -115,7 +115,7 @@ appComets.HeaderView = Backbone.View.extend({
         'shown.bs.tab a[data-toggle="tab"]': 'onTab',
         'click #adminBtn': 'goToAdmin'
     },
-    goToAdmin: function(e) {
+    goToAdmin: function (e) {
         var model = this.model;
         if (model.get('integrityResults').get('integrityChecked') || model.get('correlationResults').get('correlationRun')) {
             e.preventDefault();
@@ -123,7 +123,7 @@ appComets.HeaderView = Backbone.View.extend({
                 buttons: [{
                     'cssClass': 'btn-primary',
                     'label': "Continue",
-                    'action': function(dialog) {
+                    'action': function (dialog) {
                         var a = $(e.target);
                         if (a.prop('tagName') !== 'A') a = a.find('a');
                         window.location = a.attr('href');
@@ -131,13 +131,13 @@ appComets.HeaderView = Backbone.View.extend({
                 }, {
                     'cssClass': 'btn-primary',
                     'label': "Cancel",
-                    'action': function(dialog) {
+                    'action': function (dialog) {
                         dialog.close();
                     }
                 }],
                 closable: false,
                 message: $("<p>If you leave now you will lose access to your current work. Do you wish to continue?</p>" +
-                           "<p>You can also click \"Cancel\" then right-click the \"Admin\" button to open it in a new tab.</p>"),
+                    "<p>You can also click \"Cancel\" then right-click the \"Admin\" button to open it in a new tab.</p>"),
                 title: "You are about to leave the page."
             });
         }
@@ -145,28 +145,28 @@ appComets.HeaderView = Backbone.View.extend({
     logout: function (e) {
         e.preventDefault();
         var path = window.location.href;
-        window.location = "/auth0_redirect?logout=" + encodeURIComponent(path.substring(0,path.lastIndexOf('/'))+"/public/logout.html");
+        window.location = "/auth0_redirect?logout=" + encodeURIComponent(path.substring(0, path.lastIndexOf('/')) + "/public/logout.html");
     },
-    onTab: function(e) {
+    onTab: function (e) {
         var target = $(e.target).attr('data-target').substring(1);
         $(e.target).parent().parent().siblings().find('li.active').removeClass('active')
-        var old = $('#'+target).removeAttr('id');
-        var anchor = $('<a id="'+target+'"/>').prependTo($('body'));
+        var old = $('#' + target).removeAttr('id');
+        var anchor = $('<a id="' + target + '"/>').prependTo($('body'));
         window.location.hash = target;
         anchor.remove();
-        old.attr('id',target);
+        old.attr('id', target);
     },
-    render: function() {
+    render: function () {
         var comets = this.model.get('comets'),
-            name = this.model.get('given_name')+' '+this.model.get('family_name');
-        $('#adminBtn').toggleClass('show',(comets == 'admin'))
-        $('#logoutBtn').siblings('span').html('Welcome'+((name||' ')!==' '?', '+name:'')+'!');
+            name = this.model.get('given_name') + ' ' + this.model.get('family_name');
+        $('#adminBtn').toggleClass('show', (comets == 'admin'))
+        $('#logoutBtn').siblings('span').html('Welcome' + ((name || ' ') !== ' ' ? ', ' + name : '') + '!');
     }
 });
 
 appComets.CombineView = Backbone.View.extend({
     el: "#tab-combine",
-    initialize: function() {
+    initialize: function () {
         this.model.on({
             'change:downloadLink': this.renderDownload,
             'change:statusMessage': this.renderMessage,
@@ -188,12 +188,12 @@ appComets.CombineView = Backbone.View.extend({
         'click #resetCombine': 'reset',
         'click #combineFiles': 'combineFiles'
     },
-    combineFiles: function(e) {
+    combineFiles: function (e) {
         e.preventDefault();
         var $that = this,
             formData = new FormData(this.$el.find('form')[0]),
             disables = this.$el.find('input,select,#combineFiles');
-        disables.attr('disabled',true);
+        disables.attr('disabled', true);
         this.model.fetch({
             type: "POST",
             data: formData,
@@ -204,15 +204,15 @@ appComets.CombineView = Backbone.View.extend({
             beforeSend: function () {
                 appComets.showLoader();
             }
-        }).fail(function(xhr) {
-            var response = (xhr.responseJSON || {'statusMessage': 'An unknown error has occurred.'});
+        }).fail(function (xhr) {
+            var response = (xhr.responseJSON || { 'statusMessage': 'An unknown error has occurred.' });
             disables.removeAttr('disabled');
-            $that.model.set('statusMessage',response.statusMessage);
-        }).always(function() {
+            $that.model.set('statusMessage', response.statusMessage);
+        }).always(function () {
             appComets.hideLoader();
         });
     },
-    reset: function(e) {
+    reset: function (e) {
         e.preventDefault();
         this.model.set({
             'downloadLink': null,
@@ -221,7 +221,7 @@ appComets.CombineView = Backbone.View.extend({
         this.$el.find('input,select').removeAttr('disabled');
         this.$el.find('[type="file"]').val('').trigger('change');
     },
-    uploadFile: function(e) {
+    uploadFile: function (e) {
         e.preventDefault();
         var $that = this,
             el = $(e.target),
@@ -229,9 +229,9 @@ appComets.CombineView = Backbone.View.extend({
         if (window.FileReader && e.target.files[0]) {
             var file = e.target.files[0],
                 reader = new window.FileReader();
-            reader.onload = function(evt) {
+            reader.onload = function (evt) {
                 var content = evt.target.result;
-                content = content.substring(0,content.search(/[\r\n]/)).split(',');
+                content = content.substring(0, content.search(/[\r\n]/)).split(',');
                 $that.model.set(name, content);
             };
             reader.readAsText(file);
@@ -242,53 +242,53 @@ appComets.CombineView = Backbone.View.extend({
     updateVarmap: function (e) {
         var e = $(e.target),
             name = e.attr('name') || e.attr('id'),
-            varmap = $.extend({},this.model.get('varmap'));
+            varmap = $.extend({}, this.model.get('varmap'));
         varmap[name] = e.val();
-        this.model.set('varmap',varmap);
+        this.model.set('varmap', varmap);
     },
-    renderDownload: function() {
+    renderDownload: function () {
         var downloadLink = this.model.get('downloadLink');
         this.$el.find('#combineDownload')
-            .toggleClass('show',downloadLink)
-            .find('a').attr('href',downloadLink);
+            .toggleClass('show', downloadLink)
+            .find('a').attr('href', downloadLink);
     },
-    renderMatch: function() {
+    renderMatch: function () {
         this.$el.find('fieldset').eq(2).html(this.template({
             'data': this.model.get('templateData'),
-            'metadata': this.model.get('metadata').map(function(entry) {
-                return {'text': entry, 'value': entry};
+            'metadata': this.model.get('metadata').map(function (entry) {
+                return { 'text': entry, 'value': entry };
             }),
-            'sample': this.model.get('sample').map(function(entry) {
-                return {'text': entry, 'value': entry};
+            'sample': this.model.get('sample').map(function (entry) {
+                return { 'text': entry, 'value': entry };
             }),
             'template': this.optionsTemplate,
             'varmap': this.model.get('varmap')
         }));
     },
-    renderMessage: function() {
+    renderMessage: function () {
         this.$el.find('#combineMessage').html(this.model.get('statusMessage'));
     },
-    renderSubmit: function() {
+    renderSubmit: function () {
         var templateSelection = this.model.get('templateSelection');
         if (templateSelection.length > 0) {
             var varmap = {};
             var template = this.model.get('templateList')
-                .filter(function(entry) { return entry.value == templateSelection; })[0];
-            template.varlist.map(function(entry) {
+                .filter(function (entry) { return entry.value == templateSelection; })[0];
+            template.varlist.map(function (entry) {
                 varmap[entry] = "";
             });
-            this.model.set('templateData',template.data)
-            this.model.set('varmap',varmap);
+            this.model.set('templateData', template.data)
+            this.model.set('varmap', varmap);
             this.$el.find('#combineFiles').removeAttr('disabled');
             this.$el.find('fieldset').eq(2).addClass('show');
             this.renderMatch.apply(this);
         } else {
-            this.model.set('varmap',{});
-            this.$el.find('#combineFiles').attr('disabled',true);
+            this.model.set('varmap', {});
+            this.$el.find('#combineFiles').attr('disabled', true);
             this.$el.find('fieldset').eq(2).removeClass('show');
         }
     },
-    renderTemplate: function() {
+    renderTemplate: function () {
         var file1 = Object.keys(this.model.get('metadata')).length > 0,
             file2 = Object.keys(this.model.get('abundances')).length > 0,
             file3 = Object.keys(this.model.get('sample')).length > 0;
@@ -397,16 +397,16 @@ appComets.FormView = Backbone.View.extend({
                     integrityResults = appComets.models.integrityResults,
                     correlationResults = appComets.models.correlationResults;
                 if (response && 'status' in response) {
-                    $that.model.set($.extend({},$that.model.attributes, {
+                    $that.model.set($.extend({}, $that.model.attributes, {
                         status: response.status
                     }));
-                    integrityResults.set($.extend({},integrityResults.attributes, {
+                    integrityResults.set($.extend({}, integrityResults.attributes, {
                         csv: null,
                         integrityChecked: true,
                         status: response.status,
                         statusMessage: response.integritymessage
                     }));
-                    correlationResults.set($.extend({},correlationResults.attributes, {
+                    correlationResults.set($.extend({}, correlationResults.attributes, {
                         correlationRun: false
                     }));
                     $('a[href="#tab-integrity"]').trigger('click');
@@ -431,7 +431,7 @@ appComets.FormView = Backbone.View.extend({
             });
         }
     },
-    reset: function(e) {
+    reset: function (e) {
         e.preventDefault();
         var harmonizationForm = appComets.models.harmonizationForm,
             integrityResults = appComets.models.integrityResults,
@@ -443,24 +443,24 @@ appComets.FormView = Backbone.View.extend({
         this.$el.find('#inputDataFile').val('');
         $('[href="#tab-integrity"]').trigger('click');
     },
-    resetWhere: function(e) {
-      e.preventDefault();
-      var elem = $(e.target).next();
-      elem[0].selectedIndex = 0;
-      elem = elem.next();
-      elem[0].selectedIndex = 0;
-      elem.next().val('');
-      this.model.set({
-        'whereCategory': '',
-        'whereComparator': '',
-        'whereFilter': ''
-      });
+    resetWhere: function (e) {
+        e.preventDefault();
+        var elem = $(e.target).next();
+        elem[0].selectedIndex = 0;
+        elem = elem.next();
+        elem[0].selectedIndex = 0;
+        elem.next().val('');
+        this.model.set({
+            'whereCategory': '',
+            'whereComparator': '',
+            'whereFilter': ''
+        });
     },
     runModel: function (e) {
         e.preventDefault();
         var $that = this,
-            runModelHelper = function() {
-                var makeList = function(entry) { return entry.split(';'); };
+            runModelHelper = function () {
+                var makeList = function (entry) { return entry.split(';'); };
                 var methodSelection = this.model.get('methodSelection'),
                     outcome = _.flatten(this.model.get('outcome')),//.map(makeList)),
                     exposure = _.flatten(this.model.get('exposure')),//.map(makeList)),
@@ -470,13 +470,13 @@ appComets.FormView = Backbone.View.extend({
                     whereComparator = this.model.get('whereComparator'),
                     whereFilter = this.model.get('whereFilter'),
                     whereQuery = [];
-                var outcomeCount = outcome.length + ((outcome.indexOf('All metabolites') > -1) ? metaboliteIds.length-1 : 0),
-                    exposureCount = exposure.length + ((exposure.indexOf('All metabolites') > -1) ? metaboliteIds.length-1 : 0);
+                var outcomeCount = outcome.length + ((outcome.indexOf('All metabolites') > -1) ? metaboliteIds.length - 1 : 0),
+                    exposureCount = exposure.length + ((exposure.indexOf('All metabolites') > -1) ? metaboliteIds.length - 1 : 0);
                 if (outcomeCount * exposureCount > 32500 && !confirm("A correlation matrix of this size may cause delays in displaying the results.")) {
                     return;
                 }
                 if (whereCategory != '' && whereComparator != '' && whereFilter != '') {
-                    whereQuery.push([this.model.get('whereCategory'),this.model.get('whereComparator'),this.model.get('whereFilter')].join(""));
+                    whereQuery.push([this.model.get('whereCategory'), this.model.get('whereComparator'), this.model.get('whereFilter')].join(""));
                 }
                 var $that = this;
                 var formData = new FormData();
@@ -500,9 +500,9 @@ appComets.FormView = Backbone.View.extend({
                 for (var key in toAppend) {
                     var value = toAppend[key];
                     if (value.constructor === File)
-                      formData.append(key, value, value.name)
+                        formData.append(key, value, value.name)
                     else
-                      formData.append(key, value);
+                        formData.append(key, value);
                 }
 
                 return appComets.models.correlationResults.fetch({
@@ -522,14 +522,14 @@ appComets.FormView = Backbone.View.extend({
             BootstrapDialog.confirm({
                 btnOKClass: 'btn-primary',
                 closable: false,
-                message: "Your job will be sent to the queuing system for processing. "+
-                         "Results will be sent to you via email when all model runs are completed.\n\n"+
-                         "Please note: Depending on model complexity and queue length it could be up to a day before you receive your results",
+                message: "Your job will be sent to the queuing system for processing. " +
+                    "Results will be sent to you via email when all model runs are completed.\n\n" +
+                    "Please note: Depending on model complexity and queue length it could be up to a day before you receive your results",
                 title: "Results Will Be Emailed",
-                callback: function(result) {
+                callback: function (result) {
                     if (!result) return;
-                    runModelHelper.apply($that).fail(function(xhr) {
-                        var response = xhr.responseJSON||{'status': false, 'statusMessage': 'An unknown error has occurred.'};
+                    runModelHelper.apply($that).fail(function (xhr) {
+                        var response = xhr.responseJSON || { 'status': false, 'statusMessage': 'An unknown error has occurred.' };
                         if (!response.status) {
                             $('a[href="#tab-summary"]').tab('show');
                         }
@@ -542,37 +542,37 @@ appComets.FormView = Backbone.View.extend({
             });
         }
     },
-    renderCohortList: function() {
+    renderCohortList: function () {
         this.$el.find('#cohortSelection').html(this.template({
             optionType: "Cohort",
             optionList: this.model.get("cohortList"),
             selectedOption: this.model.get("cohortSelection")
         }));
     },
-    renderCohortSelection: function() {
-        this.$el.find('#cohortSelection').find('option[value="'+(this.model.get('cohortSelection')||"")+'"]').prop('selected',true);
+    renderCohortSelection: function () {
+        this.$el.find('#cohortSelection').find('option[value="' + (this.model.get('cohortSelection') || "") + '"]').prop('selected', true);
         this.renderCheckIntegrityButton.apply(this);
     },
-    renderCheckIntegrityButton: function() {
-        if (!this.model.get('status') && (this.model.get("csvFile")||null !== null) && (this.model.get("cohortSelection")||"").length > 0) {
+    renderCheckIntegrityButton: function () {
+        if (!this.model.get('status') && (this.model.get("csvFile") || null !== null) && (this.model.get("cohortSelection") || "").length > 0) {
             this.$el.find("#load").removeAttr('disabled');
         } else {
             this.$el.find("#load").attr('disabled', true);
         }
     },
-    renderEmail: function() {
+    renderEmail: function () {
         this.$el.find('[name="email"]').val(this.model.get('email'));
         this.renderRunModelButton.apply(this);
     },
-    renderEmailOption: function() {
+    renderEmailOption: function () {
         if (this.model.get('methodSelection') == 'Batch' && this.model.get('modelSelection') == "All models") {
             this.$el.find('#emailOption').addClass('show');
         } else {
             this.$el.find('#emailOption').removeClass('show');
-            this.model.set('email','');
+            this.model.set('email', '');
         }
     },
-    renderIntegrityChecked: function() {
+    renderIntegrityChecked: function () {
         if (this.model.get('status')) {
             this.$el.find('#cohortSelection').attr('disabled', true);
             this.$el.find('#inputDataFile').attr('disabled', true);
@@ -588,7 +588,7 @@ appComets.FormView = Backbone.View.extend({
             this.$el.find('#analysisOptions').removeClass('show');
         }
     },
-    renderMethodSelection: function() {
+    renderMethodSelection: function () {
         var $that = this;
         this.$el.find('#Batch,#Interactive').each(function (i, el) {
             var id = el.id;
@@ -599,7 +599,7 @@ appComets.FormView = Backbone.View.extend({
         this.renderEmailOption.apply(this);
         this.renderRunModelButton.apply(this);
     },
-    renderModelList: function() {
+    renderModelList: function () {
         this.$el.find('#modelSelection').html(this.template({
             optionType: 'Model',
             optionList: this.model.get('modelList'),
@@ -608,14 +608,14 @@ appComets.FormView = Backbone.View.extend({
         this.renderEmailOption.apply(this);
         this.renderRunModelButton.apply(this);
     },
-    renderModelDescription: function() {
+    renderModelDescription: function () {
         this.$el.find('#modelDescription').val(this.model.get('modelDescription'));
     },
-    renderModelOptions: function() {
+    renderModelOptions: function () {
         var $that = this;
         var modelOptions = this.model.get('defaultOptions').concat(this.model.get('subjectIds'));
         if (this.model.get('showMetabolites')) {
-            modelOptions = modelOptions.concat(this.model.get('metaboliteIds').map(function(entry) { return { text: entry, value: entry }; }));
+            modelOptions = modelOptions.concat(this.model.get('metaboliteIds').map(function (entry) { return { text: entry, value: entry }; }));
         }
         modelOptions = modelOptions.map(function (option, key) {
             return {
@@ -653,47 +653,47 @@ appComets.FormView = Backbone.View.extend({
         }));
         this.$el.find('[name="whereComparator"]').html(this.template({
             optionType: "Operator",
-            optionList: [ {
-              "text": "&lt;",
-              "value": "<"
+            optionList: [{
+                "text": "&lt;",
+                "value": "<"
             }, {
-              "text": "&lt;=",
-              "value": "<="
+                "text": "&lt;=",
+                "value": "<="
             }, {
-              "text": "=",
-              "value": "="
+                "text": "=",
+                "value": "="
             }, {
-              "text": "&gt;",
-              "value": ">"
+                "text": "&gt;",
+                "value": ">"
             }, {
-              "text": "&gt;=",
-              "value": ">="
-            } ],
+                "text": "&gt;=",
+                "value": ">="
+            }],
             selectedOption: this.model.get("whereComparator")
         }));
         this.$el.find('[name="whereFilter"]').val('');
     },
-    renderRunModelButton: function() {
+    renderRunModelButton: function () {
         var email = this.model.get('email'),
             methodSelection = this.model.get('methodSelection'),
             modelSelection = this.model.get('modelSelection'),
             exposure = this.model.get('exposure'),
             covariates = this.model.get('covariates'),
-            whereQuery = ((this.model.get('whereCategory')==''?1:0)+(this.model.get('whereComparator')==''?1:0)+(this.model.get('whereFilter')==''?1:0))%3==0;
+            whereQuery = ((this.model.get('whereCategory') == '' ? 1 : 0) + (this.model.get('whereComparator') == '' ? 1 : 0) + (this.model.get('whereFilter') == '' ? 1 : 0)) % 3 == 0;
         if (((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
-             (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0 && covariates.indexOf(this.model.get('strata')) < 0)) &&
-              whereQuery
+            (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0 && covariates.indexOf(this.model.get('strata')) < 0)) &&
+            whereQuery
         ) {
             this.$el.find('#runModel').removeAttr('disabled');
         } else {
             this.$el.find('#runModel').attr('disabled', true);
         }
     },
-    renderShowMetabolites: function() {
+    renderShowMetabolites: function () {
         this.$el.find('#showMetabolites').prop('checked', this.model.get('showMetabolites'));
         this.renderModelOptions.apply(this);
     },
-    renderStrataAlert: function() {
+    renderStrataAlert: function () {
         var $that = this,
             strataValue = this.model.get('strata');
         if (strataValue == '') {
@@ -702,16 +702,16 @@ appComets.FormView = Backbone.View.extend({
         }
         var stratifiable = this.model.get('stratifiable')[strataValue],
             subjectIds = this.model.get('subjectIds'),
-            strataText = subjectIds.filter(function(entry) { return entry.value == strataValue })[0].text;
+            strataText = subjectIds.filter(function (entry) { return entry.value == strataValue })[0].text;
         if (stratifiable) {
             this.renderModelOptions.apply(this);
         } else {
             BootstrapDialog.confirm({
-                'message': strataText+" has at least one value with less than 15 entries, which will not be evaluated.",
+                'message': strataText + " has at least one value with less than 15 entries, which will not be evaluated.",
                 'closable': false,
-                'callback': function(result) {
+                'callback': function (result) {
                     if (!result) {
-                        $that.model.set('strata','',{'silent':true});
+                        $that.model.set('strata', '', { 'silent': true });
                     }
                     $that.renderModelOptions.apply($that);
                 }
@@ -744,11 +744,11 @@ appComets.IntegrityView = Backbone.View.extend({
         if (this.model.get('integrityChecked')) {
             if (this.model.get('status')) {
                 var log2var = this.model.get('log2var');
-                if (log2var.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; },true)) {
+                if (log2var.map(function (e) { return e || false ? true : false; }).reduce(function (prev, curr) { return prev && curr; }, true)) {
                     appComets.generateHistogram('varianceDist', 'Distribution of Variance', "Frequency", 'Variance of transformed metabolite abundances', log2var);
                 }
                 var nummin = this.model.get('num.min');
-                if (nummin.map(function(e) { return e || false ? true : false; }).reduce(function(prev,curr) { return prev && curr; },true)) {
+                if (nummin.map(function (e) { return e || false ? true : false; }).reduce(function (prev, curr) { return prev && curr; }, true)) {
                     appComets.generateHistogram('subjectDist', 'Number of minimum/missing values', "Frequency", 'Distribution of the Number/Missing Values', nummin);
                 }
             }
@@ -782,7 +782,7 @@ appComets.SummaryView = Backbone.View.extend({
         'click [data-comets-header]': 'sortColumn',
         'keypress [data-comets-header]': 'passClick'
     },
-    columnSearch: function(e) {
+    columnSearch: function (e) {
         var e = $(e.target);
         var min = e.hasClass('min'),
             max = e.hasClass('max'),
@@ -794,66 +794,66 @@ appComets.SummaryView = Backbone.View.extend({
         if (min) {
             minmax = "min";
             value = parseFloat(value);
-            oldValue = this.model.get(name+minmax);
+            oldValue = this.model.get(name + minmax);
             if (isNaN(value)) { value = Number.NEGATIVE_INFINITY; }
             if (oldValue === undefined) { oldValue = Number.NEGATIVE_INFINITY; }
             if (value >= oldValue) {
                 subset = true;
-                filterdata = filterdata.filter(function(entry) {
+                filterdata = filterdata.filter(function (entry) {
                     var source = parseFloat(entry[name]);
-                    return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= value;
+                    return (isNaN(source) ? Number.NEGATIVE_INFINITY : source) >= value;
                 });
             }
         } else if (max) {
             minmax = "max";
             value = parseFloat(value);
-            oldValue = this.model.get(name+minmax);
+            oldValue = this.model.get(name + minmax);
             if (isNaN(value)) { value = Number.POSITIVE_INFINITY; }
             if (oldValue === undefined) { oldValue = Number.POSITIVE_INFINITY; }
             if (value <= oldValue) {
                 subset = true;
-                filterdata = filterdata.filter(function(entry) {
+                filterdata = filterdata.filter(function (entry) {
                     var source = parseFloat(entry[name]);
-                    return (isNaN(source)?Number.POSITIVE_INFINITY:source) <= value;
+                    return (isNaN(source) ? Number.POSITIVE_INFINITY : source) <= value;
                 });
             }
         } else {
-            value = (value||'').toLowerCase();
-            oldValue = this.model.get(name)||'';
+            value = (value || '').toLowerCase();
+            oldValue = this.model.get(name) || '';
             if (value.indexOf(oldValue) > -1) {
                 subset = true;
-                filterdata = filterdata.filter(function(entry) {
+                filterdata = filterdata.filter(function (entry) {
                     return String(entry[name]).toLowerCase().indexOf(value) > -1;
                 });
             }
         }
-        this.model.set(name+minmax,value);
+        this.model.set(name + minmax, value);
         if (!subset) {
-            filterdata = this.model.get('excorrdata').sort(appComets.sorts.property(this.model.get('sortHeader'),this.model.get('sortAsc')));
+            filterdata = this.model.get('excorrdata').sort(appComets.sorts.property(this.model.get('sortHeader'), this.model.get('sortAsc')));
             var tableOrder = this.model.get('tableOrder');
             for (var index in tableOrder) {
                 var val = this.model.get(tableOrder[index]),
-                    min = parseFloat(this.model.get(tableOrder[index]+"min")),
-                    max = parseFloat(this.model.get(tableOrder[index]+"max"));
+                    min = parseFloat(this.model.get(tableOrder[index] + "min")),
+                    max = parseFloat(this.model.get(tableOrder[index] + "max"));
                 if (!isNaN(min)) {
                     if (!isNaN(max)) {
-                        filterdata = filterdata.filter(function(entry) {
+                        filterdata = filterdata.filter(function (entry) {
                             var source = parseFloat(entry[tableOrder[index]]);
-                            return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min && (isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
+                            return (isNaN(source) ? Number.NEGATIVE_INFINITY : source) >= min && (isNaN(source) ? Number.POSITIVE_INFINITY : source) <= max;
                         });
                     } else {
-                        filterdata = filterdata.filter(function(entry) {
+                        filterdata = filterdata.filter(function (entry) {
                             var source = parseFloat(entry[tableOrder[index]]);
-                            return (isNaN(source)?Number.NEGATIVE_INFINITY:source) >= min;
+                            return (isNaN(source) ? Number.NEGATIVE_INFINITY : source) >= min;
                         });
                     }
                 } else if (!isNaN(max)) {
-                    filterdata = filterdata.filter(function(entry) {
+                    filterdata = filterdata.filter(function (entry) {
                         var source = parseFloat(entry[tableOrder[index]]);
-                        return (isNaN(source)?Number.POSITIVE_INFINITY:source) <= max;
+                        return (isNaN(source) ? Number.POSITIVE_INFINITY : source) <= max;
                     });
                 } else if (val !== undefined && val !== null) {
-                    filterdata = filterdata.filter(function(entry) {
+                    filterdata = filterdata.filter(function (entry) {
                         var source = String(entry[tableOrder[index]]).toLowerCase();
                         return source.indexOf(String(val)) > -1;
                     });
@@ -863,10 +863,10 @@ appComets.SummaryView = Backbone.View.extend({
         this.model.set({
             'filterdata': filterdata,
             'page': 1,
-            'pageCount': Math.ceil(filterdata.length/this.model.get('entryCount'))
+            'pageCount': Math.ceil(filterdata.length / this.model.get('entryCount'))
         });
     },
-    customList: function(e) {
+    customList: function (e) {
         e.preventDefault(e);
         new appComets.CustomListView({
             model: new appComets.CustomListModel({
@@ -877,40 +877,40 @@ appComets.SummaryView = Backbone.View.extend({
             })
         });
     },
-    entryCount: function(e) {
+    entryCount: function (e) {
         var entryCount = $(e.target).val();
         this.model.set({
             'entryCount': entryCount,
             'page': 1,
-            'pageCount': Math.ceil(this.model.get('filterdata').length/entryCount)
+            'pageCount': Math.ceil(this.model.get('filterdata').length / entryCount)
         });
     },
-    pageTab: function(e) {
+    pageTab: function (e) {
         e.preventDefault();
         var e = $(e.target);
         if (e.parent().hasClass('disabled')) return;
         var val = e.html(),
             page = this.model.get('page');
         if (val == 'Next') {
-            page = Math.min(page+1,this.model.get('pageCount'))||1;
+            page = Math.min(page + 1, this.model.get('pageCount')) || 1;
         } else if (val == 'Previous') {
-            page = Math.max(1,page-1);
+            page = Math.max(1, page - 1);
         } else {
             page = parseInt(val);
         }
-        this.model.set('page',page);
+        this.model.set('page', page);
     },
-    passClick: function(e) {
+    passClick: function (e) {
         e.preventDefault();
         if (e.keyCode == 13 || e.keyCode == 32) {
             $(e.target).trigger('click');
         }
         return false;
     },
-    selectRow: function(e) {
+    selectRow: function (e) {
         var e = $(e.target),
             name = e.prop('name'),
-            checked = e.prop('checked')||false,
+            checked = e.prop('checked') || false,
             data = this.model.get('filterdata');
         if (name === "all") {
             for (var index in data) {
@@ -919,21 +919,21 @@ appComets.SummaryView = Backbone.View.extend({
         } else {
             data[name].selected = checked;
         }
-        this.model.trigger('change:filterdata',this.model);
+        this.model.trigger('change:filterdata', this.model);
     },
-    sortColumn: function(e) {
+    sortColumn: function (e) {
         e.preventDefault();
         var e = $(e.target),
             sortAsc = !e.hasClass('asc'),
             sortHeader = e.attr('data-comets-header'),
             filterdata = this.model.get('filterdata');
-        e.toggleClass('asc',sortAsc).toggleClass('dsc',!sortAsc).siblings().removeClass('asc').removeClass('dsc');
-        filterdata.sort(appComets.sorts.property(sortHeader,sortAsc));
+        e.toggleClass('asc', sortAsc).toggleClass('dsc', !sortAsc).siblings().removeClass('asc').removeClass('dsc');
+        filterdata.sort(appComets.sorts.property(sortHeader, sortAsc));
         this.model.set({
             'sortAsc': sortAsc,
             'sortHeader': sortHeader
         });
-        this.model.trigger('change:filterdata',this.model);
+        this.model.trigger('change:filterdata', this.model);
     },
     startDownload: function (e) {
         e.preventDefault();
@@ -954,7 +954,7 @@ appComets.SummaryView = Backbone.View.extend({
             this.$el.html('');
         }
     },
-    renderTable: function() {
+    renderTable: function () {
         if (!(this.model.get('correlationRun') && this.model.get('status'))) return;
         var map = this.model.get('filterdata'),
             page = this.model.get('page'),
@@ -962,16 +962,16 @@ appComets.SummaryView = Backbone.View.extend({
             entryCount = this.model.get('entryCount');
         this.$el.find('#correlationSummary tbody').empty();
         var tr = '';
-        if (map.length > 0 && map.map(function(row) { return row.selected; }).reduce(function(prev,curr) { return prev&&curr; },true)) {
-            this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked',true);
+        if (map.length > 0 && map.map(function (row) { return row.selected; }).reduce(function (prev, curr) { return prev && curr; }, true)) {
+            this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked', true);
         } else {
-            this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked',false);
+            this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked', false);
         }
-        for (var index = (page-1)*entryCount; index < Math.min(page*entryCount,map.length); index++) {
-            tr += '<tr><th class="text-center"><input type="checkbox" name="'+index+'"'+(map[index].selected?' checked="true"':'')+'/></th>';
+        for (var index = (page - 1) * entryCount; index < Math.min(page * entryCount, map.length); index++) {
+            tr += '<tr><th class="text-center"><input type="checkbox" name="' + index + '"' + (map[index].selected ? ' checked="true"' : '') + '/></th>';
             for (var orderIndex in tableOrder) {
                 var val = map[index][tableOrder[orderIndex]];
-                tr += '<td>'+(val === undefined?"NA":val)+'</td>';
+                tr += '<td>' + (val === undefined ? "NA" : val) + '</td>';
             }
             tr += '</tr>';
         }
@@ -981,14 +981,14 @@ appComets.SummaryView = Backbone.View.extend({
 });
 
 appComets.CustomListView = Backbone.View.extend({
-    initialize: function() {
+    initialize: function () {
         var model = this.model,
             metabolites = {},
             metaboliteIds = model.get('metaboliteIds'),
             metaboliteList = [],
             formModel = model.get('formModel'),
             length = formModel.get('defaultOptions').length;
-        model.get('excorrdata').filter(function(entry) { return entry.selected; }).forEach(function(entry) {
+        model.get('excorrdata').filter(function (entry) { return entry.selected; }).forEach(function (entry) {
             if (metaboliteIds.indexOf(entry.exposurespec) > -1) metabolites[entry.exposurespec] = true;
             if (metaboliteIds.indexOf(entry.outcomespec) > -1) metabolites[entry.outcomespec] = true;
         });
@@ -996,7 +996,7 @@ appComets.CustomListView = Backbone.View.extend({
             metaboliteList.push(index);
         }
         model.set({
-            'listName': "custom"+length,
+            'listName': "custom" + length,
             'metaboliteList': metaboliteList
         });
         this.template = _.template(appComets.templatesList.listDialog);
@@ -1015,48 +1015,48 @@ appComets.CustomListView = Backbone.View.extend({
         'click button.create': 'createList',
         'click .modal-footer button:not(.create)': 'close'
     },
-    close: function(e) {
+    close: function (e) {
         e.preventDefault();
         this.$modal.close();
     },
-    createList: function(e) {
+    createList: function (e) {
         e.preventDefault();
         var model = this.model,
             formModel = model.get('formModel'),
             corrModel = model.get('correlationModel'),
             options = formModel.get('defaultOptions');
-        options.push({'text':model.get('listName'),'value':model.get('metaboliteList').join(";")});
-        this.model.set('metaboliteList',[]);
-        _.each(model.get('excorrdata'),function(row,index,list) { row.selected = false; });
-        formModel.trigger('change:defaultOptions',formModel);
+        options.push({ 'text': model.get('listName'), 'value': model.get('metaboliteList').join(";") });
+        this.model.set('metaboliteList', []);
+        _.each(model.get('excorrdata'), function (row, index, list) { row.selected = false; });
+        formModel.trigger('change:defaultOptions', formModel);
         corrModel.trigger('change:excorrdata', corrModel);
         corrModel.trigger('change:filterdata', corrModel);
     },
-    removeTag: function(e) {
+    removeTag: function (e) {
         e.preventDefault();
         var e = $(e.target),
             model = this.model.get('formModel'),
             defaultOptions = model.get('defaultOptions');
-        defaultOptions.splice(e.attr('data-index'),1);
-        model.trigger('change:defaultOptions',model);
+        defaultOptions.splice(e.attr('data-index'), 1);
+        model.trigger('change:defaultOptions', model);
     },
-    updateModel: function(e) {
+    updateModel: function (e) {
         if (e.keyCode == 13 && !this.$el.find('button.create').attr('disabled')) {
-            this.createList.call(this,e);
+            this.createList.call(this, e);
         } else {
-            appComets.events.updateModel.call(this,e);
+            appComets.events.updateModel.call(this, e);
         }
     },
-    checkName: function() {
+    checkName: function () {
         var listName = this.model.get('listName'),
             defaultOptions = this.model.get('formModel').get('defaultOptions');
-        if (listName === "" || defaultOptions.map(function(entry) { return listName === entry.text; }).reduce(function(prev,curr) { return prev||curr; },false)) {
-            this.$el.find('button.create').attr('disabled',true);
+        if (listName === "" || defaultOptions.map(function (entry) { return listName === entry.text; }).reduce(function (prev, curr) { return prev || curr; }, false)) {
+            this.$el.find('button.create').attr('disabled', true);
         } else {
             this.$el.find('button.create').removeAttr('disabled');
         }
     },
-    render: function() {
+    render: function () {
         this.$modal = BootstrapDialog.show({
             buttons: [{
                 'cssClass': 'btn-primary',
@@ -1068,7 +1068,7 @@ appComets.CustomListView = Backbone.View.extend({
         });
         this.setElement(this.$modal.getModal());
     },
-    rerender: function() {
+    rerender: function () {
         $('.bootstrap-dialog-message').html(this.template(this.model.attributes));
     }
 });
@@ -1102,7 +1102,7 @@ appComets.HeatmapView = Backbone.View.extend({
         if (this.model.get('correlationRun')) {
             var focusId = $(':focus').attr('id');
             this.$el.html(this.template(this.model.attributes));
-            if (focusId) $('#'+focusId).trigger('focus');
+            if (focusId) $('#' + focusId).trigger('focus');
             if (this.model.get('status') === true) {
                 var sortRow = this.model.get('sortRow'),
                     sortStratum = this.model.get('sortStratum'),
@@ -1138,7 +1138,7 @@ appComets.HeatmapView = Backbone.View.extend({
                     if (sortStratum != "All participants (no stratification)") {
                         var strataSort = {};
                         _.each(heatmapData, function (datum) {
-                            var stratum = strataSort[datum[sortStratum]]||[];
+                            var stratum = strataSort[datum[sortStratum]] || [];
                             stratum.push(datum);
                             strataSort[datum[sortStratum]] = stratum;
                         });
@@ -1161,7 +1161,7 @@ appComets.HeatmapView = Backbone.View.extend({
                 plotHeight = Math.min(Math.max(plotHeight, 200), 9000);
                 plotWidth = Math.min(Math.max(plotWidth, 200), 9000);
                 if (plotHeight != this.model.get('plotHeight') || plotWidth != this.model.get('plotWidth')) {
-                    this.model.set($.extend({},this.model.attributes, {
+                    this.model.set($.extend({}, this.model.attributes, {
                         plotHeight: plotHeight,
                         plotWidth: plotWidth
                     }));
@@ -1185,9 +1185,9 @@ appComets.HomeView = Backbone.View.extend({
     events: {
         'click .clicktab': 'tabTo'
     },
-    tabTo: function(e) {
+    tabTo: function (e) {
         var e = e.target;
-        $('nav a[data-target="'+$(e).attr('href')+'"]').trigger('click');
+        $('nav a[data-target="' + $(e).attr('href') + '"]').trigger('click');
         return false;
     }
 });
@@ -1197,10 +1197,10 @@ appComets.HelpView = Backbone.View.extend({
     events: {
         'click .goto': 'scrollToAnchor'
     },
-    scrollToAnchor: function(e) {
+    scrollToAnchor: function (e) {
         var e = e.target;
         var offset = $($(e).attr('href')).offset();
-        $('html, body').animate({scrollTop: offset.top},500);
+        $('html, body').animate({ scrollTop: offset.top }, 500);
         return false;
     }
 });
@@ -1210,7 +1210,7 @@ $(function () {
     appComets.models.templatesList = new appComets.TemplatesModel();
     appComets.models.integrityResults = new appComets.IntegrityResultsModel();
     appComets.models.correlationResults = new appComets.CorrelationResultsModel();
-    var after3 = _.after(3,function() {
+    var after3 = _.after(3, function () {
         appComets.CombineFormModel.prototype.defaults.templateList = appComets.models.templatesList.get('templates');
         appComets.models.combineForm = new appComets.CombineFormModel();
         appComets.HarmonizationFormModel.prototype.defaults.cohortList = appComets.models.cohortsList.get('cohorts');
@@ -1225,9 +1225,9 @@ $(function () {
             model: appComets.models.base
         });
     }),
-    setTitle = function (e) {
-        document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
-    };
+        setTitle = function (e) {
+            document.title = e.target.text + " - Welcome to COMETS (COnsortium of METabolomics Studies)";
+        };
     $('#pageContent').on('show.bs.tab', '#comets-tab-nav', setTitle);
     $('#pageContent').on('show.bs.tab', '#correlate-tab-nav', setTitle);
     templates = $.ajax({

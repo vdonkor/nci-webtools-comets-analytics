@@ -75,30 +75,25 @@ RUN pip install --upgrade pip \
     mod_wsgi~=4.6 \
     pyper==1.1.2 \
     pyyaml==3.12 \
-    requests==2.18.4 \
+    requests~=2.19 \
     rpy2==2.8.0 \
     stompest==2.3.0 \
     stompest.async==2.3.0 \
     twisted==17.5.0
 
 # Copy entrypoint and make it executable
-COPY "./entrypoint.sh" "/usr/bin/entrypoint.sh"
+COPY "./entrypoint.sh" "/bin/entrypoint.sh"
 
-RUN dos2unix /usr/bin/entrypoint.sh \
- && chmod 755 /usr/bin/entrypoint.sh \
- && ln -s /usr/bin/entrypoint.sh /entrypoint.sh
+RUN dos2unix /bin/entrypoint.sh \
+ && chmod 755 /bin/entrypoint.sh
 
 # Copy comets package installation script and make it executable
-COPY "./install_comets_package.sh" "/usr/bin/install_comets_package.sh"
+COPY "./install_comets_package.sh" "/bin/install_comets_package.sh"
 
-RUN dos2unix /usr/bin/install_comets_package.sh \
- && chmod 755 /usr/bin/install_comets_package.sh \
- && ln -s /usr/bin/install_comets_package.sh /install_comets_package.sh
+RUN dos2unix /bin/install_comets_package.sh \
+ && chmod 755 /bin/install_comets_package.sh
 
-RUN adduser -u 4004 ncianalysis
-
-RUN mkdir -p /deploy/app /deploy/logs \
- && chown -R ncianalysis:ncianalysis /deploy
+RUN mkdir -p /deploy/app /deploy/logs
 
 WORKDIR /deploy/app
 

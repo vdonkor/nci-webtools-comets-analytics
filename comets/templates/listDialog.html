@@ -2,39 +2,42 @@
     var defaultOptions = formModel.get("defaultOptions");
     if (metaboliteList.length > 0) {
 %>
-<p><strong>Selected Metabolites:</strong></p>
-<p><%= metaboliteList.join(", ") %></p>
-<p><strong>Tag Name:</strong></p>
-<div class="fixed-right">
-    <input type="text" name="listName" value="<%= listName %>"/>
-    <button class="btn-primary create">Create Tag</button>
-</div>
+    <p><strong>Selected Metabolites:</strong></p>
+    <p><%= metaboliteList.join(", ") %></p>
+    <p><strong>Tag Name:</strong></p>
+    <div class="fixed-right">
+        <input type="text" name="listName" value="<%= listName %>" />
+        <button class="btn-primary create">Create Tag</button>
+    </div>
 <%  } else if (defaultOptions.length < 2) { %>
     <p>There are no current lists to edit and no metabolites selected.</p>
 <%  } %>
-<%
-    if (defaultOptions.length > 1) {
-        if (metaboliteList.length > 0) {
-%>
-<hr/>
-<%      } %>
-<p><strong>Saved Tag List:</strong></p>
-<table class="table-striped">
-    <thead>
-        <tr>
-            <th>Tag</th>
-            <th>Metabolite IDs</th>
-            <th>Delete</th>
-        </tr>
-    </thead>
-    <tbody>
-<%      for (var i = 1; i < defaultOptions.length; i++) { %>
-        <tr>
-            <td><%= defaultOptions[i].text %></td>
-            <td><%= defaultOptions[i].value.split(";").join(", ") %></td>
-            <td><button class="glyphicon glyphicon-remove" data-index="<%=i%>"></button></td>
-        </tr>
-<%      } %>
-    </tbody>
-</table>
-<%  } %>
+
+<% if (defaultOptions.length > 1) { %>
+    <%= metaboliteList.length > 0 && '<hr>' %>
+    <p><strong>Saved Tag List:</strong></p>
+    <table class="table-striped">
+        <thead>
+            <tr>
+                <th>Tag</th>
+                <th>Metabolite IDs</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for (var i = 1; i < defaultOptions.length; i++) { %>
+                <tr>
+                    <td>
+                        <%= defaultOptions[i].text %>
+                    </td>
+                    <td>
+                        <%= defaultOptions[i].value.split(";").join(", ") %>
+                    </td>
+                    <td>
+                        <button class="glyphicon glyphicon-remove" data-index="<%=i%>"></button>
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+<% } %>

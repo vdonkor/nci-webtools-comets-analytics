@@ -1,69 +1,90 @@
 <% if (status === true) { %>
-    <h3>Correlation Results</h3>
-    <% if (warnings.length > 0) { %>
-    <div id="resultWarnings" class="alert alert-warning">
-        <% for (var index in warnings) { %>
-            <div>
-                <span class="glyphicon glyphicon-warning-sign"></span>
-                <%= warnings[index] %>
-            </div>
-        <% } %>
-    </div>
-    <% } %>
-    <div id="resultStatus" class="alert alert-success">
-        <span class="glyphicon glyphicon-ok"></span>
-        <%= statusMessage %>
-    </div>
-    <div id="correlationSummary">
-        <div class="form-inline">
-            <div>
-                <label>
-                    <span>Show </span>
-                    <select name="entryCount" class="form-control input-sm">
-                        <option value="10"<%= entryCount==10?" selected":"" %>>10</option>
-                        <option value="25"<%= entryCount==25?" selected":"" %>>25</option>
-                        <option value="50"<%= entryCount==50?" selected":"" %>>50</option>
-                        <option value="100"<%= entryCount==100?" selected":"" %>>100</option>
-                    </select>
-                    <span> entries</span>
-                </label>
-            </div>
-            <div id="correlationButtons">
-                <button class="btn btn-default" id="summaryDownload">Download Results</button>
-            </div>
+<h3>Correlation Results</h3>
+<% if (warnings.length > 0) { %>
+<div id="resultWarnings" class="alert alert-warning">
+    <% for (var index in warnings) { %>
+        <div>
+            <span class="glyphicon glyphicon-warning-sign"></span>
+            <%= warnings[index] %>
         </div>
-        <table class="display">
-            <thead>
-                <tr>
-                    <th class="borderless">
-                        <button class="btn btn-default glyphicon glyphicon-tags" id="customList" title="Use metabolite tagging to create a list of metabolites for analysis."></button>
-                    </th>
-<%     _.each(tableOrder,function(element,key,list) { %>
+    <% } %>
+</div>
+<% } %>
+<div id="resultStatus" class="alert alert-success">
+    <span class="glyphicon glyphicon-ok"></span>
+    <%= statusMessage %>
+</div>
+<div id="correlationSummary">
+    <div class="form-inline">
+        <div>
+            <label>
+                <span>Show </span>
+                <select name="entryCount" class="form-control input-sm">
+                    <option value="10" <%= entryCount == 10 && "selected" %>>10</option>
+                    <option value="25" <%= entryCount == 25 && "selected" %>>25</option>
+                    <option value="50" <%= entryCount == 50 && "selected" %>>50</option>
+                    <option value="100" <%= entryCount == 100 && "selected" %>>100</option>
+                </select>
+                <span> entries</span>
+            </label>
+        </div>
+        <div id="correlationButtons">
+            <button class="btn btn-default" id="summaryDownload">Download Results</button>
+        </div>
+    </div>
+    <table class="display">
+        <thead>
+            <tr>
+                <th class="borderless">
+                    <button class="btn btn-default glyphicon glyphicon-tags" id="customList" title="Use metabolite tagging to create a list of metabolites for analysis."></button>
+                </th>
+                <% tableOrder.map(function(element, key, list) { %>
                     <th>
-<%         if (element == "pvalue" || element == "corr") { %>
-                        <input name="<%= element %>" type="text" placeholder="Min" aria-label="Minimum <%= element %>" class="min" /> - <input name="<%= element %>" class="max" type="text" placeholder="Max" aria-label="Maximum <%= element %>" />
-<%         } else { %>
-                        <input name="<%= element %>" type="text" placeholder="Search <%= element %>" aria-label="Search <%= element %>" />
-<%         } %>
+                        <% if (element == "pvalue" || element == "corr") { %>
+                            <input
+                                name="<%= element %>"
+                                type="text"
+                                placeholder="Min"
+                                aria-label="Minimum <%= element %>"
+                                class="min" />
+                                -
+                                <input
+                                    name="<%= element %>"
+                                    class="max"
+                                    type="text"
+                                    placeholder="Max"
+                                    aria-label="Maximum <%= element %>" />
+                        <% } else { %>
+                            <input
+                                name="<%= element %>"
+                                type="text"
+                                placeholder="Search <%= element %>"
+                                aria-label="Search <%= element %>" />
+                        <% } %>
                     </th>
-<%     }); %>
-                </tr>
-                <tr>
-                    <th class="borderless text-center"><input type="checkbox" name="all"/></th>
-<%     _.each(tableOrder,function(element,key,list) { %>
-                    <th tabindex="0" data-comets-header="<%= element %>"<%=(sortHeader==element)?"class='"+(sortAsc?"asc":"dsc")+"'":""%>><%= element %></th>
-<%     }); %>
+                <% }); %>
+            </tr>
+            <tr>
+                <th class="borderless text-center"><input type="checkbox" name="all" /></th>
+                <% tableOrder.map(function(element,key,list) { %>
+                    <th data-comets-header="<%= element %>"
+                        class="<%= sortHeader == element && (sortAsc ? 'asc' : 'dsc') %>"
+                        tabindex="0">
+                        <%= element %>
+                    </th>
+                <% }); %>
                 </tr>
             </thead>
             <tbody>
                 <!-- Row generation done in javascript, not underscore templates, due to memory concerns. -->
             </tbody>
         </table>
-        <div id="pagingRow" class="form-inline"></div>
-    </div>
+        <div id="pagingRow" class="form-inline">
+</div>
+</div>
 <% } else if (status !== null && statusMessage) { %>
-    <div id="resultStatus" class="alert alert-warning">
-        <span class="glyphicon glyphicon-warning-sign"></span>
-        <%= statusMessage %>
-    </div>
+<div id="resultStatus" class="alert alert-warning">
+    <span class="glyphicon glyphicon-warning-sign"></span>
+    <%= statusMessage %>
+</div>
 <% } %>

@@ -1,36 +1,67 @@
 from traceback import format_exc
-import json, linecache, os, requests, smtplib, sys, time, yaml
+import os
+import requests
+import smtplib
+import time
+import yaml
 import boto3
 from pyper import R
-from flask import Flask, json, jsonify, request, Response, send_from_directory
+from flask import Flask, json, jsonify, request, send_from_directory
+from werkzeug.utils import secure_filename
 from stompest.config import StompConfig
 from stompest.sync import Stomp
 
 app = Flask(__name__)
 
+
 @app.errorhandler(Exception)
 def error_handler(e):
+    '''Ensures that uncaught errors are logged and returned as json'''
     app.logger.error(format_exc())
     return jsonify(str(e)), 500
 
-"""
+
+def debug(host='0.0.0.0', port=8000):
+    '''Starts the flask server in debug mode on port 8000'''
+
+    @app.route('/', strict_slashes=False)
+    @app.route('/<path:path>', strict_slashes=False)
+    def static_files(path):
+        if path.endswith('/') or '.' not in path:
+            path += 'index.html'
+        return send_from_directory(os.getcwd(), path)
+
+    app.run(host, port, debug=True)
+
+
 def init():
-    '''Performs initial setup for the application'''
+    '''Performs initial setup for the application.'''
 
     with open('restricted/settings.yml', 'r') as f:
-        app.config = yaml.safe_load(f)
+        app.config.update(yaml.safe_load(f))
 
     r = R()
     r('source("./cometsWrapper.R")')
-    app.config['excel_templates'] = json.loads(r['getTemplates()'])
-    app.config['cohorts'] = json.loads(r['getCohorts()'])
+    app.config['cohorts'] = r['get_comets_cohorts()']
+    app.config['excel_templates'] = r['get_comets_templates()']
+
+    temp_dir = 'tmp'
+    if not os.path.isdir(temp_dir):
+        os.makedirs(temp_dir)
+    app.config['temp_dir'] = temp_dir
+
+
+init()
+
 
 def stream_json(data):
+    '''A json generator'''
     for chunk in json.JSONEncoder().iterencode(data):
         yield chunk
 
+
 def send_email(sender, recipients, subject, contents):
-    '''Sends an email
+    '''Sends an email using smtp_ssl
 
     Parameters
     ----------
@@ -42,34 +73,52 @@ def send_email(sender, recipients, subject, contents):
     config = app.config['email']
     smtp = smtplib.SMTP_SSL(config['host'], config['port'])
     smtp.login(config['username'], config['password'])
-    message = '\n'.join([
+    message = '\n'.join(
         'From: ' + sender,
         'To: ' + recipients,
         'Subject: ' + subject,
         contents
-    ])
+    )
     smtp.sendmail(sender, recipients, message)
     smtp.quit()
 
-def upload_file_s3(filepath, bucket_prefix='/comets/input/'):
+
+def upload_file_s3(filepath, bucket_prefix='/comets/'):
+    '''Uploads a file to Amazon S3
+
+    Parameters
+    ----------
+    filepath - Path to the file to upload
+    bucket_prefix - Prefix for the file's bucket key
+    '''
+
     config = app.config['s3']
-
-    s3 = boto3.client(
-        's3',
-        aws_access_key_id=config['username'],
-        aws_secret_access_key=config['password']
-    )
-
     filename = os.path.split(filepath)[1]
     bucket_key = bucket_prefix + filename
 
-    s3.object(config['bucket'], bucket_key).put(
-        Body=open(filepath, 'rb')
+    boto3.resource(
+        's3',
+        aws_access_key_id=config['username'],
+        aws_secret_access_key=config['password']
+    ).Bucket(
+        name=config['bucket']
+    ).upload_file(
+        bucket_key,
+        filepath
     )
 
-def queue_file(parameters):
+
+def queue_correlation_job(parameters, queue_name='/queue/Comets'):
+    '''Queues a batch correlation job
+
+    Parameters
+    ----------
+    parameters - A list containing the path to the s3 input file, as well as \
+                 the models to run
+
+    queue_name - The name of the queue to submit this job to
+    '''
     config = app.config['queue']
-    queue_name = '/queue/Comets'
     queue_input = json.dumps(parameters)
 
     client = Stomp(
@@ -83,291 +132,216 @@ def queue_file(parameters):
     )
     client.disconnect()
 
-# heartbeat monitor
-@app.route('/cometsRest/public/ping', methods = ['GET'])
+
+def save_uploaded_file(uploaded_file, prefix='input'):
+    '''Saves an uploaded file to the temp folder and returns its filepath
+
+    Parameters
+    ----------
+    uploaded_file - The uploaded file from Flask
+
+    prefix - A file prefix for the uploaded file
+    '''
+
+    temp_dir = app.config['temp_dir']
+    filename = '_'.join(
+        prefix,
+        time.strftime('%Y_%m_%d_%I_%M'),
+        secure_filename(uploaded_file.filename)
+    )
+    filepath = os.path.join(temp_dir, filename)
+    uploaded_file.save(filepath)
+    return filepath
+
+
+@app.route('/cometsRest/public/ping', methods=['GET'])
 def ping():
-    return jsonify({'pong':1})
+    '''Returns a response if this service is running'''
+    return jsonify({'pong': 1})
 
 
-@app.route('/check_integrity', methods=['POST'])
+@app.route('/cohorts', methods=['GET'])
+def get_cohorts():
+    '''Returns all cohorts'''
+    return jsonify(app.config['cohorts'])
+
+
+@app.route('/excel_templates', methods=['GET'])
+def get_excel_templates():
+    '''Returns excel template parameters used to generate input files'''
+    return jsonify(app.config['excel_templates'])
+
+
+@app.route('/api/read_comets_input', methods=['POST'])
 def check_integrity():
-    input_file = request.files['inputFile']
-    input_file.save(os.path.join('tmp'))
+    '''Checks the integrity of an input file and returns the processed input'''
+
+    filepath = save_uploaded_file(request.files['inputFile'])
+
+    r = R()
+    r('source("cometsWrapper.R")')
+    r.filepath = filepath
+    output = r['COMETS::readCOMETSinput(filepath)']
+
+    if 'error' in output:
+        raise(output['error'])
+
+    return jsonify(output)
 
 
-# takes excel workbook as input
-@app.route('/cometsRest/integrityCheck', methods = ['POST'])
-def integrityCheck():
-    try:
-        userFile = request.files['inputFile']
-        if not os.path.exists('tmp'):
-            os.makedirs('tmp')
-        name, ext = os.path.splitext(userFile.filename)
-        filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext.lower()
-        filepath = os.path.join('tmp', filename)
-        saveFile = userFile.save(os.path.join('tmp', filename))
-        rds_filepath = filepath + '.rds'
+@app.route('/api/correlate_batch', methods=['POST'])
+def correlate_batch():
+    '''Queues a batch correlation job'''
 
-        if os.path.isfile(os.path.join('tmp', filename)):
-            print("Successfully Uploaded")
-        r = pr.R()
-        r('source("./cometsWrapper.R")')
-        r.assign('filename',os.path.join('tmp',filename))
-        r.assign('cohort',request.form['cohortSelection'])
-        r('checkIntegrity = checkIntegrity(filename,cohort)')
-        r('saveRDS(checkIntegrity, file="%s")' % rds_filepath)
-        returnFile = r['checkIntegrity']
-        del r
-        with open(returnFile) as file:
-            result = json.loads(file.read())
-        os.remove(returnFile)
-        os.remove(filepath)
-        if ("error" in result):
-            response = buildFailure(result['error'])
-        else:
-            result['saveValue']['filename'] = os.path.splitext(filename)[0]
-            result['saveValue']['originalFilename'] = name+ext
-            result['saveValue']['rdsFilename'] = rds_filepath
-            response = buildSuccess(result['saveValue'])
-    except Exception:
-        app.logger.error(format_exc())
-        response = buildFailure({"status": False, "integritymessage":"An unknown error occurred"})
-    finally:
-        return response
+    parameters = json.loads(request.form.json)
+    filepath = parameters['input_file']
 
-# takes previously uploaded file and
-@app.route('/cometsRest/correlate', methods = ['POST'])
+    upload_file_s3(filepath, '/comets/input/')
+    queue_correlation_job(parameters)
+    return jsonify(True)
+
+
+@app.route('/api/correlate', methods=['POST'])
 def correlate():
-    try:
-        userFile = request.files['inputFile']
-        if not os.path.exists('tmp'):
-            os.makedirs('tmp')
-        name, ext = os.path.splitext(userFile.filename)
-        filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext.lower()
-        filepath = os.path.join('tmp', filename)
-        saveFile = userFile.save(os.path.join('tmp', filename))
+    '''Runs a single correlation, given a user-defined model'''
 
-        parameters = dict(request.form)
-        for field in parameters:
-            parameters[field] = parameters[field][0]
-        parameters['filename'] = filename
+    parameters = json.loads(request.form.json)
 
-        if ('outcome' in parameters):
-            parameters['outcome'] = json.loads(parameters['outcome'])
-            if (len(parameters['outcome']) == 0):
-                parameters['outcome'] = None
-        if ('exposure' in parameters):
-            parameters['exposure'] = json.loads(parameters['exposure'])
-            if (len(parameters['exposure']) == 0):
-                parameters['exposure'] = None
-        if ('covariates' in parameters):
-            parameters['covariates'] = json.loads(parameters['covariates'])
-            if (len(parameters['covariates']) == 0):
-                parameters['covariates'] = None
-        if ('strata' in parameters):
-            if (len(parameters['strata']) == 0):
-                parameters['strata'] = None
-            else:
-                parameters['strata'] = [parameters['strata']]
-        if ('whereQuery' in parameters):
-            parameters['whereQuery'] = json.loads(parameters['whereQuery']);
-            if (len(parameters['whereQuery']) == 0):
-                parameters['whereQuery'] = None
-        if (parameters['modelName'] == "All models"):
-            queueFile(parameters)
-            os.remove(filepath)
-            response = buildFailure({'status': 'info', 'statusMessage': "The results will be emailed to you."})
-        else:
-            if ('filename' in parameters):
-                parameters['filename'] = os.path.join('tmp', parameters['filename'])
-            r = pr.R()
-            r('source("./cometsWrapper.R")')
-            r.assign('parameters',json.dumps(parameters))
-            r('correlate = runModel(parameters)')
-            returnFile = r['correlate']
-            os.remove(filepath)
-            del r
-            with open(returnFile) as file:
-                result = json.loads(file.read())
-            os.remove(returnFile)
-            if ("error" in result):
-                response = buildFailure(result['error'])
-            else:
-                if ('warnings' in result):
-                    result['saveValue']['warnings'] = result['warnings']
-                response = buildSuccess(result['saveValue'])
+    r = R()
+    r['source("cometsWrapper.R")']
+    r.parameters = json.dumps(parameters)
+    output = r['correlate(parameters)']
+    return jsonify(output)
 
-    except Exception:
-        app.logger.error(format_exc())
-        response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
-    finally:
-        return response
 
-@app.route('/cometsRest/combine', methods = ['POST'])
-def combine():
-    try:
-        parameters = dict(request.form)
-        for field in parameters:
-            parameters[field] = parameters[field][0]
-        if not os.path.exists('tmp'):
-            os.makedirs('tmp')
-        timestamp = time.strftime("%Y_%m_%d_%I_%M")
-        # abundences
-        abundances = request.files['abundances']
-        name, ext = os.path.splitext(abundances.filename)
-        filenameA = os.path.join('tmp',"abundances_" + timestamp + ext)
-        saveFile = abundances.save(filenameA)
-        parameters['abundances'] = filenameA
-        if os.path.isfile(filenameA):
-            print("Successfully Uploaded Abundances")
-        # metadata
-        metadata = request.files['metadata']
-        name, ext = os.path.splitext(metadata.filename)
-        filenameM = os.path.join('tmp',"metadata_" + timestamp + ext)
-        saveFile = metadata.save(filenameM)
-        parameters['metadata'] = filenameM
-        if os.path.isfile(filenameM):
-            print("Successfully Uploaded Metadata")
-        #samples
-        sample = request.files['sample']
-        name, ext = os.path.splitext(sample.filename)
-        filenameS = os.path.join('tmp',"sample_" + timestamp + ext)
-        saveFile = sample.save(filenameS)
-        parameters['sample'] = filenameS
-        if os.path.isfile(filenameS):
-            print("Successfully Uploaded Sample")
-        r = pr.R()
-        r('source("./cometsWrapper.R")')
-        r.assign('parameters', json.dumps(parameters))
-        r('combine = combineInputs(parameters)')
-        returnFile = r['combine']
-        del r
-        with open(returnFile) as file:
-            result = json.loads(file.read())
-        os.remove(returnFile)
-        os.remove(filenameA)
-        os.remove(filenameM)
-        os.remove(filenameS)
-        if ("error" in result):
-            return jsonify(result['error']), 500
-        else:
-            return jsonify(result['saveValue'])
-    except Exception:
-        app.logger.error(format_exc())
-        return jsonify({"status": False, "statusMessage":"An unknown error has occurred."}), 500
+@app.route('/api/create_comets_input', methods=['POST'])
+def combine_inputs():
+    '''Creates a COMETS input file given csv files, a variable map, and a
+    template name
 
-@app.route('/cometsRest/templates', methods = ['GET'])
-def templates():
-    return jsonify(app.config["htmlTemplates"])
+    Returns the path to the output file
+    '''
 
-@app.route('/cometsRest/excelTemplates', methods=['GET'])
-def excelTemplates():
-    return jsonify(app.config["excelTemplates"])
+    output_file = 'comets_input_%s.xlsx' % time.strftime('%Y_%m_%d_%I_%M')
+    output_filepath = os.path.join(app.config['temp_dir'], output_file)
 
-@app.route('/cometsRest/public/cohorts', methods=['GET'])
-def cohorts():
-    return jsonify(app.config['cohortList'])
+    r = R()
+    r.template = request.form.template
+    r.varmap = request.form.varmap
+    r.output_filepath = output_filepath
+    r.filenames = {
+        'abundancesfile': save_uploaded_file(request.files['abundances_file']),
+        'metabfile': save_uploaded_file(request.files['metabolites_file']),
+        'subjfile': save_uploaded_file(request.files['subjects_file']),
+    }
+    r['''COMETS::createCOMETSinput(
+            template = template,
+            varmap = varmap,
+            filenames = filenames,
+            outputfile = output_filepath)''']
 
-@app.route('/cometsRest/registration/user_metadata', methods=['POST'])
-def user_metadata():
-    try:
-        parameters = json.loads(request.data)
-        data = {
-            "app_metadata": {
-                "comets": "active"
-            },
-            "user_metadata" : {
-                "affiliation": parameters['affiliation'],
-                "cohort": parameters['cohort'],
-                "family_name": parameters['family_name'],
-                "given_name": parameters['given_name']
-            }
+    return output_filepath
+
+
+@app.route('/admin/users', methods=['POST'])
+def create_user():
+    '''Registers a new comets user and notifies administrators'''
+
+    config = app.config['auth0']
+
+    parameters = request.json
+    data = {
+        'app_metadata': {
+            'comets': 'active'
+        },
+        'user_metadata': {
+            'affiliation': parameters['affiliation'],
+            'cohort': parameters['cohort'],
+            'family_name': parameters['family_name'],
+            'given_name': parameters['given_name']
         }
-        url = "https://"+app.config['auth0.domain']+".auth0.com/api/v2/users/"+parameters['user_id']
-        headers = {
-            "Authorization": "Bearer "+app.config['auth0.token'],
-            "Content-Type": "application/json"
-        }
-        response = json.loads(requests.patch(url,data=json.dumps(data),headers=headers).text)
-        response['comets'] = 'active'
-        user = response['user_metadata']
-        email = response['email']
-        composeMail(
-            app.config['email.sender'],
-            app.config['email.admin'],
-            "Comets User Registration",
-            "Dear Comets Admins,\n\n"+
-            "This email is to let you know a user just registered on the Comets Analytics web site and entered the following information.\n\n"+
-            "Email Address: "+email+"\n"+
-            "Last Name: "+user["family_name"]+"\n"+
-            "First Name: "+user["given_name"]+"\n"+
-            "Affiliation: "+user["affiliation"]+"\n"+
-            "Cohort: "+user["cohort"]+"\n\n"+
-            "Sincerely,\n"+
-            "Sent from the Comets Analytics Web Tool"
+    }
+
+    headers = {'Authorization': 'Bearer ' + config['token']}
+
+    url = 'https://%s.auth0.com/api/v2/user/%s' % (
+        config['domain'],
+        config['user_id']
+    )
+
+    response = requests.patch(url, json=data, headers=headers).json()
+
+    response['comets'] = 'active'
+    user = response['user_metadata']
+    email = response['email']
+
+    email_config = app.config['email']
+    send_email(
+        email_config['sender'],
+        email_config['admin'],
+        '\n'.join(
+            'Comets User Registration',
+            'Dear Comets Admins, \n',
+            'This email is to let you know a user has registered on the ' +
+            'COMETS Analytics web site and entered the following information.',
+            'Email Address: ' + email,
+            'Last Name: ' + user['family_name'],
+            'First Name: ' + user['given_name'],
+            'Affiliation: ' + user['affiliation'],
+            'Cohort: ' + user['cohort'],
+            '\nSincerely,',
+            'Sent from the Comets Analytics Web Tool',
         )
-        return jsonify(response)
-    except Exception:
-        app.logger.error(format_exc())
-        return jsonify({"status": False, "statusMessage":"An unknown error has occurred."}), 500
+    )
+    return jsonify(response)
 
-@app.route('/cometsRest/admin/users', methods=['GET'])
-def user_list_get():
-    try:
-        url = "https://"+app.config['auth0.domain']+".auth0.com/api/v2/users?q=comets%3A*%20TO%20*&fields=app_metadata%2Cemail%2Cfamily_name%2Cgiven_name%2Cidentities.connection%2Cuser_id%2Cuser_metadata&include_fields=true&per_page=100&page="
-        headers = {
-            "Authorization": "Bearer "+app.config['auth0.token'],
-            "Content-Type": "application/json"
-        }
-        page = 0
-        request = json.loads(requests.get(url+str(page),headers=headers).text)
-        response = request
-        while len(request) == 100:
-            page += 1
-            request = json.loads(requests.get(url+str(page),headers=headers).text)
-            response += request
-        return buildSuccess({"user_list":response})
-    except Exception:
-        app.logger.error(format_exc())
-        return jsonify({"status": False, "statusMessage":"An unknown error occurred"}), 500
 
-@app.route('/cometsRest/admin/users', methods=['PATCH'])
-def user_list_update():
-    try:
-        user_list = json.loads(request.data)
-        response = []
-        for parameters in user_list:
-            comets = parameters['app_metadata']['comets']
-            data = {
-                "app_metadata": {
-                    "comets": comets
-                }
+@app.route('/admin/users', methods=['GET'])
+def get_users():
+    '''Retrieves all comets users'''
+
+    config = app.config['auth0']
+    page = 0
+    users = []
+    total_users = 1  # placeholder value to begin paginating results
+
+    # retrieve 1000 users at a time
+    while len(users) < total_users:
+        response = requests.get(
+            'https://%s.auth0.com/api/v2/users' % config['domain'],
+            headers={'Authorization': 'Bearer ' + config['token']},
+            params={
+                'search_engine': 'v3',
+                'include_totals': 'true',
+                'page': page,
+                'per_page': 1000,
             }
-            url = "https://"+app.config['auth0.domain']+".auth0.com/api/v2/users/"+parameters['user_id']
-            headers = {
-                "Authorization": "Bearer "+app.config['auth0.token'],
-                "Content-Type": "application/json"
-            }
-            line = json.loads(requests.patch(url, data=json.dumps(data), headers=headers).text)
-            line['comets'] = line['app_metadata']['comets']
-            response.append(line)
+        ).json()
+        total_users = response['total']
+        users += response['users']
+        page += 1
 
-        return jsonify({'user_list': response})
-    except Exception:
-        app.logger.error(format_exc())
-        return jsonify({"status": False, "statusMessage":"An unknown error occurred"}), 500
+    return jsonify(users)
 
-init()
-"""
+
+@app.route('/admin/users', methods=['PATCH'])
+def update_users():
+    '''Updates a list of comets users'''
+
+    config = app.config['auth0']
+
+    # for each user record provided, make a PATCH request for that user
+    # and return the result for each request
+    records = request.json()
+    responses = map(lambda record: requests.patch(
+        'https://%s.auth0.com/api/v2/users' % config['domain'],
+        headers={'Authorization': 'Bearer ' + config['token']},
+        json=record
+    ).json(), records)
+
+    return jsonify(responses)
+
+
+# Launch in debug mode if this script is being run by the python interpreter
 if __name__ == '__main__':
-    # If this script is being run by the python interpreter
-    # then serve this application using debug mode on port 8000
-
-    @app.route('/', strict_slashes=False)
-    @app.route('/<path:path>', strict_slashes=False)
-    def static_files(path):
-        if path.endswith('/') or '.' not in path:
-            path += 'index.html'
-        return send_from_directory(os.getcwd(), path)
-
-    app.run(host = '0.0.0.0', port = 8000, debug = True)
+    debug()

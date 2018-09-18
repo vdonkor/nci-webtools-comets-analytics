@@ -1,52 +1,71 @@
 <% if(status) { %>
-    <p>The heatmap below displays EXPOSUREs on the x axis and OUTCOMEs on the y axis.</p>
-    <div class="row">
-        <div class="col-xs-12 col-sm-6 col-md-3">
-            <label for="sortStratum">Strata Sort By:</label>
-            <select id="sortStratum" class="form-control"<%= clusterResults ? " disabled" : "" %>>
-                <option value="All participants (no stratification)"<%= sortRow == "All participants (no stratification)" ? " selected" : "" %>>All participants (no stratification)</option>
-                <% _.each(strataStore,function(stratum,key,list) { %>
-                    <option value="<%= stratum.value %>"<%= sortStratum == stratum.value ? "selected" : "" %>><%= stratum.text %></option>
-                <% }); %>
-            </select>
-        </div>
-        <div class="col-xs-12 col-sm-6 col-md-3">
-            <label for="sortRow">Outcomes Sort By:</label>
-            <select id="sortRow" class="form-control"<%= clusterResults ? " disabled" : "" %>>
-                <% _.each(exposures,function(exposure,key,list) { %>
-                    <option value="<%= exposure %>"<%= sortRow == exposure ? "selected" : "" %>><%= exposure %></option>
-                <% }); %>
-                <option value="Metabolite Name (A-Z)"<%= sortRow == "Metabolite Name (A-Z)" ? " selected" : "" %>>Metabolite Name (A-Z)</option>
-                <option value="Metabolite Name (Z-A)"<%= sortRow == "Metabolite Name (Z-A)" ? " selected" : "" %>>Metabolite Name (Z-A)</option>
-            </select>
-        </div>
+<p>The heatmap below displays EXPOSUREs on the x axis and OUTCOMEs on the y axis.</p>
+<div class="row">
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <label for="sortStratum">Strata Sort By:</label>
+        <select id="sortStratum" class="form-control" <%=clusterResults && "disabled" %>>
+            <option
+                value="All participants (no stratification)"
+                <%=sortRow=="All participants (no stratification)" && " selected" %>>
+                All participants (no stratification)
+            </option>
+            <% strataStore.map(function(stratum, key, list) { %>
+            <option value="<%= stratum.value %>" <%=sortStratum==stratum.value && "selected" %>>
+                <%= stratum.text %>
+            </option>
+            <% }); %>
+        </select>
     </div>
-    <div class="row">
-        <div class="col-xs-12 col-sm-6 col-md-3">
-            <label for="plotColorscale">Palette:</label>
-            <select id="plotColorscale" class="form-control">
-                <% _.each(colorscales,function(colorscale,key,list) { %>
-                    <option value="<%= colorscale %>"<%= plotColorscale == colorscale ? "selected" : "" %>><%= colorscale %></option>
-                <% }); %>
-            </select>
-        </div>
-        <div class="col-xs-12 col-sm-6 col-md-3">
-            <label for="plotHeight">Plot height:</label>
-            <input id="plotHeight" class="form-control" value="<%= plotHeight %>" type="number" min="200" max="9000" step="10" />
-        </div>
-        <div class="col-xs-12 col-sm-6 col-md-3">
-            <label for="plotWidth">Plot width:</label>
-            <input id="plotWidth" class="form-control" value="<%= plotWidth %>" type="number" min="200" max="9000" step="10" />
-        </div>
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <label for="sortRow">Outcomes Sort By:</label>
+        <select id="sortRow" class="form-control" <%= clusterResults && "disabled" %>>
+            <% exposures.map(function(exposure, key, list) { %>
+                <option value="<%= exposure %>" <%= sortRow == exposure && "selected" %>>
+                    <%= exposure %>
+                </option>
+            <% }); %>
+            <option value="Metabolite Name (A-Z)" <%= sortRow == "Metabolite Name (A-Z)" && "selected" %>>
+                Metabolite Name (A-Z)
+            </option>
+            <option value="Metabolite Name (Z-A)" <%= sortRow == "Metabolite Name (Z-A)" && "selected" %>>
+                Metabolite Name (Z-A)
+            </option>
+        </select>
     </div>
-    <hr />
-    <div style="margin: 5px 200px;">       
-        <label class="checkbox-inline" for="displayAnnotations">
-            <input type="checkbox" id="displayAnnotations"<%= displayAnnotations ? " checked" : "" %>>Display annotations
-        </label>    
-        <label class="checkbox-inline" for="clusterResults" title="The checkbox will only be enabled when there are at least 2 exposures and outcomes.">
-            <input type="checkbox" id="clusterResults"<%= clusterResults ? " checked" : "" %><%= Object.keys(clustersort||{}).length > 0 ? "" : " disabled" %>/>Show hierarchical clustering (Requires at least 2 exposures and outcomes)
-        </label>        
-    </div>    
-    <div id="correlateHeatmap"></div>
+</div>
+<div class="row">
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <label for="plotColorscale">Palette:</label>
+        <select id="plotColorscale" class="form-control">
+            <% colorscales.map(function(colorscale, key, list) { %>
+                <option value="<%= colorscale %>" <%= plotColorscale == colorscale && "selected" %>>
+                    <%= colorscale %>
+                </option>
+            <% }); %>
+        </select>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <label for="plotHeight">Plot height:</label>
+        <input id="plotHeight" class="form-control" value="<%= plotHeight %>" type="number" min="200" max="9000" step="10" />
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <label for="plotWidth">Plot width:</label>
+        <input id="plotWidth" class="form-control" value="<%= plotWidth %>" type="number" min="200" max="9000" step="10" />
+    </div>
+</div>
+<hr />
+<div style="margin: 5px 200px;">
+    <label class="checkbox-inline" for="displayAnnotations">
+        <input type="checkbox" id="displayAnnotations" <%= displayAnnotations && "checked" %>>Display annotations
+    </label>
+    <label class="checkbox-inline" for="clusterResults" title="The checkbox will only be enabled when there are at least 2 exposures and outcomes.">
+        <input
+            type="checkbox"
+            id="clusterResults"
+            <%= clusterResults && "checked" %>
+            <%= _.isEqual({}, clustersort || {}) && "disabled" %>>
+            Show hierarchical clustering (Requires at least 2 exposures and outcomes)
+    </label>
+</div>
+<div id="correlateHeatmap"></div>
 <% } %>
