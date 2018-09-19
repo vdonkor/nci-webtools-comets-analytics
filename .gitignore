@@ -9,6 +9,8 @@ comets/app/
 comets/common/
 comets/examples/*
 comets/restricted/token.txt
+comets/restricted
 comets/tmp/
 docker/run/
 .vscode
+dev.bat
