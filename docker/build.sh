@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# web application container image
+# web application
 docker build -t cbiitss/comets:base0 -t cbiitss/comets -f comets.base.dockerfile .
 
-# request processor image
+# request processor
 docker build -t cbiitss/comets:processor -f comets.processor.dockerfile .
 
-# dev image
+# local development
 docker build -t cbiitss/comets:dev -f comets.dev.dockerfile .
