@@ -1,16 +1,4 @@
-.Rproj.user/
-*.csv
 *.pyc
-*.sh
-*.wsgi
-*.yml
-comets/.Rhistory
-comets/app/
-comets/common/
-comets/examples/*
-comets/restricted/token.txt
-comets/restricted
+comets/restricted/
 comets/tmp/
-docker/run/
 .vscode
-dev.bat
