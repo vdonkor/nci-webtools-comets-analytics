@@ -41,7 +41,7 @@ def init():
         app.config.update(yaml.safe_load(f))
 
     r = R()
-    r('source("./cometsWrapper.R")')
+    r('source("cometsWrapper.R")')
     app.config['cohorts'] = r['get_comets_cohorts()']
     app.config['excel_templates'] = r['get_comets_templates()']
 
@@ -154,34 +154,35 @@ def save_uploaded_file(uploaded_file, prefix='input'):
     return filepath
 
 
+@app.route('/api/ping', methods=['GET'])
 @app.route('/cometsRest/public/ping', methods=['GET'])
 def ping():
     '''Returns a response if this service is running'''
     return jsonify({'pong': 1})
 
 
-@app.route('/cohorts', methods=['GET'])
+@app.route('/api/cohorts', methods=['GET'])
 def get_cohorts():
     '''Returns all cohorts'''
     return jsonify(app.config['cohorts'])
 
 
-@app.route('/excel_templates', methods=['GET'])
+@app.route('/api/excel_templates', methods=['GET'])
 def get_excel_templates():
     '''Returns excel template parameters used to generate input files'''
     return jsonify(app.config['excel_templates'])
 
 
-@app.route('/api/read_comets_input', methods=['POST'])
+@app.route('/api/read_input', methods=['POST'])
 def check_integrity():
     '''Checks the integrity of an input file and returns the processed input'''
 
     filepath = save_uploaded_file(request.files['inputFile'])
 
     r = R()
-    r('source("cometsWrapper.R")')
     r.filepath = filepath
-    output = r['COMETS::readCOMETSinput(filepath)']
+    r('source("cometsWrapper.R")')
+    output = r['read_comets_input(filepath)']
 
     if 'error' in output:
         raise(output['error'])
@@ -193,29 +194,29 @@ def check_integrity():
 def correlate_batch():
     '''Queues a batch correlation job'''
 
-    parameters = json.loads(request.form.json)
-    filepath = parameters['input_file']
+    model_parameters = json.loads(request.form.json)
+    filepath = model_parameters['input_filepath']
 
     upload_file_s3(filepath, '/comets/input/')
-    queue_correlation_job(parameters)
+    queue_correlation_job(model_parameters, queue_name='/queue/Comets')
     return jsonify(True)
 
 
 @app.route('/api/correlate', methods=['POST'])
 def correlate():
-    '''Runs a single correlation, given a user-defined model'''
+    '''Runs a correlation given a user-defined model'''
 
     parameters = json.loads(request.form.json)
 
     r = R()
-    r['source("cometsWrapper.R")']
+    r('source("cometsWrapper.R")')
     r.parameters = json.dumps(parameters)
-    output = r['correlate(parameters)']
+    output = r['run_comets_correlation(parameters)']
     return jsonify(output)
 
 
-@app.route('/api/create_comets_input', methods=['POST'])
-def combine_inputs():
+@app.route('/api/create_input', methods=['POST'])
+def create_input():
     '''Creates a COMETS input file given csv files, a variable map, and a
     template name
 
@@ -226,21 +227,26 @@ def combine_inputs():
     output_filepath = os.path.join(app.config['temp_dir'], output_file)
 
     r = R()
+    r.comets_wrapper_path = './cometsWrapper.R'
+
     r.template = request.form.template
     r.varmap = request.form.varmap
     r.output_filepath = output_filepath
-    r.filenames = {
-        'abundancesfile': save_uploaded_file(request.files['abundances_file']),
-        'metabfile': save_uploaded_file(request.files['metabolites_file']),
-        'subjfile': save_uploaded_file(request.files['subjects_file']),
-    }
-    r['''COMETS::createCOMETSinput(
+    r.abundances_filepath = save_uploaded_file(request.files['abundances_file'])
+    r.metabolites_filepath = save_uploaded_file(request.files['metabolites_file'])
+    r.subjects_filepath = save_uploaded_file(request.files['subjects_file'])
+
+    output = r['''create_comets_input(
             template = template,
             varmap = varmap,
-            filenames = filenames,
-            outputfile = output_filepath)''']
+            outputfile = output_filepath,
+            filenames = list(
+                abundancesfile = abundances_filepath
+                metabfile = metabolites_filepath
+                subjfile = subjects_filepath
+            ))''']
 
-    return output_filepath
+    return jsonify(output)
 
 
 @app.route('/admin/users', methods=['POST'])
