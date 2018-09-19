@@ -12,7 +12,11 @@ rm -rf /usr/lib64/R/library/00LOCK-rcode
 # change ownership of deployment directory
 chown -R ncianalysis:ncianalysis /deploy
 
+# set default password for rstudio server user
 echo ncianalysis | passwd --stdin ncianalysis
+
+# start rstudio server
+
 
 # start wsgi server
 pushd /deploy

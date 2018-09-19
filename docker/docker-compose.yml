@@ -22,7 +22,7 @@ services:
       - activemq
     links:
       - activemq
-    entrypoint: "entrypoint.sh /deploy/app/process/Consumer.py'"
+    entrypoint: "entrypoint.sh /deploy/app/process/Consumer.py"
   activemq:
     image: "cbiitss/activemq:latest"
     container_name: activemq
