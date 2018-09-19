@@ -1,4 +1,4 @@
 *.pyc
+.vscode
 comets/restricted/
 comets/tmp/
-.vscode
