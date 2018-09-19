@@ -70,6 +70,7 @@ RUN R -e "\
 # Install python dependencies
 RUN pip install --upgrade pip \
  && pip install \
+    boto~=2.49 \
     boto3~=1.8 \
     flask~=1.0 \
     mod_wsgi~=4.6 \
@@ -81,23 +82,13 @@ RUN pip install --upgrade pip \
     stompest.async==2.3.0 \
     twisted==17.5.0
 
-# Copy entrypoints and make them executable
+# Copy entrypoint and make it executable
 COPY "./entrypoint.sh" "/bin/entrypoint.sh"
 
 RUN dos2unix /bin/entrypoint.sh \
  && chmod 755 /bin/entrypoint.sh
 
-COPY "./entrypoint.processor.sh" "/bin/entrypoint.processor.sh"
-
-RUN dos2unix /bin/entrypoint.processor.sh \
- && chmod 755 /bin/entrypoint.processor.sh
-
-COPY "./entrypoint.dev.sh" "/bin/entrypoint.dev.sh"
-
-RUN dos2unix /bin/entrypoint.dev.sh \
- && chmod 755 /bin/entrypoint.dev.sh
-
-# Copy comets package installation script and make it executable
+# Copy install_comets_package script and make it executable
 COPY "./install_comets_package.sh" "/bin/install_comets_package.sh"
 
 RUN dos2unix /bin/install_comets_package.sh \
