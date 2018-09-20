@@ -9,8 +9,17 @@ rm -rf /usr/lib64/R/library/00LOCK-rcode
 # install comets package if directory does not exist
 [[ ! -d /usr/lib64/R/library/COMETS ]] && install_comets_package.sh
 
+# create ncianalyis user
+useradd -u 4004 ncianalysis
+
 # change ownership of deployment directory
 chown -R ncianalysis:ncianalysis /deploy
+
+# set default password for rstudio server user
+echo ncianalysis | passwd --stdin ncianalysis
+
+# start rstudio server
+
 
 # start wsgi server
 pushd /deploy
@@ -31,6 +40,8 @@ mod_wsgi-express start-server /deploy/app/deploy.wsgi \
   --request-timeout 900 \
   --reload-on-changes \
   --limit-request-body 2147483647 \
-  --processes 2 \
-  --threads 4 \
-  --rotate-logs
+  --processes 1 \
+  --threads 1 \
+  --rotate-logs \
+  --log-level info
+

@@ -14,7 +14,7 @@ from twisted.internet import defer, reactor
 
 config = {}
 logger = logging.getLogger("comets_processor")
-#logger.addHandler(logging.handlers.TimedRotatingFileHandler("comets_processor.log",'midnight'))
+logger.addHandler(logging.handlers.TimedRotatingFileHandler('/deploy/logs/comets_processor.log','midnight'))
 
 class Consumer(object):
 
@@ -69,7 +69,7 @@ class Consumer(object):
             filename = parameters['filename']
 
             logger.info('--------------------------------------------------------------------------------')
-            
+
             logger.info('[%s] Received frame: %s' % (self.timestamp(), parameters))
             logger.info('[%s] Original filename: %s' % (self.timestamp(), parameters['originalFilename']))
             logger.info('[%s] Fetching input file from S3: %s' % (self.timestamp(), '/comets/input/'+filename))
