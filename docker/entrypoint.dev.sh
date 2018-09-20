@@ -42,4 +42,6 @@ mod_wsgi-express start-server /deploy/app/deploy.wsgi \
   --limit-request-body 2147483647 \
   --processes 1 \
   --threads 1 \
-  --rotate-logs
+  --rotate-logs \
+  --log-level info
+

@@ -1241,4 +1241,22 @@ $(function () {
     }).done(after3);
     appComets.models.cohortsList.fetch().done(after3);
     appComets.models.templatesList.fetch().done(after3);
+
+    $(window).on('beforeunload', function(e) {
+        e.preventDefault();
+
+        var sessionFiles = [
+            appComets.models.harmonizationForm.get('rdsFilePath'),
+            appComets.models.integrityResults.get('csvDownload'),
+            appComets.models.correlationResults.get('csv'),
+        ].filter(
+            _.isString
+        ).map(function(filepath) {
+            return filepath.replace(/tmp\//, '')
+        });
+
+        $.post('/api/end_session', JSON.stringify(sessionFiles));
+
+        e.returnValue = '';
+    })
 });

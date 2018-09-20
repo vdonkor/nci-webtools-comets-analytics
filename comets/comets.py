@@ -1,4 +1,4 @@
-import json, linecache, os, requests, smtplib, sys, time, yaml
+import json, linecache, os, requests, smtplib, sys, time, yaml, logging
 import pyper as pr
 from boto.s3.connection import S3Connection
 from flask import Flask, json, jsonify, request, Response, send_from_directory
@@ -7,6 +7,7 @@ from stompest.sync import Stomp
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.logger.setLevel(logging.INFO)
 
 def flatten(yaml,parent=None):
     for param in yaml:
@@ -109,13 +110,16 @@ def integrityCheck():
         saveFile = userFile.save(os.path.join('tmp', filename))
 
         if os.path.isfile(os.path.join('tmp', filename)):
-            print("Successfully Uploaded")
+            app.logger.info("Successfully Uploaded")
+
+
         r = pr.R()
         r('source("./cometsWrapper.R")')
         r.assign('filename',os.path.join('tmp',filename))
         r.assign('cohort',request.form['cohortSelection'])
         r('checkIntegrity = checkIntegrity(filename,cohort)')
         returnFile = r['checkIntegrity']
+        app.logger.info("Finished integrity check")
         del r
         with open(returnFile) as file:
             result = json.loads(file.read())
@@ -181,6 +185,7 @@ def correlate():
             queueFile(parameters)
             os.remove(filepath)
             response = buildFailure({'status': 'info', 'statusMessage': "The results will be emailed to you."})
+            app.logger.info("Queued file %s", filepath)
         else:
             if ('filename' in parameters):
                 parameters['filename'] = os.path.join('tmp', parameters['filename'])
@@ -200,6 +205,7 @@ def correlate():
                 if ('warnings' in result):
                     result['saveValue']['warnings'] = result['warnings']
                 response = buildSuccess(result['saveValue'])
+            app.logger.info("Finished running model for %s", userFile.filename)
 
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
@@ -401,13 +407,14 @@ def user_list_update():
 @app.route('/api/end_session', methods=['POST'])
 def end_session():
     ''' Cleans up any files generated during a session '''
-
-    filenames = map(secure_filename, request.json())
-
-    for filename in filenames:
-        filepath = os.path.join('tmp', filename)
-        if os.path.exists(filepath):
-            os.remove(filepath)
+    app.logger.info('User session has ended')
+    for filename in request.get_json(force=True) or []:
+        if filename:
+            filename = secure_filename(filename)
+            filepath = os.path.join('tmp', filename)
+            app.logger.info('Cleaning up file %s', filepath)
+            if os.path.exists(filepath):
+                os.remove(filepath)
 
     return jsonify(True)
 
