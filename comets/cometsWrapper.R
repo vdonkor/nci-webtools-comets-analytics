@@ -1,6 +1,6 @@
 library(stringr)
 library(jsonlite)
-library(COMETS)
+# library(COMETS)
 library(stats)
 
 getCohorts <- function() {
@@ -83,12 +83,12 @@ checkIntegrity <- function(filename,cohort) {
         returnValue$saveValue <- tryCatch(
             withCallingHandlers(
                 {
-                  exmetabdata = readCOMETSinput(filename)
+                  exmetabdata = COMETS::readCOMETSinput(filename)
                   rdsFilePath = paste0('tmp/integrity_check_', timestamp, '.rds')
                   saveRDS(exmetabdata, rdsFilePath)
                   exmetabdata$rdsFilePath = rdsFilePath
                   exmetabdata$stratifiable <- t(as.data.frame(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...) { mdCol = table(...); !any(mdCol < 15) })))# && length(as.vector(mdCol)) > 1
-                  exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
+                  exmetabdata$csvDownload = COMETS::OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
                   subjectMetadata <- as.data.frame(exmetabdata$allSubjectMetaData)
                   subjectMetadata[,1] <- as.character(lapply(
                       exmetabdata$allSubjectMetaData,
@@ -141,7 +141,7 @@ runModel <- function(jsonData) {
                 {
                     input = fromJSON(jsonData)
                     exmetabdata <- readRDS(input$rdsFilePath)
-                    exmodeldata <- getModelData(exmetabdata,
+                    exmodeldata <- COMETS::getModelData(exmetabdata,
                       modelspec=input$methodSelection,
                       modlabel=input$modelSelection,
                       rowvars=input$outcome,
@@ -150,11 +150,11 @@ runModel <- function(jsonData) {
                       strvars=input$strata,
                       where=input$whereQuery
                     )
-                    excorrdata <- runCorr(exmodeldata,exmetabdata,input$cohortSelection)
+                    excorrdata <- COMETS::runCorr(exmodeldata,exmetabdata,input$cohortSelection)
                     if (length(excorrdata) <= 0) {
                       stop("ModelNotRunException")
                     }
-                    csv <- OutputCSVResults(paste0('tmp/corr',timestamp),excorrdata,input$cohortSelection)
+                    csv <- COMETS::OutputCSVResults(paste0('tmp/corr',timestamp),excorrdata,input$cohortSelection)
                     heatmapdata = excorrdata[!is.na(excorrdata$pvalue),]
                     clustersort = NULL
                     if (length(unique(heatmapdata$outcomespec)) > 1 && length(unique(heatmapdata$exposurespec)) > 1 && length(unique(excorrdata$stratavar)) < 1) {
