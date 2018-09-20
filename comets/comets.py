@@ -4,6 +4,7 @@ from boto.s3.connection import S3Connection
 from flask import Flask, json, jsonify, request, Response, send_from_directory
 from stompest.config import StompConfig
 from stompest.sync import Stomp
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -106,7 +107,7 @@ def integrityCheck():
         filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext.lower()
         filepath = os.path.join('tmp', filename)
         saveFile = userFile.save(os.path.join('tmp', filename))
-        
+
         if os.path.isfile(os.path.join('tmp', filename)):
             print("Successfully Uploaded")
         r = pr.R()
@@ -396,6 +397,19 @@ def user_list_update():
         response = buildFailure({"status": False, "statusMessage":"An unknown error occurred"})
     finally:
         return response
+
+@app.route('/api/end_session', methods=['POST']):
+def end_session():
+    ''' Cleans up any files generated during a session '''
+
+    filenames = map(secure_filename, request.json())
+
+    for filename in filenames:
+        filepath = os.path.join('tmp', filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+    return jsonify(True)
 
 with open("restricted/settings.yml", 'r') as f:
     flatten(yaml.safe_load(f))
