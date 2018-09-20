@@ -26,10 +26,10 @@ html, body {
     background: #fff;
 }
 nav.navbar.navbar-default {
-    padding: 5px 0;
+    padding: 5px;
 }
 #adminBtn:not(.show) {
-    display: none;  
+    display: none;
 }
 .tab-content,
 #pageContent > .container-fluid + div {
