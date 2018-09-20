@@ -1,4 +1,5 @@
 *.pyc
+*.log
 .vscode
 comets/restricted/
 comets/tmp/

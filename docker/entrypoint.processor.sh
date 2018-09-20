@@ -19,4 +19,4 @@ chown -R ncianalysis:ncianalysis /deploy
 # if not specified, use default Consumer.py
 su ncianalysis
 pushd /deploy/app
-python ${1:-"process/Consumer.py"} > /deploy/logs/comets_processor.log  2>&1
+python ${1:-"process/Consumer.py"}
