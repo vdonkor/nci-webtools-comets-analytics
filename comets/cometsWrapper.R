@@ -84,6 +84,9 @@ checkIntegrity <- function(filename,cohort) {
             withCallingHandlers(
                 {
                   exmetabdata = readCOMETSinput(filename)
+                  rdsFilePath = paste0('tmp/integrity_check_', timestamp, '.rds')
+                  saveRDS(exmetabdata, rdsFilePath)
+                  exmetabdata$rdsFilePath = rdsFilePath
                   exmetabdata$stratifiable <- t(as.data.frame(apply(exmetabdata$subjdata[exmetabdata$allSubjectMetaData],2,function(...) { mdCol = table(...); !any(mdCol < 15) })))# && length(as.vector(mdCol)) > 1
                   exmetabdata$csvDownload = OutputCSVResults(paste0('tmp/Harm',timestamp),exmetabdata$metab,cohort)
                   subjectMetadata <- as.data.frame(exmetabdata$allSubjectMetaData)
@@ -137,7 +140,7 @@ runModel <- function(jsonData) {
             withCallingHandlers(
                 {
                     input = fromJSON(jsonData)
-                    exmetabdata <- readCOMETSinput(input$filename)
+                    exmetabdata <- readRDS(input$rdsFilePath)
                     exmodeldata <- getModelData(exmetabdata,
                       modelspec=input$methodSelection,
                       modlabel=input$modelSelection,

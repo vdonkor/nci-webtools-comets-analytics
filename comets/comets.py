@@ -398,7 +398,7 @@ def user_list_update():
     finally:
         return response
 
-@app.route('/api/end_session', methods=['POST']):
+@app.route('/api/end_session', methods=['POST'])
 def end_session():
     ''' Cleans up any files generated during a session '''
 
