@@ -11,6 +11,7 @@ services:
       - activemq
     ports:
       - '8000:8000'
+      - '8787:8787'
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:8000']
   comets_processor:

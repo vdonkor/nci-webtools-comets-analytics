@@ -19,7 +19,7 @@ chown -R ncianalysis:ncianalysis /deploy
 echo ncianalysis | passwd --stdin ncianalysis
 
 # start rstudio server
-
+rstudio-server start
 
 # start wsgi server
 pushd /deploy
