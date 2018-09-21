@@ -3,6 +3,20 @@
 # remove wsgi directory
 rm -rf /deploy/wsgi
 
+# create additional configuration directives for apache
+mkdir -p /deploy/wsgi
+
+# Additional configuration directives
+cat << EOF > /deploy/wsgi/additional-configuration.conf
+# Do not serve certain filetypes
+<FilesMatch "\.(conf|db|ini|py|wsgi|xml|R|r|md|yml|log)$">
+  Require all denied
+</FilesMatch>
+# Workaround for process timeout
+WSGIApplicationGroup %{GLOBAL}
+WSGISocketPrefix $SOCKET_PREFIX
+EOF
+
 # remove lock
 rm -rf /usr/lib64/R/library/00LOCK-rcode
 
@@ -37,4 +51,5 @@ mod_wsgi-express start-server /deploy/app/deploy.wsgi \
   --processes 2 \
   --threads 4 \
   --rotate-logs \
-  --log-level info
+  --log-level info \
+  --include-file wsgi/additional-configuration.conf
