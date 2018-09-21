@@ -106,6 +106,7 @@ checkIntegrity <- function(filename,cohort) {
                   colnames(exmetabdata$stratifiable) <- subjectMetadata[,1]
                   exmetabdata$stratifiable <- as.list(as.data.frame(exmetabdata$stratifiable))
                   exmetabdata$allSubjectMetaData <- subjectMetadata
+                  exmetabdata$allMetabolites = exmetabdata$dict_metabnames[exmetabdata$allMetabolites]
                   exmetabdata
                 },
                 message=function(m) {

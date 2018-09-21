@@ -501,7 +501,7 @@ appComets.FormView = Backbone.View.extend({
 
                 for (var key in toAppend) {
                     var value = toAppend[key];
-                    if (value.constructor === File)
+                    if (value && value.constructor === File)
                       formData.append(key, value, value.name)
                     else
                       formData.append(key, value);
