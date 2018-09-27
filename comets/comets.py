@@ -8,9 +8,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
-app.logger.addHandler(logging.handlers.TimedRotatingFileHandler('comets.log','midnight'))
-# FORMAT = '%(asctime)-15s %(message)s'
-# app.logger.basicConfig(format=FORMAT)
+# app.logger.addHandler(logging.handlers.TimedRotatingFileHandler('comets.log','midnight'))
 
 def flatten(yaml,parent=None):
     for param in yaml:

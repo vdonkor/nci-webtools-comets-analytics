@@ -14,7 +14,6 @@ from twisted.internet import defer, reactor
 
 config = {}
 logger = logging.getLogger("comets_processor")
-logger.addHandler(logging.handlers.TimedRotatingFileHandler('/deploy/logs/comets_processor.log','midnight'))
 
 class Consumer(object):
 
@@ -197,6 +196,8 @@ class Consumer(object):
                 logger.info("[%s] Failure email sent." % self.timestamp())
 
 if __name__ == '__main__':
+    import argparse
+
     def flatten(yaml,parent=None):
         for param in yaml:
             if (isinstance(yaml[param],dict)):
@@ -206,8 +207,26 @@ if __name__ == '__main__':
     with open("restricted/settings.yml", 'r') as f:
         flatten(yaml.safe_load(f))
     wrapper.source('./process/processWrapper.R')
-    logging.basicConfig(level = logging.INFO)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--log-folder',
+        type=str,
+        default='/deploy/logs/',
+        dest='log_folder',
+        help='path to the processor logs folder',
+    )
+
+    args = parser.parse_args()
+    log_filename = 'comets_processor.log'
+    log_filepath = os.path.join(args.log_folder, log_filename)
+
+    logging.basicConfig(level=logging.INFO)
+
+    logger.addHandler(
+        logging.handlers.TimedRotatingFileHandler(log_filepath, 'midnight')
+    )
     logger.info('[%s] Started COMETS processor' % datetime.now().strftime("%Y-%m-%d %T"))
+
     Consumer().run()
     reactor.run()
-
