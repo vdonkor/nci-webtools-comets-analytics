@@ -35,39 +35,40 @@
     <script type="text/javascript" src="javascript/comets.js"></script>
 </head>
 <body>
+    <a href="#main-content" class="sr-only sr-only-focusable">Skip to main content</a>
     <header>
         <a href="./index.html" target="_BLANK"><img src="public/images/COMETSLogo.png" alt="COMETS Analytics" title="Banner of COMETS Analytics" /></a>
     </header>
-    <div class="container-fluid">
+    <main class="container-fluid">
         <div id="pageContent">
             <div id="header" class="container-fluid">
                 <div class="row">
                     <div id='page-head' class="col-xs-12">
                         <strong>CO</strong>nsortium of <strong>MET</strong>abolomics <strong>S</strong>tudies
-                        <span class="pull-right"><span></span><a id="logoutBtn" href="">Logout</a></span>
+                        <span class="pull-right"><span></span><a id="logoutBtn" href=""  >Logout</a></span>
                     </div>
                 </div>
                 <div class="row">
                     <nav class="navbar navbar-default">
                         <div id="comets-tab-nav">
                             <ul class="nav nav-pills pull-left">
-                                <li role="presentation" class="active"><a data-toggle="tab" data-target="#tab-home">Home</a></li>
-                                <li role="presentation"><a data-toggle="tab" data-target="#tab-correlate">Correlate</a></li>
-                                <li role="presentation"><a data-toggle="tab" data-target="#tab-help">Help</a></li>
+                                <li role="presentation" class="active"><a data-toggle="tab" data-target="#tab-home" tabindex="0">Home</a></li>
+                                <li role="presentation"><a data-toggle="tab" data-target="#tab-correlate"  tabindex="0">Correlate</a></li>
+                                <li role="presentation"><a data-toggle="tab" data-target="#tab-help"  tabindex="0">Help</a></li>
                             </ul>
                             <ul class="nav nav-pills pull-right">
-                                <li role="presentation"><a data-toggle="tab" data-target="#tab-combine">Create Input</a></li>
-                                <li id="adminBtn" role="presentation"><a href="admin/index.html">Admin</a></li>
+                                <li role="presentation"><a data-toggle="tab" data-target="#tab-combine"  tabindex="0">Create Input</a></li>
+                                <li id="adminBtn" role="presentation"><a href="admin/index.html"  tabindex="0">Admin</a></li>
                             </ul>
                         </div>
                     </nav>
                 </div>
             </div>
-            <div class="tab-content">
+            <div class="tab-content" id="main-content" tabindex="0">
                 <div class="tab-pane active" id="tab-home">
                     <div class="container">
                         <div class="row">
-                            <h3><strong>Welcome to COMETS Analytics!</strong></h3>
+                            <h1 class="dark-orange h3"><strong>Welcome to COMETS Analytics!</strong></h1>
                             <p>This web-based self-service application supports all individual cohort analyses of the COMETS consortium to produce aggregated data for meta-analyses. This collaborative work is done via the COMETS harmonization group to enable consistent and reproducible analyses across studies.  Specifically, the platform: 1)  harmonizes metabolite names; 2) performs statistical analyses of metabolomics data; and 3) outputs analysis results in a standardized format ready for meta-analysis. Data are not saved in the system, but output must be downloaded and submitted centrally for meta-analyses. Each type of analyses will be available in the navigation bar.  At present, only correlation analyses are available (see <a href="#tab-correlate" class="clicktab">Correlate tab</a>).  For details, see the <a href="#tab-help" class="clicktab">Help tab</a>.</p>
                             <p>For more information on the consortium, see <a href=" http://epi.grants.cancer.gov/comets/" target="_blank">COMETS website</a>.</p>
                         </div>
@@ -81,22 +82,22 @@
                                     <div class="form-group">
                                         <label for="metadata">Select Metabolite Meta-Data CSV File <span class="required">*</span></label>
                                         <a href="examples/testmetab.csv" class="pull-right">Example</a>
-                                        <input type="file" name="metadata" accept=".csv,text/csv"/>
+                                        <input type="file" id="metadata" name="metadata" accept=".csv,text/csv"/>
                                     </div>
                                     <div class="form-group">
                                         <label for="abundances">Select Metabolite Abundances CSV File <span class="required">*</span></label>
                                         <a href="examples/testabundances.csv" class="pull-right">Example</a>
-                                        <input type="file" name="abundances" accept=".csv,text/csv"/>
+                                        <input type="file" id="abundances" name="abundances" accept=".csv,text/csv"/>
                                     </div>
                                     <div class="form-group">
                                         <label for="sample">Select Subject Data CSV File <span class="required">*</span></label>
                                         <a href="examples/testsubject.csv" class="pull-right">Example</a>
-                                        <input type="file" name="sample" accept=".csv,text/csv"/>
+                                        <input type="file" id="sample" name="sample" accept=".csv,text/csv"/>
                                     </div>
                                 </fieldset>
                                 <fieldset class="well">
                                     <div class="form-group">
-                                        <label for="template">Select Template <span class="required">*</span></label>
+                                        <label for="templateSelection">Select Template <span class="required">*</span></label>
                                         <div class="row">
                                             <div class="col-xs-12">
                                                 <select name="templateSelection" id="templateSelection" class="form-control col-xs-12" required>
@@ -124,7 +125,7 @@
                 <div class="tab-pane" id="tab-correlate">
                     <div class="row">
                         <div class="col-xs-12 col-md-4">
-                            <h3>Conduct cohort-specific correlation analyses</h3>
+                            <h1 class="h3">Conduct cohort-specific correlation analyses</h1>
                             <form id="cometsForm" class="well clearfix" name="cometsForm" enctype="multipart/form-data">
                                 <fieldset class="well">
                                     <div class="row">
@@ -203,10 +204,12 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="whereCategory">Where:</label>
+                                            <label for="whereComparator" class="sr-only">Comparison:</label>
+                                            <label for="whereFilter" class="sr-only">Filter:</label>
                                             <input id="whereClear" type="button" value="Clear"/>
-                                            <select name="whereCategory" class="form-control"></select>
-                                            <select name="whereComparator" class="form-control"></select>
-                                            <input name="whereFilter" type="text" placeholder="Compare to" class="form-control"/>
+                                            <select id="whereCategory" name="whereCategory" class="form-control"></select>
+                                            <select id="whereComparator" name="whereComparator" class="form-control"></select>
+                                            <input id="whereFilter" name="whereFilter" type="text" placeholder="Compare to" class="form-control"/>
                                         </div>
                                     </div>
                                 </fieldset>
@@ -222,7 +225,7 @@
                                 </div>
                                 <div id="HelpIcon" style="margin-bottom:8px">
                                     <i class="glyphicon glyphicon-question-sign" style="color:#337Ab7"></i><a id="toggleHelp" href="javascript:void(0);"> Help</a>
-                                </div>                                
+                                </div>
                                 <div class="downloadIcon">
                                     <a id="sampleDownload" href="examples/cometsInput.xlsx"><span class="glyphicon glyphicon-download"></span> Download Sample Input</a>
                                 </div>
@@ -230,16 +233,15 @@
                                     <a id="harmonizeDownload" href="examples/uid.xlsx"><span class="glyphicon glyphicon-download"></span> Download Master Metabolite List</a>
                                 </div>
                                 <div id="inputHelp">
-                                    <h4>Input fields</h4> Specify the name of your cohort. If your cohort is not listed, please notify the harmonization group.
+                                    <h2 class="h4">Input fields</h2> Specify the name of your cohort. If your cohort is not listed, please notify the harmonization group.
 
-                                    <h4>Integrity check</h4> The tab will display the results of the harmonization and integrity check results.
+                                    <h2 class="h4">Integrity check</h2> The tab will display the results of the harmonization and integrity check results.
 
-                                    <h4>Summary</h4> The table of correlations and metabolite information is displayed with an option to download the results in CSV format. For each exposure, the correlation, n and p value are displayed. Please download the file for each model and send to data harmonization group.
+                                    <h2 class="h4">Summary</h2> The table of correlations and metabolite information is displayed with an option to download the results in CSV format. For each exposure, the correlation, n and p value are displayed. Please download the file for each model and send to data harmonization group.
 
+                                    <h2 class="h4">Heatmap</h2> The heatmap displays the metabolites in rows and exposures in columns using partial (if adjustment variables are specified) spearman correlations. From this tab, you can download the heatmap as a png file, pan, zoom and get correlation coefficients. You can also sort the results using the dropdown menu.
 
-                                    <h4>Heatmap</h4> The heatmap displays the metabolites in rows and exposures in columns using partial (if adjustment variables are specified) spearman correlations. From this tab, you can download the heatmap as a png file, pan, zoom and get correlation coefficients. You can also sort the results using the dropdown menu.
-
-                                    <h4>Cluster and heatmap</h4> The cluster and heatmap is available for use when there are 2 or more exposures and 2 or more outcomes are specified.
+                                    <h2 class="h4">Cluster and heatmap</h2> The cluster and heatmap is available for use when there are 2 or more exposures and 2 or more outcomes are specified.
 
 
                                     <!-- on hold <h4>Network</h4> Using the genenet package, we display the partial correlation network of your outcomes, exposures and adjusted covariates. There is an option to display the minimum correlation to display with a default of 0.40. -->
@@ -376,7 +378,7 @@
                 <!-- end of help tab content -->
             </div>
             <!-- end of correlate Tab -->
-        </div>
+        </main>
         <div id="loader"><img src="public/images/loader.gif" alt="Loading....Please Wait"></div>
         <script>
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function()

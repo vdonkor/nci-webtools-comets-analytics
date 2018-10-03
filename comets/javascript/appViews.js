@@ -970,7 +970,7 @@ appComets.SummaryView = Backbone.View.extend({
             this.$el.find('#correlationSummary thead input[type="checkbox"]').attr('checked',false);
         }
         for (var index = (page-1)*entryCount; index < Math.min(page*entryCount,map.length); index++) {
-            tr += '<tr><th class="text-center"><input type="checkbox" name="'+index+'"'+(map[index].selected?' checked="true"':'')+'/></th>';
+            tr += '<tr><th class="text-center" scope="row"><label class="sr-only" for="row-' + index + '">Select metabolite</label><input id="row-' + index + '" type="checkbox" name="'+index+'"'+(map[index].selected?' checked="true"':'')+'/></th>';
             for (var orderIndex in tableOrder) {
                 var val = map[index][tableOrder[orderIndex]];
                 tr += '<td>'+(val === undefined?"NA":val)+'</td>';
@@ -1242,6 +1242,12 @@ $(function () {
     appComets.models.cohortsList.fetch().done(after3);
     appComets.models.templatesList.fetch().done(after3);
 
+    // enable keyboard accessibility for tabs
+    $('[data-toggle="tab"]').keyup(function(e) {
+        if (e.originalEvent.keyCode == 13)
+            $(this).tab('show');
+    })
+
     $(window).on('beforeunload', function(e) {
         e.preventDefault();
 
@@ -1258,5 +1264,5 @@ $(function () {
         $.post('/api/end_session', JSON.stringify(sessionFiles));
 
         e.returnValue = '';
-    })
+    });
 });

@@ -9,20 +9,29 @@ header img {
     width: 500px;
     max-width: 100%;
 }
+a {
+    color: #3070a7;
+}
+.nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover {
+    background-color: #215a82;
+}
 #page-head {
     color: #FFF;
     font-size: 14pt;
-    background: #2A71A5;
+    background: #215a82;
     padding: 5px 0 5px 10px;
 }
 #logoutBtn {
-    color: #9CF;
+    color: #b0d8ff;
     float: right;
     margin-left: 1em;
     width: 4em;
 }
 strong {
-    color: #EC7A26;
+    color: #ff8c38;
+}
+.dark-orange, .dark-orange * {
+    color: #f76900;
 }
 #pageContent > .container-fluid {
     margin-bottom: 2em;
