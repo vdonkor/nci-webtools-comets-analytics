@@ -327,7 +327,7 @@ appComets.FormView = Backbone.View.extend({
         this.$el.find('#outcome, #exposure, #covariates').each(function (i, el) {
             $(el).selectize({
                 delimiter: '|',
-                plugins: ['remove_button'],
+                plugins: ['remove_button', '508_compliance'],
                 sortField: 'order'
             });
         });
@@ -1246,7 +1246,27 @@ $(function () {
     $('[data-toggle="tab"]').keyup(function(e) {
         if (e.originalEvent.keyCode == 13)
             $(this).tab('show');
-    })
+    });
+
+    // attach form labels to selectize inputs
+    Selectize.define('508_compliance', function(options) {
+        var self = this;
+        this.setup = (function() {
+            var original = self.setup;
+            return function() {
+                original.apply(this, arguments);
+                var originalId = this.$input.attr('id');
+                var selectizeId = 'selectize-' + originalId;
+                this.$control_input.attr('id', selectizeId);
+                var label = $('<label class="sr-only"/>')
+                    .attr('for', selectizeId)
+                    .text('Selectable input for ' + originalId);
+
+                this.$wrapper.append(label);
+            };
+        })();
+
+    });
 
     $(window).on('beforeunload', function(e) {
         e.preventDefault();

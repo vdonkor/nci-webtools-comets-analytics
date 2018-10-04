@@ -184,7 +184,7 @@ label[for="showMetabolites"] div {
     display: inline-block;
 }
 .required {
-    color:red;
+    color:#a20000;
     font-weight: bolder;
 }
 .axisLegend {

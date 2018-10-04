@@ -17,8 +17,8 @@ a {
 }
 #page-head {
     color: #FFF;
-    font-size: 14pt;
-    background: #215a82;
+    font-size: 16pt;
+    background: #1a4869;
     padding: 5px 0 5px 10px;
 }
 #logoutBtn {
@@ -28,7 +28,7 @@ a {
     width: 4em;
 }
 strong {
-    color: #ff8c38;
+    color: #D4B300;
 }
 .dark-orange, .dark-orange * {
     color: #f76900;
