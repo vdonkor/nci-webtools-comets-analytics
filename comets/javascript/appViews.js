@@ -463,9 +463,9 @@ appComets.FormView = Backbone.View.extend({
             runModelHelper = function() {
                 var makeList = function(entry) { return entry.split(';'); };
                 var methodSelection = this.model.get('methodSelection'),
-                    outcome = _.flatten(this.model.get('outcome')),//.map(makeList)),
-                    exposure = _.flatten(this.model.get('exposure')),//.map(makeList)),
-                    covariates = _.flatten(this.model.get('covariates')),//.map(makeList)),
+                    outcome = _.flatten(this.model.get('outcome').map(makeList)),
+                    exposure = _.flatten(this.model.get('exposure').map(makeList)),
+                    covariates = _.flatten(this.model.get('covariates').map(makeList)),
                     metaboliteIds = this.model.get('metaboliteIds'),
                     whereCategory = this.model.get('whereCategory'),
                     whereComparator = this.model.get('whereComparator'),
@@ -1269,7 +1269,8 @@ $(function () {
     });
 
     $(window).on('beforeunload', function(e) {
-        e.preventDefault();
+
+        console.log('called beforeunload');
 
         var sessionFiles = [
             appComets.models.harmonizationForm.get('rdsFilePath'),

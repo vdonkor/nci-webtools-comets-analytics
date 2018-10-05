@@ -18,8 +18,9 @@ a {
 #page-head {
     color: #FFF;
     font-size: 16pt;
-    background: #1a4869;
+    background-color: #1a4869;
     padding: 5px 0 5px 10px;
+    border-radius: 4px 4px 0 0;
 }
 #logoutBtn {
     color: #b0d8ff;
@@ -35,6 +36,10 @@ strong {
 }
 #pageContent > .container-fluid {
     margin-bottom: 2em;
+}
+#pageContent > #header {
+    border-radius: 4px;
+    box-shadow: 0 4px 16px #eee;
 }
 .tab-content.tab-border {
     border: 1px solid #000;

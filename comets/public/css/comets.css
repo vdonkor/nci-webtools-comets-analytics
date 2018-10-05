@@ -27,6 +27,7 @@ html, body {
 }
 nav.navbar.navbar-default {
     padding: 5px;
+    border-radius: 0 0 4px 4px;
 }
 #adminBtn:not(.show) {
     display: none;
