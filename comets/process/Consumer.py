@@ -189,7 +189,7 @@ class Consumer(object):
                     parameters['email'],
                     "Comets Batch Mode Model Results - error",
                     "Dear COMETS user,\n\n"+
-                    "Due to an unexpected error, no meaningful results could be provided. Please contact the COMETS Web Tool team for assistance in resolving the issue.\n\n"+
+                    "This job failed to be processed due to an internal error. Please contact the COMETS Web Tool team for assistance in resolving the issue.\n\n"+
                     "Respectfully,\n\n"+
                     "COMETS Web Tool"
                 )):
