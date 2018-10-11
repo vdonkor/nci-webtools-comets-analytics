@@ -1268,10 +1268,8 @@ $(function () {
 
     });
 
-    $(window).on('beforeunload', function(e) {
-
-        console.log('called beforeunload');
-
+    // remove session files when logging out
+    $('#logoutBtn').click(function(e) {
         var sessionFiles = [
             appComets.models.harmonizationForm.get('rdsFilePath'),
             appComets.models.integrityResults.get('csvDownload'),
@@ -1283,7 +1281,5 @@ $(function () {
         });
 
         $.post('/api/end_session', JSON.stringify(sessionFiles));
-
-        e.returnValue = '';
     });
 });
