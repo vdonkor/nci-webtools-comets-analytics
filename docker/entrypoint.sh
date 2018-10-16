@@ -14,7 +14,6 @@ cat << EOF > /deploy/wsgi/additional-configuration.conf
 </FilesMatch>
 # Workaround for process timeout
 WSGIApplicationGroup %{GLOBAL}
-WSGISocketPrefix $SOCKET_PREFIX
 EOF
 
 # remove lock
@@ -46,10 +45,10 @@ mod_wsgi-express start-server /deploy/app/deploy.wsgi \
   --graceful-timeout 900 \
   --connect-timeout 900 \
   --request-timeout 900 \
-  --reload-on-changes \
   --limit-request-body 2147483647 \
   --processes 2 \
   --threads 4 \
   --rotate-logs \
   --log-level info \
+  --error-log-name comets_log \
   --include-file wsgi/additional-configuration.conf
