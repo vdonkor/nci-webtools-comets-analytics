@@ -1,3 +1,11 @@
 table.table-striped th {
     border-top: 1px solid #000;
 }
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: white !important;
+}
+
+.navbar.navbar-default {
+    padding: 5px;
+}
