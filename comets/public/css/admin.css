@@ -4,6 +4,14 @@ table.table-striped th {
 
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
     background: white !important;
+    border-color: transparent;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:active {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    background: transparent !important;
 }
 
 .navbar.navbar-default {
