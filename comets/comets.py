@@ -85,7 +85,15 @@ def composeMail(sender,recipients,subject,content):
     return False
 
 def queueFile(parameters):
-    s3conn = S3Connection(app.config['s3.username'],app.config['s3.password']).get_bucket(app.config['s3.bucket']).new_key('/comets/input/'+parameters['filename'])
+    
+    username = app.config['s3.username']
+    password = app.config['s3.password']
+
+    if username and password:
+        s3conn = S3Connection(username, password).get_bucket(app.config['s3.bucket']).new_key('/comets/input/'+parameters['filename'])
+    else:
+        s3conn = S3Connection().get_bucket(app.config['s3.bucket']).new_key('/comets/input/'+parameters['filename'])
+
     s3conn.set_contents_from_filename(os.path.join('tmp',parameters['filename']))
     forQueue = json.dumps(parameters)
     client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])))

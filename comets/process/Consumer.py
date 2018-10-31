@@ -73,7 +73,15 @@ class Consumer(object):
             logger.info('[%s] Original filename: %s' % (self.timestamp(), parameters['originalFilename']))
             logger.info('[%s] Fetching input file from S3: %s' % (self.timestamp(), '/comets/input/'+filename))
             parameters['filename'] = os.path.join('tmp',filename)
-            s3conn = S3Connection(config['s3.username'],config['s3.password']).get_bucket(config['s3.bucket'])
+
+            username = config['s3.username']
+            password = config['s3.password']
+
+            if username and password:
+                s3conn = S3Connection(username, password).get_bucket(config['s3.bucket'])
+            else:
+                s3conn = S3Connection().get_bucket(config['s3.bucket'])
+
             s3conn.get_key('/comets/input/'+filename).get_contents_to_filename(parameters['filename'])
             logger.info('[%s] Load data input file: %s' % (self.timestamp(), filename))
 
