@@ -13,9 +13,9 @@ describe('COMETS Smoke Test', function() {
             .forBrowser('firefox')
             .setFirefoxOptions(new firefox.Options().headless())
             .build();
-        this.user = process.env.USER;
-        this.password = process.env.PASSWORD;
-        this.website = process.env.WEBSITE.replace(/\/$/, '');
+        this.user = process.env.TEST_USER;
+        this.password = process.env.TEST_PASSWORD;
+        this.website = process.env.TEST_WEBSITE.replace(/\/$/, '');
     });
 
     it('should specify the correct website', async function() {
