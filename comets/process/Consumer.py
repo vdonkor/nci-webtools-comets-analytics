@@ -67,25 +67,27 @@ class Consumer(object):
             parameters = json.loads(frame.body)
             filename = parameters['filename']
 
+            username = config['s3.username']
+            password = config['s3.password']
+            input_folder = config['s3.input_folder'] or '/comets/input/'
+            output_folder = config['s3.output_folder'] or '/comets/results/'
+
             logger.info('--------------------------------------------------------------------------------')
 
             logger.info('[%s] Received frame: %s' % (self.timestamp(), parameters))
             logger.info('[%s] Original filename: %s' % (self.timestamp(), parameters['originalFilename']))
-            logger.info('[%s] Fetching input file from S3: %s' % (self.timestamp(), '/comets/input/'+filename))
+            logger.info('[%s] Fetching input file from S3: %s' % (self.timestamp(), input_folder+filename))
             parameters['filename'] = os.path.join('tmp',filename)
-
-            username = config['s3.username']
-            password = config['s3.password']
 
             if username and password:
                 s3conn = S3Connection(username, password).get_bucket(config['s3.bucket'])
             else:
                 s3conn = S3Connection().get_bucket(config['s3.bucket'])
 
-            s3conn.get_key('/comets/input/'+filename).get_contents_to_filename(parameters['filename'])
+            s3conn.get_key(input_folder+filename).get_contents_to_filename(parameters['filename'])
             logger.info('[%s] Load data input file: %s' % (self.timestamp(), filename))
 
-            s3conn.delete_key('/comets/input/'+filename)
+            s3conn.delete_key(input_folder+filename)
             logger.info('[%s] Delete input file from s3 bucket: %s' % (self.timestamp(), filename))
 
             result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
@@ -162,7 +164,7 @@ class Consumer(object):
             zipf.close()
             header = "We've finished running your file: "+os.path.splitext(parameters['originalFilename'])[0]+"\n\n"
             if (len(zipf.infolist()) > 0):
-                s3key = s3conn.new_key('/comets/results/'+filenameZ);
+                s3key = s3conn.new_key(output_folder+filenameZ);
                 s3key.set_contents_from_filename(filepath)
                 header += "The results of your batch data run are available through the following link. Any additional information (warnings, errors, etc.) are included below.\n\n"
                 header += s3key.generate_url(expires_in=604800)+"\n\n" #604800 = 7d*24h*60m*60s
