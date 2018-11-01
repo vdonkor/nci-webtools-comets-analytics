@@ -5,3 +5,4 @@
 comets/restricted/
 comets/tmp/
 node_modules
+tests/*.xml
