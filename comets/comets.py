@@ -1,6 +1,7 @@
 import json, linecache, os, requests, smtplib, sys, time, yaml, logging
 import pyper as pr
 from boto.s3.connection import S3Connection
+import boto3
 from flask import Flask, json, jsonify, request, Response, send_from_directory
 from stompest.config import StompConfig
 from stompest.sync import Stomp
@@ -85,17 +86,22 @@ def composeMail(sender,recipients,subject,content):
     return False
 
 def queueFile(parameters):
-    
+    bucket = app.config['s3.bucket']
     username = app.config['s3.username']
     password = app.config['s3.password']
     input_folder = app.config['s3.input_folder'] or '/comets/input/'
 
     if username and password:
-        s3conn = S3Connection(username, password).get_bucket(app.config['s3.bucket']).new_key(input_folder+parameters['filename'])
+        s3 = boto3.resource('s3', aws_access_key_id=username, aws_secret_access_key=password)
     else:
-        s3conn = S3Connection().get_bucket(app.config['s3.bucket']).new_key(input_folder+parameters['filename'])
+        s3 = boto3.resource('s3')
 
-    s3conn.set_contents_from_filename(os.path.join('tmp',parameters['filename']))
+    s3.meta.client.upload_file(
+        os.path.join('tmp',parameters['filename']),
+        bucket,
+        input_folder + parameters['filename'],
+    )
+
     forQueue = json.dumps(parameters)
     client = Stomp(StompConfig('tcp://'+app.config['queue.host']+':'+str(app.config['queue.port'])))
     client.connect()

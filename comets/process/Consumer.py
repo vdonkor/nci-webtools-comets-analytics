@@ -1,5 +1,5 @@
 import json, linecache, logging, os, smtplib, sys, yaml, zipfile
-
+import boto3
 from boto.s3.connection import S3Connection
 from datetime import datetime
 from email.mime.application import MIMEApplication
@@ -67,6 +67,7 @@ class Consumer(object):
             parameters = json.loads(frame.body)
             filename = parameters['filename']
 
+            bucket = config['s3.bucket']
             username = config['s3.username']
             password = config['s3.password']
             input_folder = config['s3.input_folder'] or '/comets/input/'
@@ -80,14 +81,15 @@ class Consumer(object):
             parameters['filename'] = os.path.join('tmp',filename)
 
             if username and password:
-                s3conn = S3Connection(username, password).get_bucket(config['s3.bucket'])
+                s3 = boto3.resource('s3', aws_access_key_id=username, aws_secret_access_key=password)
             else:
-                s3conn = S3Connection().get_bucket(config['s3.bucket'])
+                s3 = boto3.resource('s3')
 
-            s3conn.get_key(input_folder+filename).get_contents_to_filename(parameters['filename'])
+            s3.meta.client.download_file(bucket, input_folder+filename, parameters['filename'])
             logger.info('[%s] Load data input file: %s' % (self.timestamp(), filename))
 
-            s3conn.delete_key(input_folder+filename)
+            # s3conn.delete_key(input_folder+filename)
+            s3.meta.client.delete_object(Bucket=bucket, Key=input_folder+filename)
             logger.info('[%s] Delete input file from s3 bucket: %s' % (self.timestamp(), filename))
 
             result = json.loads(wrapper.runAllModels(json.dumps(parameters))[0])
@@ -164,10 +166,19 @@ class Consumer(object):
             zipf.close()
             header = "We've finished running your file: "+os.path.splitext(parameters['originalFilename'])[0]+"\n\n"
             if (len(zipf.infolist()) > 0):
-                s3key = s3conn.new_key(output_folder+filenameZ);
-                s3key.set_contents_from_filename(filepath)
+                bucket_key = output_folder+filenameZ
+                s3.meta.client.upload_file(filepath, bucket, bucket_key)
+
+                # s3key = s3conn.new_key(output_folder+filenameZ);
+                # s3key.set_contents_from_filename(filepath)
                 header += "The results of your batch data run are available through the following link. Any additional information (warnings, errors, etc.) are included below.\n\n"
-                header += s3key.generate_url(expires_in=604800)+"\n\n" #604800 = 7d*24h*60m*60s
+                s3.meta.client.generate_presigned_url(
+                    ClientMethod='get_object',
+                    Params={'Bucket': bucket, 'Key': bucket_key},
+                    ExpiresIn=604800
+                )
+
+                # header += s3key.generate_url(expires_in=604800)+"\n\n" #604800 = 7d*24h*60m*60s
                 header += "The search results will be available for the next 7 days.\n\n"
             else:
                 header += "There were no models or all the models resulted in errors, so no data is available. Any additional information (warnings, errors, etc.) are included below.\n\n"
