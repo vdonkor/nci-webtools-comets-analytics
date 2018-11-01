@@ -3,32 +3,19 @@ const request = require('request');
 const should = require('chai').should();
 const { expect } = require('chai');
 const { Builder, By, Key, until } = require('selenium-webdriver');
+const firefox = require('selenium-webdriver/firefox');
 
-describe('Smoke Test', function() {
+describe('COMETS Smoke Test', function() {
     this.timeout(0);
 
     before(async function() {
-        this.driver = await new Builder().forBrowser('firefox').build();
+        this.driver = await new Builder()
+            .forBrowser('firefox')
+            .setFirefoxOptions(new firefox.Options().headless())
+            .build();
         this.user = process.env.USER;
         this.password = process.env.PASSWORD;
         this.website = process.env.WEBSITE.replace(/\/$/, '');
-        this.login = (async function() {
-            const driver = this.driver;
-
-            const email = By.name('email');
-            const password = By.name('password');
-            const submit = By.css('[type="submit"]');
-
-            // wait until controls are located before filling out form
-            await driver.wait(until.elementLocated(email));
-            await driver.wait(until.elementLocated(password));
-            await driver.wait(until.elementLocated(submit));
-
-            // fill out and submit login form
-            await driver.findElement(email).sendKeys(this.user) ;
-            await driver.findElement(password).sendKeys(this.password) ;
-            await driver.findElement(submit).click();
-        }).bind(this);
     });
 
     it('should specify the correct website', async function() {
@@ -41,7 +28,21 @@ describe('Smoke Test', function() {
 
     it('should allow the test user to log in', async function() {
         const driver = this.driver;
-        await this.login();
+
+        const email = By.name('email');
+        const password = By.name('password');
+        const submit = By.css('[type="submit"]');
+
+        // wait until controls are located before filling out form
+        await driver.wait(until.elementLocated(email));
+        await driver.wait(until.elementLocated(password));
+        await driver.wait(until.elementLocated(submit));
+
+        // fill out and submit login form
+        await driver.findElement(email).sendKeys(this.user) ;
+        await driver.findElement(password).sendKeys(this.password) ;
+        await driver.findElement(submit).click();
+
         await driver.wait(until.titleContains('Welcome to COMETS'));
         const title = await driver.getTitle();
         title.should.equal('Welcome to COMETS (COnsortium of METabolomics Studies)');
