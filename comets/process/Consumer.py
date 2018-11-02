@@ -172,14 +172,14 @@ class Consumer(object):
                 # s3key = s3conn.new_key(output_folder+filenameZ);
                 # s3key.set_contents_from_filename(filepath)
                 header += "The results of your batch data run are available through the following link. Any additional information (warnings, errors, etc.) are included below.\n\n"
-                s3.meta.client.generate_presigned_url(
+                header += s3.meta.client.generate_presigned_url(
                     ClientMethod='get_object',
                     Params={'Bucket': bucket, 'Key': bucket_key},
                     ExpiresIn=604800
                 )
 
                 # header += s3key.generate_url(expires_in=604800)+"\n\n" #604800 = 7d*24h*60m*60s
-                header += "The search results will be available for the next 7 days.\n\n"
+                header += "\n\nThe search results will be available for the next 7 days.\n\n"
             else:
                 header += "There were no models or all the models resulted in errors, so no data is available. Any additional information (warnings, errors, etc.) are included below.\n\n"
             if (self.composeMail(
