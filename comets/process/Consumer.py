@@ -51,7 +51,7 @@ class Consumer(object):
             filename = f.f_code.co_filename
             linecache.checkcache(filename)
             line = linecache.getline(filename, lineno, f.f_globals)
-            print('[{}] EXCEPTION IN ({}, LINE {} "{}"): {}'.format(self.timestamp(), filename, lineno, line.strip(), exc_obj))
+            logger.info('[{}] EXCEPTION IN ({}, LINE {} "{}"): {}'.format(self.timestamp(), filename, lineno, line.strip(), exc_obj))
             pass
         return False
 
