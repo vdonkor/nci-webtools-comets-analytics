@@ -1,4 +1,4 @@
-FROM centos
+FROM centos:latest
 
 # Install/update system packages
 RUN yum -y update \
@@ -10,6 +10,7 @@ RUN yum -y update \
     gcc-gfortran \
     httpd-devel \
     libcurl-devel \
+    libgit2-devel \
     libpng-devel \
     libssh2-devel \
     libxml2-devel \
@@ -29,6 +30,9 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 # Use libjvm.so from jre
 RUN ln -s /usr/lib/jvm/jre/lib/amd64/server/libjvm.so /usr/lib64/libjvm.so
 
+RUN mkdir -p /usr/share/doc/R-3.5.1/html \
+ && touch /usr/share/doc/R-3.5.1/html/R.css
+
 # Set CRAN respository
 RUN { \
     echo "local({"                                         ;\
@@ -38,34 +42,29 @@ RUN { \
     echo "})"                                              ;\
 } | tee -a "/usr/lib64/R/library/base/R/Rprofile"
 
+
 # Install R development tools
-RUN R -e "install.packages( \
-        c('devtools', 'roxygen2'), \
-        INSTALL_opts = c('--no-html') \
-    );"
+RUN R -e "install.packages(c('devtools', 'roxygen2', 'BiocManager'))"
 
 # Install R dependencies
-RUN R -e "\
-    devtools::install_git('https://git.bioconductor.org/packages/BiocInstaller', branch = 'RELEASE_3_7'); \
-    devtools::install_bioc('Biobase'); \
-    devtools::install_version('ClassComparison',  version = '3.1.5'   ); \
-    devtools::install_version('caret',            version = '6.0-79'  ); \
-    devtools::install_version('dplyr',            version = '0.7.4'   ); \
-    devtools::install_version('d3heatmap',        version = '0.6.1.2' ); \
-    devtools::install_version('Hmisc',            version = '4.1-1'   ); \
-    devtools::install_version('jsonlite',         version = '1.5'     ); \
-    devtools::install_version('plotly',           version = '4.7.1'   ); \
-    devtools::install_version('plyr',             version = '1.8.4'   ); \
-    devtools::install_version('ppcor',            version = '1.1'     ); \
-    devtools::install_version('psych',            version = '1.7.8'   ); \
-    devtools::install_version('readxl',           version = '1.0.0'   ); \
-    devtools::install_version('rio',              version = '0.5.9'   ); \
-    devtools::install_version('shiny',            version = '1.0.5'   ); \
-    devtools::install_version('shinyFiles',       version = '0.6.2'   ); \
-    devtools::install_version('stringr',          version = '1.2.0'   ); \
-    devtools::install_version('subselect',        version = '0.14'    ); \
-    devtools::install_version('tidyr',            version = '0.8.0'   ); \
-    devtools::install_version('xlsx',             version = '0.5.7'   ); "
+RUN R -e "BiocManager::install(c('Biobase', 'ClassComparison'), version = '3.8', ask = FALSE, update = FALSE);"
+RUN R -e "devtools::install_version('dplyr',            quick = TRUE, version = '0.7.8'   );"
+RUN R -e "devtools::install_version('d3heatmap',        quick = TRUE, version = '0.6.1.2' );"
+RUN R -e "devtools::install_version('Hmisc',            quick = TRUE, version = '4.1-1'   );"
+RUN R -e "devtools::install_version('jsonlite',         quick = TRUE, version = '1.5'     );"
+RUN R -e "devtools::install_version('plotly',           quick = TRUE, version = '4.8.0'   );"
+RUN R -e "devtools::install_version('plyr',             quick = TRUE, version = '1.8.4'   );"
+RUN R -e "devtools::install_version('ppcor',            quick = TRUE, version = '1.1'     );"
+RUN R -e "devtools::install_version('psych',            quick = TRUE, version = '1.8.10'  );"
+RUN R -e "devtools::install_version('readxl',           quick = TRUE, version = '1.1.0'   );"
+RUN R -e "devtools::install_version('rio',              quick = TRUE, version = '0.5.16'  );"
+RUN R -e "devtools::install_version('shiny',            quick = TRUE, version = '1.2.0'   );"
+RUN R -e "devtools::install_version('shinyFiles',       quick = TRUE, version = '0.7.2'   );"
+RUN R -e "devtools::install_version('stringr',          quick = TRUE, version = '1.3.1'   );"
+RUN R -e "devtools::install_version('subselect',        quick = TRUE, version = '0.14'    );"
+RUN R -e "devtools::install_version('tidyr',            quick = TRUE, version = '0.8.2'   );"
+RUN R -e "devtools::install_version('xlsx',             quick = TRUE, version = '0.6.1'   );"
+RUN R -e "devtools::install_version('caret',            quick = TRUE, version = '6.0-81'  );"
 
 # Install python dependencies
 RUN pip install --upgrade pip \
