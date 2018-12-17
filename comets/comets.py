@@ -1,5 +1,7 @@
 import json, linecache, os, requests, smtplib, sys, time, yaml, logging
+import traceback
 import pyper as pr
+from pyper import R
 from boto.s3.connection import S3Connection
 import boto3
 from flask import Flask, json, jsonify, request, Response, send_from_directory
@@ -9,6 +11,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
+app.tmp = 'tmp'
 # app.logger.addHandler(logging.handlers.TimedRotatingFileHandler('comets.log','midnight'))
 
 def flatten(yaml,parent=None):
@@ -97,7 +100,7 @@ def queueFile(parameters):
         s3 = boto3.resource('s3')
 
     s3.meta.client.upload_file(
-        os.path.join('tmp',parameters['filename']),
+        parameters['filepath'],
         bucket,
         input_folder + parameters['filename'],
     )
@@ -108,6 +111,23 @@ def queueFile(parameters):
     client.send('/queue/Comets',forQueue,{'correlation-id': parameters['filename']})
     client.disconnect()
 
+
+def timestamp():
+    return time.strftime("%Y_%m_%d_%I_%M")
+
+
+def save_input_file(input_file):
+    tmp = app.tmp
+    if not os.path.exists(tmp):
+        os.makedirs(tmp)
+
+    name, ext = os.path.splitext(input_file.filename)
+    filename = '{}_{}{}'.format(name, timestamp(), ext.lower())
+    filepath = os.path.join(tmp, filename)
+    input_file.save(filepath)
+    return filename
+
+
 # heartbeat monitor
 @app.route('/cometsRest/public/ping', methods = ['GET'])
 def ping():
@@ -115,66 +135,52 @@ def ping():
 
 # takes excel workbook as input
 @app.route('/cometsRest/integrityCheck', methods = ['POST'])
-def integrityCheck():
+def read_comets_input():
     try:
-        userFile = request.files['inputFile']
-        if not os.path.exists('tmp'):
-            os.makedirs('tmp')
-        name, ext = os.path.splitext(userFile.filename)
-        filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext.lower()
+        input_file = request.files['inputFile']
+        original_filename = input_file.filename
+        filename = save_input_file(input_file)
         filepath = os.path.join('tmp', filename)
-        saveFile = userFile.save(os.path.join('tmp', filename))
 
-        if os.path.isfile(os.path.join('tmp', filename)):
-            app.logger.info("Successfully Uploaded")
+        app.logger.info("Successfully Uploaded: %s", filename)
 
+        r = R()
+        r.filename = filepath
+        r.cohort = request.form['cohortSelection']
+        r('''   source("./cometsWrapper.R")
+                output_file = checkIntegrity(filename, cohort)  ''')
 
-        r = pr.R()
-        r('source("./cometsWrapper.R")')
-        r.assign('filename',os.path.join('tmp',filename))
-        r.assign('cohort',request.form['cohortSelection'])
-        r('checkIntegrity = checkIntegrity(filename,cohort)')
-        returnFile = r['checkIntegrity']
-        app.logger.info("Finished integrity check")
-        del r
-        with open(returnFile) as file:
-            result = json.loads(file.read())
-        os.remove(returnFile)
+        with open(r.output_file) as f:
+            result = json.load(f)
+        os.remove(r.output_file)
         os.remove(filepath)
-        if ("error" in result):
-            response = buildFailure(result['error'])
+        del r
+
+        app.logger.info("Finished integrity check for: %s", filename)
+
+        if ('error' in result):
+            return buildFailure(result['error'])
+
         else:
-            result['saveValue']['filename'] = os.path.splitext(filename)[0]
-            result['saveValue']['originalFilename'] = name+ext
-            response = buildSuccess(result['saveValue'])
+            result = result['saveValue']
+            result['filename'] = filename
+            result['originalFilename'] = original_filename
+            return buildSuccess(result)
+
     except Exception as e:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "integritymessage":"An unknown error occurred"})
-    finally:
-        return response
+        app.logger.error(traceback.format_exc())
+        return buildFailure({"status": False, "integritymessage": "An unknown error occurred"})
 
 # takes previously uploaded file and
-@app.route('/cometsRest/correlate', methods = ['POST'])
+@app.route('/cometsRest/correlate', methods=['POST'])
 def correlate():
     try:
-        userFile = request.files['inputFile']
-        if not os.path.exists('tmp'):
-            os.makedirs('tmp')
-        name, ext = os.path.splitext(userFile.filename)
-        filename = "Input_"+name+"_"+ time.strftime("%Y_%m_%d_%I_%M") + ext.lower()
-        filepath = os.path.join('tmp', filename)
-        saveFile = userFile.save(os.path.join('tmp', filename))
+        if not os.path.exists(app.tmp):
+            os.makedirs(app.tmp)
 
         parameters = dict(request.form)
         for field in parameters:
             parameters[field] = parameters[field][0]
-        parameters['filename'] = filename
 
         if ('outcome' in parameters):
             parameters['outcome'] = json.loads(parameters['outcome'])
@@ -198,42 +204,40 @@ def correlate():
             if (len(parameters['whereQuery']) == 0):
                 parameters['whereQuery'] = None
         if (parameters['modelName'] == "All models"):
+            filename = save_input_file(request.files['inputFile'])
+            filepath = os.path.join('tmp', filename)
+            parameters['filename'] = filename
+            parameters['filepath'] = filepath
             queueFile(parameters)
             os.remove(filepath)
-            response = buildFailure({'status': 'info', 'statusMessage': "The results will be emailed to you."})
             app.logger.info("Queued file %s", filepath)
+
+            return buildFailure({'status': 'info', 'statusMessage': "The results will be emailed to you."})
         else:
-            if ('filename' in parameters):
-                parameters['filename'] = os.path.join('tmp', parameters['filename'])
-            r = pr.R()
+            r = R()
             r('source("./cometsWrapper.R")')
-            r.assign('parameters',json.dumps(parameters))
-            r('correlate = runModel(parameters)')
-            returnFile = r['correlate']
-            os.remove(filepath)
+            r.parameters = json.dumps(parameters)
+            r('output_file = runModel(parameters)')
+
+            with open(r.output_file) as f:
+                result = json.load(f)
+
+            os.remove(r.output_file)
             del r
-            with open(returnFile) as file:
-                result = json.loads(file.read())
-            os.remove(returnFile)
+
             if ("error" in result):
-                response = buildFailure(result['error'])
+                return buildFailure(result['error'])
+
             else:
                 if ('warnings' in result):
                     result['saveValue']['warnings'] = result['warnings']
-                response = buildSuccess(result['saveValue'])
-            app.logger.info("Finished running model for %s", userFile.filename)
+                return buildSuccess(result['saveValue'])
 
-    except Exception as e:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-        response = buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
-    finally:
-        return response
+            app.logger.info("Finished running model")
+    except Exception:
+        app.logger.error(traceback.format_exc())
+        return buildFailure({"status": False, "statusMessage":"An unknown error has occurred."})
+
 
 @app.route('/cometsRest/combine', methods = ['POST'])
 def combine():
