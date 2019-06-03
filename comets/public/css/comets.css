@@ -7,6 +7,16 @@ html, body {
 .tab-pane {
     min-height: 500px;
 }
+
+.tab-content-custom {
+    border: 1px solid #ddd !important;
+    border-top: none !important;
+}
+
+.tab-content-custom > .tab-pane {
+    min-height: inherit !important;
+}
+
 #loader {
     background-color: rgba(0, 0, 0, 0.5);
     background-position: center;

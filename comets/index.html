@@ -34,6 +34,7 @@
     <script type="text/javascript" src="javascript/appModels.js"></script>
     <script type="text/javascript" src="javascript/comets.js"></script>
 </head>
+
 <body>
     <a href="#main-content" class="sr-only sr-only-focusable">Skip to main content</a>
     <header>
@@ -45,7 +46,7 @@
                 <div class="row">
                     <div id='page-head' class="col-xs-12">
                         <strong>CO</strong>nsortium of <strong>MET</strong>abolomics <strong>S</strong>tudies
-                        <span class="pull-right"><span></span><a id="logoutBtn" href=""  >Logout</a></span>
+                        <span class="pull-right"><span></span><a id="logoutBtn" href="">Logout</a></span>
                     </div>
                 </div>
                 <div class="row">
@@ -53,12 +54,13 @@
                         <div id="comets-tab-nav">
                             <ul class="nav nav-pills pull-left">
                                 <li role="presentation" class="active"><a data-toggle="tab" data-target="#tab-home" tabindex="0">Home</a></li>
-                                <li role="presentation"><a data-toggle="tab" data-target="#tab-correlate"  tabindex="0">Correlate</a></li>
-                                <li role="presentation"><a data-toggle="tab" data-target="#tab-help"  tabindex="0">Help</a></li>
+                                <li role="presentation"><a data-toggle="tab" data-target="#tab-correlate" tabindex="0">Correlate</a></li>
+                                <li role="presentation"><a data-toggle="tab" data-target="#tab-query-metabolites" tabindex="0">Metabolites UID</a></li>
+                                <li role="presentation"><a data-toggle="tab" data-target="#tab-help" tabindex="0">Help</a></li>
                             </ul>
                             <ul class="nav nav-pills pull-right">
-                                <li role="presentation"><a data-toggle="tab" data-target="#tab-combine"  tabindex="0">Create Input</a></li>
-                                <li id="adminBtn" role="presentation"><a href="admin/index.html"  tabindex="0">Admin</a></li>
+                                <li role="presentation"><a data-toggle="tab" data-target="#tab-combine" tabindex="0">Create Input</a></li>
+                                <li id="adminBtn" role="presentation"><a href="admin/index.html" tabindex="0">Admin</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -69,7 +71,7 @@
                     <div class="container">
                         <div class="row">
                             <h1 class="dark-orange h3"><strong>Welcome to COMETS Analytics!</strong></h1>
-                            <p>This web-based self-service application supports all individual cohort analyses of the COMETS consortium to produce aggregated data for meta-analyses. This collaborative work is done via the COMETS harmonization group to enable consistent and reproducible analyses across studies.  Specifically, the platform: 1)  harmonizes metabolite names; 2) performs statistical analyses of metabolomics data; and 3) outputs analysis results in a standardized format ready for meta-analysis. Data are not saved in the system, but output must be downloaded and submitted centrally for meta-analyses. Each type of analyses will be available in the navigation bar.  At present, only correlation analyses are available (see <a href="#tab-correlate" class="clicktab">Correlate tab</a>).  For details, see the <a href="#tab-help" class="clicktab">Help tab</a>.</p>
+                            <p>This web-based self-service application supports all individual cohort analyses of the COMETS consortium to produce aggregated data for meta-analyses. This collaborative work is done via the COMETS harmonization group to enable consistent and reproducible analyses across studies. Specifically, the platform: 1) harmonizes metabolite names; 2) performs statistical analyses of metabolomics data; and 3) outputs analysis results in a standardized format ready for meta-analysis. Data are not saved in the system, but output must be downloaded and submitted centrally for meta-analyses. Each type of analyses will be available in the navigation bar. At present, only correlation analyses are available (see <a href="#tab-correlate" class="clicktab">Correlate tab</a>). For details, see the <a href="#tab-help" class="clicktab">Help tab</a>.</p>
                             <p>For more information on the consortium, see <a href=" http://epi.grants.cancer.gov/comets/" target="_blank">COMETS website</a>.</p>
                         </div>
                     </div>
@@ -83,17 +85,17 @@
                                     <div class="form-group">
                                         <label for="metadata">Select Metabolite Meta-Data CSV File <span class="required">*</span></label>
                                         <a href="examples/testmetab.csv" class="pull-right">Example</a>
-                                        <input type="file" id="metadata" name="metadata" accept=".csv,text/csv"/>
+                                        <input type="file" id="metadata" name="metadata" accept=".csv,text/csv" />
                                     </div>
                                     <div class="form-group">
                                         <label for="abundances">Select Metabolite Abundances CSV File <span class="required">*</span></label>
                                         <a href="examples/testabundances.csv" class="pull-right">Example</a>
-                                        <input type="file" id="abundances" name="abundances" accept=".csv,text/csv"/>
+                                        <input type="file" id="abundances" name="abundances" accept=".csv,text/csv" />
                                     </div>
                                     <div class="form-group">
                                         <label for="sample">Select Subject Data CSV File <span class="required">*</span></label>
                                         <a href="examples/testsubject.csv" class="pull-right">Example</a>
-                                        <input type="file" id="sample" name="sample" accept=".csv,text/csv"/>
+                                        <input type="file" id="sample" name="sample" accept=".csv,text/csv" />
                                     </div>
                                 </fieldset>
                                 <fieldset class="well">
@@ -209,10 +211,10 @@
                                             <label for="whereCategory">Where:</label>
                                             <label for="whereComparator" class="sr-only">Comparison:</label>
                                             <label for="whereFilter" class="sr-only">Filter:</label>
-                                            <input id="whereClear" type="button" value="Clear"/>
+                                            <input id="whereClear" type="button" value="Clear" />
                                             <select id="whereCategory" name="whereCategory" class="form-control"></select>
                                             <select id="whereComparator" name="whereComparator" class="form-control"></select>
-                                            <input id="whereFilter" name="whereFilter" type="text" placeholder="Compare to" class="form-control"/>
+                                            <input id="whereFilter" name="whereFilter" type="text" placeholder="Compare to" class="form-control" />
                                         </div>
                                     </div>
                                 </fieldset>
@@ -276,6 +278,50 @@
                     </div>
                     <!-- end of right panel -->
                 </div>
+
+                <div class="tab-pane" id="tab-query-metabolites">
+                    <div>
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a href="#tab-predefined-search" aria-controls="tab-predefined-search" role="tab" data-toggle="tab">Predefined Search</a>
+                            </li>
+
+                            <li role="presentation">
+                                <a href="#tab-advanced-search" aria-controls="tab-advanced-search" role="tab" data-toggle="tab">Advanced Search</a>
+                            </li>
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content tab-content-custom">
+                            <div role="tabpanel" class="tab-pane active" id="tab-predefined-search">
+                                <div class="form-group">
+                                    <label for="query-name">Query Name</label>
+                                    <div style="display: flex; align-items: center;">
+                                        <select class="form-control" id="query-name" name="query-name" style="display: inline-block; max-width: 300px; margin-right: 5px;">
+                                            <option hidden>Select a query</option>
+                                            <option value="all_studies">All studies</option>
+                                            <option value="all_harmonizations">All harmonizations</option>
+                                            <option value="predicted_metabolites">Predicted metabolites</option>
+                                            <option value="urine_biospecimen">Urine biospecimen</option>
+                                        </select>
+                                        <button class="btn btn-warning">
+                                            <i class="glyphicon glyphicon-search"></i>
+                                            Search
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="tab-advanced-search">
+                                To Be Determined
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
                 <!-- start help Tab -->
                 <div class="tab-pane" id="tab-help">
                     <div id="toc">
@@ -286,7 +332,7 @@
                     <div id="help-content">
                         <div id="about">
                             <h2>About</h2>
-                            <p>COMETS Analytics was developed by the COMETS Data Harmonization Group with web interface support from NCI's <a href="http://cbiit.nci.nih.gov/" target="_blank">CBIIT</a>. Metabolite names were harmonized by linking metabolite lists of frequently-used metabolomics platforms to unique identifiers from public metabolite databases (e.g. HMDB, REFMET).  Prototypes of the web platform were developed using R Shiny. The underlying statistical analyses and data processing uses an R package called COMETS which can be run locally. The HTML5-based web interface to the COMETS package is currently hosted on Amazon Cloud to provides scalability for computationally-intensive analyses.  COMETS analytics was designed so that users can submit data in standard Excel format using the template described below where one can also specify models through the Excel file or through a web-interface.  The app currently performs Spearman correlations, with interactive graphics provided by Plotly.</p>
+                            <p>COMETS Analytics was developed by the COMETS Data Harmonization Group with web interface support from NCI's <a href="http://cbiit.nci.nih.gov/" target="_blank">CBIIT</a>. Metabolite names were harmonized by linking metabolite lists of frequently-used metabolomics platforms to unique identifiers from public metabolite databases (e.g. HMDB, REFMET). Prototypes of the web platform were developed using R Shiny. The underlying statistical analyses and data processing uses an R package called COMETS which can be run locally. The HTML5-based web interface to the COMETS package is currently hosted on Amazon Cloud to provides scalability for computationally-intensive analyses. COMETS analytics was designed so that users can submit data in standard Excel format using the template described below where one can also specify models through the Excel file or through a web-interface. The app currently performs Spearman correlations, with interactive graphics provided by Plotly.</p>
                             <p>We thank Krista Zanetti for her support and the CBIIT team who translated the R Shiny prototype to HTML5 with funding support from the DCEG Informatics Challenge: Sue Pan, JJ Pan, Kai-Ling Chen, Tony Hall, and Wesley Obenshain.</p>
                             <p>COMETS Package Development Team: <a href="mailto:ella@bsc.gwu.edu">Ella Temprosa</a>, <a href="mailto:Ewy.Mathe@osumc.edu">Ewy Mathe</a>, <a href="mailto:moorest@mail.nih.gov">Steve Moore</a>, and <a href="mailto:RischA@imsweb.com">Adam Risch</a></p>
                         </div>
@@ -306,7 +352,9 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <h3 class="col-xs-12 col-md-2"><div class="steps">Step 1</div></h3>
+                                <h3 class="col-xs-12 col-md-2">
+                                    <div class="steps">Step 1</div>
+                                </h3>
                                 <div class="col-xs-12 col-md-10">
                                     <h3>Upload input file</h3>
                                     <p>The input file is currently in excel formate with 5 sheets. Download and use the <a href="examples/cometsInput.xlsx" title="example input excel file">example input file here</a> as a template.</p>
@@ -330,7 +378,9 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <h3 class="col-xs-12 col-md-2"><div class="steps">Step 2</div></h3>
+                                <h3 class="col-xs-12 col-md-2">
+                                    <div class="steps">Step 2</div>
+                                </h3>
                                 <div class="col-xs-12 col-md-10">
                                     <h3>Harmonize Metabolites</h3>
                                     <p>
@@ -338,7 +388,9 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <h3 class="col-xs-12 col-md-2"><div class="steps">Step 3</div></h3>
+                                <h3 class="col-xs-12 col-md-2">
+                                    <div class="steps">Step 3</div>
+                                </h3>
                                 <div class="col-xs-12 col-md-10">
                                     <h3>Data Integrity</h3>
                                     <p>
@@ -368,7 +420,9 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <h3 class="col-xs-12 col-md-2"><div class="steps">Step 4</div></h3>
+                                <h3 class="col-xs-12 col-md-2">
+                                    <div class="steps">Step 4</div>
+                                </h3>
                                 <div class="col-xs-12 col-md-10">
                                     <h3>Run Correlation Analyses</h3>
                                     <p>
@@ -382,17 +436,17 @@
                 <!-- end of help tab content -->
             </div>
             <!-- end of correlate Tab -->
-        </main>
-        <div id="loader"><img src="public/images/loader.gif" alt="Loading....Please Wait"></div>
-        <script>
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function()
-        { (i[r].q=i[r].q||[]).push(arguments)}
-        ,i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    </main>
+    <div id="loader"><img src="public/images/loader.gif" alt="Loading....Please Wait"></div>
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments) }
+            , i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
         ga('create', 'UA-62346354-7', 'auto');
         ga('send', 'pageview');
-        </script>
+    </script>
     </div>
     <script type="text/javascript">_satellite.pageBottom();</script>
 </body>
