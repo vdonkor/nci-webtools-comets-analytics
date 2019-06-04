@@ -101,6 +101,7 @@ appComets.BaseView = Backbone.View.extend({
             model: this.model.get('correlationResults')
         });
         appComets.views.help = new appComets.HelpView();
+        appComets.views.queryMetabolites = new appComets.QueryMetabolitesView();
     }
 });
 
@@ -1207,6 +1208,56 @@ appComets.HelpView = Backbone.View.extend({
     }
 });
 
+appComets.QueryMetabolitesView = Backbone.View.extend({
+    el: '#tab-query-metabolites',
+    events: {
+        'click #predefined-search': 'predefinedSearch',
+    },
+    predefinedSearch: function(e) {
+        var query = $('#query-name').val();
+        if (!query) return false;
+
+        appComets.showLoader();
+
+        $.get('/api/predefined-search/' + query).then(function(response) {
+            console.log(response);
+
+            // determine column keys and titles from query data
+            var columns = response.headers.map(function(item) {
+                return { title: item };
+            });
+
+            // clear data table if initialized
+            if ($.fn.DataTable.isDataTable('#search-results')) {
+                $('#search-results').DataTable().clear().destroy();
+                $('#search-results').empty();
+            }
+
+            // draw data table
+            $('#search-results').DataTable({
+                scrollX: true,
+                columns: columns,
+                data: response.data,
+                lengthMenu: [25, 50, 100],
+                pageLength: 25,
+                language: {
+                    lengthMenu: 'Display _MENU_',
+                    info: '<label style="margin-left: 5px">of _TOTAL_ metabolites</label>',
+                    infoFiltered: '',
+                    infoEmpty: '',
+                },
+                dom: "<'d-flex align-items-center flex-wrap justify-content-between'"
+                    + "<'mv-5 d-flex align-items-center'l<'mt-5'i>>p"
+                    + "><'table-responsive't>",
+            });
+
+            appComets.hideLoader();
+        }).catch(function() {
+            appComets.hideLoader();
+        })
+    }
+})
+
 $(function () {
     appComets.models.cohortsList = new appComets.CohortsModel();
     appComets.models.templatesList = new appComets.TemplatesModel();
@@ -1280,6 +1331,6 @@ $(function () {
             return filepath.replace(/tmp\//, '')
         });
 
-        $.post('/api/end_session', JSON.stringify(sessionFiles));
+        $.post('/api/end-session', JSON.stringify(sessionFiles));
     });
 });

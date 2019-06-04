@@ -293,19 +293,19 @@
                         </ul>
 
                         <!-- Tab panes -->
-                        <div class="tab-content tab-content-custom">
+                        <div class="tab-content tab-content-custom form-group" id="query-metabolites">
                             <div role="tabpanel" class="tab-pane active" id="tab-predefined-search">
                                 <div class="form-group">
                                     <label for="query-name">Query Name</label>
                                     <div style="display: flex; align-items: center;">
                                         <select class="form-control" id="query-name" name="query-name" style="display: inline-block; max-width: 300px; margin-right: 5px;">
-                                            <option hidden>Select a query</option>
+                                            <option value="" hidden>Select a query</option>
                                             <option value="all_studies">All studies</option>
                                             <option value="all_harmonizations">All harmonizations</option>
                                             <option value="predicted_metabolites">Predicted metabolites</option>
                                             <option value="urine_biospecimen">Urine biospecimen</option>
                                         </select>
-                                        <button class="btn btn-warning">
+                                        <button class="btn btn-warning" id="predefined-search">
                                             <i class="glyphicon glyphicon-search"></i>
                                             Search
                                         </button>
@@ -317,6 +317,9 @@
                                 To Be Determined
                             </div>
                         </div>
+
+                        <table id="search-results" class="display table-striped table-hover" style="width: 100%"></table>
+
                     </div>
 
 
@@ -440,9 +443,9 @@
     <div id="loader"><img src="public/images/loader.gif" alt="Loading....Please Wait"></div>
     <script>
         (function (i, s, o, g, r, a, m) {
-        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments) }
-            , i[r].l = 1 * new Date(); a = s.createElement(o),
-                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments) }
+                , i[r].l = 1 * new Date(); a = s.createElement(o),
+                    m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
         })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
         ga('create', 'UA-62346354-7', 'auto');
         ga('send', 'pageview');

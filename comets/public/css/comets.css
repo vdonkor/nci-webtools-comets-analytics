@@ -403,3 +403,38 @@ fieldset label[for="whereCategory"] {
 input.min, input.max {
     max-width: 45%;
 }
+
+
+.d-flex {
+    display: flex;
+}
+
+.align-item-center {
+    align-items: center;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.mr-40 {
+    margin-right: 40px;
+}
+
+.mv-5 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.mt-5 {
+    margin-top: 5px;
+}
+
+#search-results_paginate .pagination {
+    margin-top: 0;
+    margin-bottom: 0;
+}
