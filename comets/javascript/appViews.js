@@ -1242,7 +1242,7 @@ appComets.QueryMetabolitesView = Backbone.View.extend({
                 pageLength: 25,
                 language: {
                     lengthMenu: 'Display _MENU_',
-                    info: '<label style="margin-left: 5px">of _TOTAL_ metabolites</label>',
+                    info: '<label style="margin-left: 5px">of _TOTAL_ records</label>',
                     infoFiltered: '',
                     infoEmpty: '',
                 },
