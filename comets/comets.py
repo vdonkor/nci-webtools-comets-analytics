@@ -1,6 +1,7 @@
 import json, linecache, os, requests, smtplib, sys, time, yaml, logging
 import traceback
 import pyper as pr
+import sqlite3
 from pyper import R
 from boto.s3.connection import S3Connection
 import boto3
@@ -425,7 +426,7 @@ def user_list_update():
     finally:
         return response
 
-@app.route('/api/end_session', methods=['POST'])
+@app.route('/api/end-session', methods=['POST'])
 def end_session():
     ''' Cleans up any files generated during a session '''
     app.logger.info('User session has ended')
@@ -438,6 +439,113 @@ def end_session():
                 os.remove(filepath)
 
     return jsonify(True)
+
+@app.route('/api/predefined-search/<query>', methods=['GET'])
+def predefined_search(query):
+    sql = {
+        'debug': 'SELECT * FROM sqlite_master',
+        'all_studies': 'SELECT study_name, dataset_name, n, platform FROM STUDY',
+        'all_harmonizations': '''
+            SELECT
+                id_harm,
+                uid_01,
+                sum (
+                    ABC_BROAD_HARMFLG +
+                    AIRWAVE_HARMFLG +
+                    ALSPAC_HARMFLG +
+                    ARIC_BATCH1_METABOLON_HARMFLG +
+                    ARIC_HARMFLG +
+                    ATBC1_HARMFLG +
+                    ATBC2_HARMFLG +
+                    ATBC3_HARMFLG +
+                    ATBC_APR13_HARMFLG +
+                    ATBC_DEC13_HARMFLG +
+                    ATBC_SEP14_HARMFLG +
+                    BAEPENDI_HARMFLG +
+                    BIBMOTHER_HARMFLG +
+                    BIB_HARMFLG +
+                    BRAINSHAKE_HARMFLG +
+                    BWHHS_HARMFLG +
+                    CAMP1_HARMFLG +
+                    CAMP2_HARMFLG +
+                    CAMP3_HARMFLG +
+                    CAMP_HARMFLG +
+                    CAPS_HARMFLG +
+                    CATHGEN_HARMFLG +
+                    COLO_HARMFLG +
+                    COPSA_HARMFLG +
+                    CORSA_HARMFLG +
+                    CPS2F_HARMFLG +
+                    CPS2M_HARMFLG +
+                    DPP_HARMFLG +
+                    EPIC_BMRI_HARMFLG +
+                    EPIC_BREAST_HARMFLG +
+                    EPIC_COLORECT_HARMFLG +
+                    EPIC_KIDNEY_HARMFLG +
+                    EPIC_LIVER_HARMFLG +
+                    EPIC_PROST_HARMFLG +
+                    ESTONIA_HARMFLG +
+                    FENLAND_BIOCRATES_HARMFLG +
+                    FRAMHAM_HARMFLG +
+                    GENECARD_HARMFLG +
+                    HABC_HARMFLG +
+                    HCI_WCMC_HARMFLG +
+                    MRCNSHDS_HARMFLG +
+                    MROS_HARMFLG +
+                    NCI_METABOLON_HARMFLG +
+                    NHS1_HARMFLG +
+                    NHS2_HARMFLG +
+                    NSHDS_HARMFLG +
+                    PLCO_HARMFLG +
+                    PLCO_RCC_BROAD_HARMFLG +
+                    PRAEVENT_HARMFLG +
+                    SABRE_HARMFLG +
+                    SBR_HARMFLG +
+                    SHANGHAI_BRAINSHAKE_HARMFLG +
+                    SHANGHAI_CHD_METABOLON_HARMFLG +
+                    SMHS_HARMFLG +
+                    SP2_HARMFLG +
+                    SPA1_HARMFLG +
+                    SPA2_HARMFLG +
+                    TMCS_HARMFLG +
+                    TWINSUK_HARMFLG +
+                    TWINSV4_HARMFLG +
+                    TWINS_BIOC_HARMFLG +
+                    TWINS_BSHK_HARMFLG +
+                    UCLEB_NMR_HARMFLG +
+                    UPBEAT_HARMFLG +
+                    VDAART_AGE1_HARMFLG +
+                    VDAART_AGE3_HARMFLG +
+                    VDAART_HARMFLG +
+                    WELL_HARMFLG +
+                    WHI2_HARMFLG +
+                    WHISERUM_HARMFLG +
+                    WHI_HARMFLG +
+                    WIHS_HARMFLG +
+                    WOMIN_HARMFLG
+                ) AS N_DATASETS
+            FROM MASTER_UID_BIOCHEMICAL_NAME
+            GROUP BY id_harm''',
+        'predicted_metabolites': '',
+        'urine_biospecimen': '',
+    }.get(query, None)
+
+    if not sql:
+        raise(Exception('Invalid Query'))
+
+    return jsonify(query_db(sql))
+
+def query_db(sql, database='restricted/rcode/inst/extdata/sqlite_db_y2019m05d14.sqlite'):
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+    c.execute(sql)
+    data = c.fetchall()
+    headers = [x[0] for x in c.description]
+    c.close()
+    return {
+        'headers': headers,
+        'data': data
+    }
 
 with open("restricted/settings.yml", 'r') as f:
     flatten(yaml.safe_load(f))
