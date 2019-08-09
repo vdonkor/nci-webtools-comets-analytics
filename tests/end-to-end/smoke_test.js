@@ -76,6 +76,9 @@ describe('COMETS Smoke Test', function() {
     it('should run a model from the sample file', async function() {
         const driver = this.driver;
 
+        // select pre-specified models
+        await driver.findElement(By.id('methodSelection1')).click();
+
         // run BMI basic adjustment
         await driver.findElement(By.name('modelSelection')).sendKeys('B');
         await driver.findElement(By.id('runModel')).click();
