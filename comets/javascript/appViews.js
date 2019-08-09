@@ -568,7 +568,7 @@ appComets.FormView = Backbone.View.extend({
         this.renderRunModelButton.apply(this);
     },
     renderEmailOption: function() {
-        if (this.model.get('methodSelection') == 'All') {
+        if (this.model.get('methodSelection') == 'All' && this.model.get('cohortSelection')) {
             this.$el.find('#emailOption').addClass('show');
         } else {
             this.$el.find('#emailOption').removeClass('show');
