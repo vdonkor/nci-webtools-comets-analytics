@@ -204,7 +204,7 @@ def correlate():
             parameters['whereQuery'] = json.loads(parameters['whereQuery']);
             if (len(parameters['whereQuery']) == 0):
                 parameters['whereQuery'] = None
-        if (parameters['modelName'] == "All models"):
+        if (parameters['methodSelection'] == "All"):
             filename = save_input_file(request.files['inputFile'])
             filepath = os.path.join('tmp', filename)
             parameters['filename'] = filename
