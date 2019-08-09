@@ -114,7 +114,7 @@ appComets.HarmonizationFormModel = Backbone.Model.extend({
         exposure: [],
         filename: null,
         metaboliteIds: [],
-        methodSelection: "Batch",
+        methodSelection: "All",
         modelDescription: "Unadjusted",
         modelList: [],
         defaultOptions: [{ 'text': "All Metabolites", 'value': "All metabolites" }],
@@ -177,7 +177,7 @@ appComets.IntegrityResultsModel = Backbone.Model.extend({
                     return obj['num.min'] > response.subjdata.length * .25;
                 }).reduce(sum,0)
             },
-            models: [{'model': 'All models'}].concat(response.mods),
+            models: response.mods, //[{'model': 'All models'}]
             'num.min': response.metab.map(function (obj) {
                 return obj['num.min'];
             }),

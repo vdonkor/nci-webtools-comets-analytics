@@ -521,7 +521,7 @@ appComets.FormView = Backbone.View.extend({
                     appComets.hideLoader();
                 });
             };
-        if (this.model.get('methodSelection') == 'Batch' && this.model.get('modelSelection') == "All models") {
+        if (this.model.get('methodSelection') == 'All') {
             BootstrapDialog.confirm({
                 btnOKClass: 'btn-primary',
                 closable: false,
@@ -568,7 +568,7 @@ appComets.FormView = Backbone.View.extend({
         this.renderRunModelButton.apply(this);
     },
     renderEmailOption: function() {
-        if (this.model.get('methodSelection') == 'Batch' && this.model.get('modelSelection') == "All models") {
+        if (this.model.get('methodSelection') == 'All') {
             this.$el.find('#emailOption').addClass('show');
         } else {
             this.$el.find('#emailOption').removeClass('show');
@@ -683,7 +683,7 @@ appComets.FormView = Backbone.View.extend({
             exposure = this.model.get('exposure'),
             covariates = this.model.get('covariates'),
             whereQuery = ((this.model.get('whereCategory')==''?1:0)+(this.model.get('whereComparator')==''?1:0)+(this.model.get('whereFilter')==''?1:0))%3==0;
-        if (((methodSelection == 'Batch' && modelSelection && !(modelSelection == "All models" && email == "")) ||
+        if (((methodSelection == 'Batch' && modelSelection) || !(methodSelection == "All" && email == "") ||
              (methodSelection == 'Interactive' && this.model.get('outcome').length > 0 && exposure.length > 0 && exposure.indexOf(this.model.get('strata')) < 0 && covariates.indexOf(this.model.get('strata')) < 0)) &&
               whereQuery
         ) {
