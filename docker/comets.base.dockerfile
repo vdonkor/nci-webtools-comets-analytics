@@ -1,8 +1,10 @@
-FROM centos:latest
+FROM centos:7
 
 # Install/update system packages
 RUN yum -y update \
- && yum -y install epel-release \
+ && yum -y install \
+    https://repo.ius.io/ius-release-el7.rpm \
+    https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
  && yum -y install \
     dos2unix \
     gcc \
@@ -15,6 +17,9 @@ RUN yum -y update \
     libssh2-devel \
     libxml2-devel \
     openssl-devel \
+    python36 \
+    python36-devel \
+    python36-pip \
     python \
     python-pip \
     python-devel \
@@ -80,6 +85,21 @@ RUN pip install --upgrade pip \
     stompest==2.3.0 \
     stompest.async==2.3.0 \
     twisted==17.5.0
+
+# Install python 3 dependencies
+RUN pip3 install --upgrade pip \
+ && pip3 install \
+    boto~=2.49 \
+    boto3~=1.10 \
+    flask~=1.1 \
+    mod_wsgi~=4.6 \
+    pyper==1.1.2 \
+    pyyaml~=5.1 \
+    requests~=2.22 \
+    rpy2~=3.2 \
+    stompest~=2.3 \
+    stompest.async~=2.3.0 \
+    twisted~=19.7
 
 # Copy entrypoint and make it executable
 COPY "./entrypoint.sh" "/bin/entrypoint.sh"
