@@ -181,8 +181,8 @@ def correlate():
 
         parameters = dict(request.form)
         print(parameters)
-        # for field in parameters:
-        #     parameters[field] = parameters[field][0]
+        for field in parameters:
+            parameters[field] = parameters[field][0].decode()
 
         if ('outcome' in parameters):
             parameters['outcome'] = json.loads(parameters['outcome'])
@@ -245,8 +245,8 @@ def correlate():
 def combine():
     try:
         parameters = dict(request.form)
-        # for field in parameters:
-        #     parameters[field] = parameters[field][0]
+        for field in parameters:
+            parameters[field] = parameters[field][0].decode()
         if not os.path.exists('tmp'):
             os.makedirs('tmp')
         timestamp = time.strftime("%Y_%m_%d_%I_%M")
