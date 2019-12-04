@@ -1,4 +1,5 @@
 flask
+pyyaml
 rpy2
 stompest
 stompest.async
