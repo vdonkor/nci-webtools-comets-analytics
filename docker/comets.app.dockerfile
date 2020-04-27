@@ -1,7 +1,7 @@
 # cbiitss/comets:base is built from:
 # (in root directory)
 # docker build -t cbiitss/comets:base -f docker/comets.base.dockerfile .
-FROM cbiitss/comets:base 
+FROM cbiitss/comets:base0
 
 # Install additional dependencies. For example: 
 # RUN yum -y update && yum -y install some_package && yum clean all
