@@ -21,7 +21,7 @@ COPY comets/* /deploy/app/
 RUN install_comets_package.sh
 
 # Copy entrypoint and make it executable
-COPY "./entrypoint.processor.sh" "/bin/entrypoint.processor.sh"
+COPY "docker/entrypoint.processor.sh" "/bin/entrypoint.processor.sh"
 
 RUN dos2unix /bin/entrypoint.processor.sh \
  && chmod 755 /bin/entrypoint.processor.sh
