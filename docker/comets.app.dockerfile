@@ -1,7 +1,7 @@
 # cbiitss/comets:base is built from:
 # (in root directory)
 # docker build -t cbiitss/comets:base -f docker/comets.base.dockerfile .
-FROM cbiitss/comets:base0
+FROM cbiitss/comets:r-package
 
 # Install additional dependencies. For example: 
 # RUN yum -y update && yum -y install some_package && yum clean all
@@ -16,9 +16,6 @@ FROM cbiitss/comets:base0
 #           popd
 #           cp -R /tmp/R-cometsAnalytics/RPackageSource/* comets/restricted/rcode
 COPY comets/* /deploy/app/
-
-# Install COMETS Package
-RUN install_comets_package.sh
 
 # Start application using entrypoint
 ENTRYPOINT ["entrypoint.sh"]
